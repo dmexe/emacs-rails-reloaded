@@ -1,9 +1,40 @@
-(defun string-ext/start-with? (string start)
+(defun string-ext/cut-safe (string cut from)
+  (let ((str (string-ext/cut string cut from)))
+    (if str
+        str
+      string)))
+
+(defun string-ext/cut (string cut from)
+  "Cut from STRING fragment CUT from FROM,
+FROM must equal :begin or :end. Return result string,
+else return nil."
+  (cond
+    ((and (eq from :begin)
+          (string-ext/start-p string cut))
+     (substring string (length cut) (length string)))
+    ((and (eq from :end)
+          (string-ext/end-p string cut))
+     (substring string 0 (- (length string) (length cut))))))
+;;    (t string)))
+
+(defun string-ext/from-symbol (sym)
+  "Convert symbol SYM to string."
+  (string-ext/cut-safe (format "%s" sym) ":" :begin))
+
+(defun string-ext/start-p (string start)
   "Return t if STRING start with START, else return nil."
   (let ((len (length start))
         (orig-len (length string)))
     (when (<= len orig-len)
       (string= start (substring string 0 len)))))
+
+(defun string-ext/end-p (string end)
+  "Return t if STRING end with END, else return nil."
+  (let* ((len (length end))
+         (orig-len (length string))
+         (from (- orig-len len)))
+    (when (<= len orig-len)
+      (string= end (substring string from orig-len)))))
 
 (defmacro string-ext/string=~ (regex string &rest body)
   "regex matching similar to the =~ operator found in other languages."
@@ -24,5 +55,25 @@
                                ;;after
                                ($a (substring ,str (match-end 0) (length ,str))))
                ,@body)))))))
+
+(defun string-ext/camelize (string)
+  "Convert from camel_case/string to CamelCase::String."
+  (let ((case-fold-search nil))
+    (replace-regexp-in-string " " ""
+      (replace-regexp-in-string "  " "::"
+        (capitalize
+         (replace-regexp-in-string "\_" " "
+           (replace-regexp-in-string "\/" "  " string)))))))
+
+(defun string-ext/decamelize (string)
+  "Convert from CamelCase::String to camel_case/string."
+  (let ((case-fold-search nil))
+    (downcase
+     (replace-regexp-in-string "::" "/"
+       (replace-regexp-in-string
+        "\\([A-Z]+\\)\\([A-Z][a-z]\\)" "\\1_\\2"
+          (replace-regexp-in-string
+            "\\([a-z\\d]\\)\\([A-Z]\\)" "\\1_\\2"
+            string))))))
 
 (provide 'string-ext)

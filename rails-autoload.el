@@ -27,59 +27,15 @@
 
 ;;; Code:
 
-(require 'string-ext)
+(autoload 'rails/initialize-for-current-buffer "rails-reloaded" nil t)
+(autoload 'rails/root "rails-lib" nil t)
 
-(defvar rails/buffer '())
-(make-variable-buffer-local 'rails/buffer)
 
-(defvar rails/bundles '())
+(add-hook 'find-file-hooks 'rails/find-file-hook)
 
-(defvar rails/projects '())
+(defun rails/find-file-hook ()
+  (when (rails/root (buffer-file-name))
+    (rails/initialize-for-current-buffer)))
 
-(setq rails/projects '())
 
-(defun rails/root (&optional file)
-  "Return RAILS_ROOT for FILE, if FILE not set using `buffer-file-name' instead it,
-else RAILS_ROOT not found, return nil."
-  (let (root
-        (file (if file file (buffer-file-name))))
-    (cond
-     ((setq root (rails/find-existing-root-for file)))
-     ((setq root (rails/find-root-for file))))
-    root))
-
-(defun rails/find-existing-root-for(file)
-  "Search RAILS_ROOT for FILE in `rails/projects' and return it,
-else return nil"
-  (let ((project (car rails/projects))
-        (projects (cdr rails/projects))
-        (root))
-    (while (and (not root)
-                project)
-      (if (string-ext/start-with? file project)
-          (setq root project)
-        (progn
-          (setq project (car projects))
-          (setq projects (cdr projects)))))
-    root))
-
-(defun rails/find-root-for (file)
-  "Return RAILS_ROOT if FILE is a part of a Rails application,
-else return nil"
-  (let ((curdir (directory-of-file (expand-file-name file)))
-        (max 10)
-        (found nil))
-    (while (and (not found) (> max 0))
-      (progn
-        (if (file-exists-p (concat curdir "config/environment.rb"))
-            (progn
-              (setq found t))
-          (progn
-            (setq curdir (concat curdir "../"))
-            (setq max (- max 1))))))
-    (when found
-      (let ((root (expand-file-name curdir)))
-        (setq rails/projects (uniq-list (add-to-list 'rails/projects root)))
-        root))))
-
-(provide rails-autoload)
+(provide 'rails-autoload)
