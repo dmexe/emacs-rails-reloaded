@@ -174,15 +174,16 @@
 
 (defun rails/goto-from-current-file ()
   (interactive)
-  (let ((file (buffer-file-name)))
-    (rails/with-root file
-      (let ((list (rails/goto-item-alist-from-file
-                   (rails/root)
-                   file
-                   rails/current-buffer))
-            (title (capitalize (string-ext/from-symbol
-                                (rails/buffer-type rails/current-buffer)))))
-        (rails/menu-from-goto-item-alist (rails/root) (format "Go to from %s to..." title) list)))))
+  (when (rails/buffer-p rails/current-buffer)
+    (let ((file (buffer-file-name)))
+      (rails/with-root file
+        (let ((list (rails/goto-item-alist-from-file
+                     (rails/root)
+                     file
+                     rails/current-buffer))
+              (title (capitalize (string-ext/from-symbol
+                                  (rails/buffer-type rails/current-buffer)))))
+          (rails/menu-from-goto-item-alist (rails/root) (format "Go to from %s to..." title) list))))))
 
 (defun rails/fast-goto-from-current-file ()
   (interactive)

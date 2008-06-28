@@ -1,7 +1,7 @@
 (defconst rails/controller/dir "app/controllers/")
 (defconst rails/controller/file-suffix "_controller")
-(defconst rails/controller/buffer-weight 1)
 (defconst rails/controller/goto-item-weight 5)
+(defconst rails/controller/buffer-weight 1)
 (defconst rails/controller/buffer-type :controller)
 
 (defun rails/controller/goto-item-from-file (root file rails-buffer)
@@ -42,7 +42,8 @@
       file)))
 
 (defun rails/controller/initialize (root file)
-  (when (eq (rails/buffer-type rails/current-buffer) rails/controller/buffer-type)
+  (when (and (rails/buffer-p rails/current-buffer)
+             (eq (rails/buffer-type rails/current-buffer) rails/controller/buffer-type))
     (add-hook 'rails/after-goto-file-hook 'rails/controller/after-goto-file-hook t t)))
 
 (defun rails/controller/current-buffer-action-name ()
