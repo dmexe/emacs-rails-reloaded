@@ -37,10 +37,11 @@
 
 (defvar rails/projects '())
 
-(defstruct rails/buffer type name filename weight)
-(defstruct rails/goto-item group name file)
+(defstruct rails/buffer type name file weight)
+(defstruct rails/goto-item group name file weight action-name)
 
 (defvar rails/current-buffer nil)
+(defvar rails/prev-current-buffer nil)
 
 (defvar rails/bundles-list '(controller
                              helper
@@ -52,6 +53,8 @@
 
 (defvar rails/ruby/file-suffix ".rb")
 (defvar rails/associated-types-list '())
+
+(defvar rails/after-goto-file-hook nil)
 
 (defun rails/load-bundles ()
   "Loading bundles from `rails/bundles'."
@@ -68,11 +71,11 @@
 (defun rails/initialize-bundles (root file)
   (let ((file (rails/cut-root file)))
     (dolist (func (rails/bundles-func "initialize"))
-      (apply func (list root file rails/current-buffer)))))
+      (apply func (list root file)))))
 
 (defun rails/determine-type-of-file (root file &optional rails-buffer)
   (if (and rails-buffer
-           (string= (rails/cut-root file) (rails/buffer-filename rails-buffer))
+           (string= (rails/cut-root file) (rails/buffer-file rails-buffer))
            (rails/buffer-type rails-buffer)
            (rails/buffer-name rails-buffer))
       rails-buffer
@@ -97,10 +100,10 @@
                 (progn
                   (setf (rails/buffer-type rails-buffer) type)
                   (setf (rails/buffer-name rails-buffer) name)
-                  (setf (rails/buffer-filename rails-buffer) strip-file)
+                  (setf (rails/buffer-file rails-buffer) strip-file)
                   (setf (rails/buffer-weight rails-buffer) weight)
                   rails-buffer)
-              (make-rails/buffer :type type :name name :filename strip-file :weight weight))))))))
+              (make-rails/buffer :type type :name name :file strip-file :weight weight))))))))
 
 (defun rails/goto-item-alist-from-file (root file rails-buffer)
   (let ((goto-item-list '()))
@@ -131,9 +134,20 @@
   (when goto-item
     (when-bind (file (rails/goto-item-file goto-item))
       (when (rails/file-exist-p root file)
+        (unless (rails/goto-item-action-name goto-item)
+          (setf (rails/goto-item-action-name goto-item)
+                (rails/current-buffer-action-name)))
         (rails/find-file root file)
-        (when rails/current-buffer
-          (rails/notify-by-rails-buffer rails/current-buffer))))))
+        (run-hooks 'rails/after-goto-file-hook))
+      (when rails/current-buffer
+        (rails/notify-by-rails-buffer rails/current-buffer)))))
+
+(defun rails/current-buffer-action-name ()
+  (when (rails/buffer-p rails/current-buffer)
+    (when-bind (func (rails/bundle-func
+                      (string-ext/from-symbol (rails/buffer-type rails/current-buffer))
+                      "current-buffer-action-name"))
+               (funcall func))))
 
 (defun rails/notify (string)
   (message string))
@@ -143,6 +157,7 @@
    (format "Opened %s %s"
            (string-ext/cut (format "%s" (rails/buffer-type rails-buffer)) ":" :begin)
            (capitalize (rails/buffer-name rails-buffer)))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -154,6 +169,7 @@
   (interactive)
   (setq rails/bundles-loaded-p nil)
   (setq rails/bundles-func-list nil)
+  (setq rails-minor-mode-map (rails-minor-mode-default-keymap))
   (rails/load-bundles))
 
 (defun rails/goto-from-current-file ()
@@ -168,6 +184,21 @@
                                 (rails/buffer-type rails/current-buffer)))))
         (rails/menu-from-goto-item-alist (rails/root) (format "Go to from %s to..." title) list)))))
 
+(defun rails/fast-goto-from-current-file ()
+  (interactive)
+  (let ((file (buffer-file-name))
+        (weight 0)
+        goto-item)
+    (rails/with-root file
+      (dolist (func (rails/bundles-func "fast-goto-item-from-file"))
+        (let ((item (funcall func (rails/root) (rails/cut-root file) rails/current-buffer)))
+          (when (and (rails/goto-item-p item)
+                     (>= (rails/goto-item-weight item) weight))
+                (setq weight (rails/goto-item-weight item))
+                (setq goto-item item))))
+      (when goto-item
+        (rails/goto-from-goto-item (rails/root) goto-item)))))
+
 (defun rails/initialize-for-current-buffer ()
   (interactive)
   (let ((file (buffer-file-name)))
@@ -175,16 +206,29 @@
       (rails/load-bundles)
       (set (make-local-variable 'rails/current-buffer)
            (rails/determine-type-of-file (rails/root) file))
+      (set (make-local-variable 'rails/prev-current-buffer)
+           nil)
       (rails-minor-mode t)
       (rails/initialize-bundles (rails/root) file))))
 
-(defvar rails-minor-mode-map
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Rails minor mode
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun rails-minor-mode-default-keymap ()
   (let ((map (make-keymap)))
+    (define-keys map
+      ((rails/define-short-key "<down>") 'rails/goto-from-current-file)
+      ((rails/define-short-key "<up>")   'rails/fast-goto-from-current-file))
     map))
 
-(define-keys rails-minor-mode-map
-  ((kbd "\C-c <down>") 'rails/goto-from-current-file))
+(defvar rails-minor-mode-prefix-key "\C-c")
+(defvar rails-minor-mode-prefix2-key "\C-c")
 
+(defvar rails-minor-mode-map (rails-minor-mode-default-keymap))
 
 (define-minor-mode rails-minor-mode
   "RubyOnRails"

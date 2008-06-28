@@ -31,7 +31,7 @@
     (when (rails/file-exist-p root file)
       file)))
 
-(defun rails/helper/initialize (root file rails-current-buffer)
+(defun rails/helper/initialize (root file)
   )
 
 (defun rails/helper/load ()

@@ -135,6 +135,21 @@ else return nil"
 (defun rails/find-file (root file)
   (find-file (concat root file)))
 
+(defun rails/directory-to-goto-menu (root dir title func &optional regexp)
+  (when-bind (files (files-ext/find-recursive-files
+                     '(lambda (it) (funcall func root it))
+                     regexp
+                     (concat root dir)))
+    (setq files
+          (mapcar
+           '(lambda (it) (make-rails/goto-item
+                         :group :default
+                         :name  (string-ext/decamelize (rails/buffer-name it))
+                         :file  (rails/buffer-file it)))
+           files))
+    (setq files (list (list :default files)))
+    (rails/menu-from-goto-item-alist root title files)))
+
 (defun rails/add-to-associated-types-list (type)
   (add-to-list 'rails/associated-types-list type))
 
@@ -142,5 +157,14 @@ else return nil"
   (let ((type (rails/buffer-type rails-buffer)))
     (unless (eq type exclude-type)
       (find type rails/associated-types-list))))
+
+(defmacro rails/define-key (key)
+  `(kbd ,(concat rails-minor-mode-prefix-key " " rails-minor-mode-prefix2-key  " " key)))
+
+(defmacro rails/define-short-key (key)
+  `(kbd ,(concat rails-minor-mode-prefix-key " " key)))
+
+(defmacro rails/define-goto-key (key func)
+  `(define-key rails-minor-mode-map (rails/define-key ,(concat " g " key)) ,func))
 
 (provide 'rails-lib)

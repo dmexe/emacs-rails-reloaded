@@ -56,7 +56,7 @@ else return nil."
                                ($a (substring ,str (match-end 0) (length ,str))))
                ,@body)))))))
 
-(defun string-ext/camelize (string)
+(defun string-ext/decamelize (string)
   "Convert from camel_case/string to CamelCase::String."
   (let ((case-fold-search nil))
     (replace-regexp-in-string " " ""
@@ -65,7 +65,7 @@ else return nil."
          (replace-regexp-in-string "\_" " "
            (replace-regexp-in-string "\/" "  " string)))))))
 
-(defun string-ext/decamelize (string)
+(defun string-ext/camelize (string)
   "Convert from CamelCase::String to camel_case/string."
   (let ((case-fold-search nil))
     (downcase
