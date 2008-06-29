@@ -12,6 +12,18 @@
                              :name "Controller"
                              :file file-name))))
 
+(defun rails/controller/goto-associated ()
+  (interactive)
+  (let ((file (buffer-file-name))
+        (rails-buffer rails/current-buffer))
+    (rails/with-root file
+      (when-bind
+       (goto-item
+        (rails/controller/goto-item-from-file (rails/root)
+                                              (rails/cut-root file)
+                                              rails-buffer))
+       (rails/fast-find-file-by-goto-item (rails/root) goto-item)))))
+
 (defun rails/controller/fast-goto-item-from-file (root file rails-buffer)
   (when-bind (type (rails/associated-type-p rails-buffer rails/controller/buffer-type))
      (when-bind (file-name
@@ -88,6 +100,8 @@
 
 (defun rails/controller/load ()
   (rails/add-to-associated-types-list rails/controller/buffer-type)
-  (rails/define-goto-key "c" 'rails/controller/goto-from-list))
+  (rails/define-goto-key "c" 'rails/controller/goto-from-list)
+  (rails/define-fast-goto-key "c" 'rails/controller/goto-associated)
+  )
 
 (provide 'rails-controller-bundle)

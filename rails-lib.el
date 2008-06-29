@@ -168,6 +168,9 @@ else return nil"
   `(kbd ,(concat rails-minor-mode-prefix-key " " key)))
 
 (defmacro rails/define-goto-key (key func)
-  `(define-key rails-minor-mode-map (rails/define-key ,(concat " g " key)) ,func))
+  `(define-key rails-minor-mode-map (rails/define-key ,(concat "g " key)) ,func))
+
+(defmacro rails/define-fast-goto-key (key func)
+  `(define-key rails-minor-mode-map (rails/define-short-key ,key) ,func))
 
 (provide 'rails-lib)

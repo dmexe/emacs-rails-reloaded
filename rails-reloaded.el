@@ -38,7 +38,7 @@
 (defvar rails/projects '())
 
 (defstruct rails/buffer type name file weight)
-(defstruct rails/goto-item group name file weight action-name)
+(defstruct rails/goto-item group name file weight action-name func)
 
 (defvar rails/current-buffer nil)
 (defvar rails/prev-current-buffer nil)
@@ -128,9 +128,9 @@
                           (list title
                                 menu)))
       (when item
-        (rails/goto-from-goto-item root item)))))
+        (rails/find-file-by-goto-item root item)))))
 
-(defun rails/goto-from-goto-item (root goto-item &optional run-hooks)
+(defun rails/find-file-by-goto-item (root goto-item &optional run-hooks)
   (when goto-item
     (when-bind (file (rails/goto-item-file goto-item))
       (when (rails/file-exist-p root file)
@@ -142,6 +142,9 @@
           (run-hooks 'rails/after-goto-file-hook)))
       (when rails/current-buffer
         (rails/notify-by-rails-buffer rails/current-buffer)))))
+
+(defun rails/fast-find-file-by-goto-item (root goto-item)
+  (rails/find-file-by-goto-item root goto-item t))
 
 (defun rails/current-buffer-action-name ()
   (when (rails/buffer-p rails/current-buffer)
@@ -155,9 +158,10 @@
 
 (defun rails/notify-by-rails-buffer (rails-buffer)
   (rails/notify
-   (format "Opened %s %s"
+   (format "%s %s"
+           (capitalize (rails/buffer-name rails-buffer))
            (string-ext/cut (format "%s" (rails/buffer-type rails-buffer)) ":" :begin)
-           (capitalize (rails/buffer-name rails-buffer)))))
+           )))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -199,7 +203,7 @@
                 (setq weight (rails/goto-item-weight item))
                 (setq goto-item item))))
       (when goto-item
-        (rails/goto-from-goto-item (rails/root) goto-item t)))))
+        (rails/fast-find-file-by-goto-item (rails/root) goto-item t)))))
 
 (defun rails/initialize-for-current-buffer ()
   (interactive)

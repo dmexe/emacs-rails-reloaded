@@ -50,11 +50,24 @@
     (when (eq rails/helper/buffer-type (rails/buffer-type buf))
       buf)))
 
+(defun rails/helper/goto-associated ()
+  (interactive)
+  (let ((file (buffer-file-name))
+        (rails-buffer rails/current-buffer))
+    (rails/with-root file
+      (when-bind
+       (goto-item
+        (rails/helper/goto-item-from-file (rails/root)
+                                          (rails/cut-root file)
+                                          rails-buffer))
+       (rails/fast-find-file-by-goto-item (rails/root) goto-item)))))
+
 (defun rails/helper/initialize (root file)
   )
 
 (defun rails/helper/load ()
   (rails/add-to-associated-types-list rails/helper/buffer-type)
-  (rails/define-goto-key "h" 'rails/helper/goto-from-list))
+  (rails/define-goto-key "h" 'rails/helper/goto-from-list)
+  (rails/define-fast-goto-key "h" 'rails/helper/goto-associated))
 
 (provide 'rails-helper-bundle)
