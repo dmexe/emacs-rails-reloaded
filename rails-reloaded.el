@@ -39,14 +39,15 @@
 (defvar rails/projects '())
 
 (defstruct rails/buffer type name association-name views-dir-name file weight)
-(defstruct rails/goto-item group name file weight func action-name)
+(defstruct rails/goto-item group name file weight func)
 
 (defvar rails/current-buffer nil)
 (defvar rails/prev-current-buffer nil)
 
 (defvar rails/bundles-list '(controller
                              helper
-                             model))
+                             model
+                             view))
 
 (defvar rails/bundles-func-list '())
 
@@ -68,10 +69,10 @@
           (apply load-func (list))))))
     (setq rails/bundles-loaded-p t))
 
-(defun rails/initialize-bundles (root file)
+(defun rails/initialize-bundles (root file rails-current-buffer)
   (let ((file (rails/cut-root file)))
     (dolist (func (rails/bundles-func "initialize"))
-      (apply func (list root file)))))
+      (apply func (list root file rails-current-buffer)))))
 
 (defun rails/determine-type-of-file (root file &optional rails-buffer)
   (if (and rails-buffer
@@ -83,6 +84,8 @@
       (let ((strip-file (rails/cut-root file))
             type
             name
+            association-name
+            views-dir-name
             (weight 0))
         (when strip-file
           (dolist (func (rails/bundles-func "determine-type-of-file"))
@@ -94,33 +97,46 @@
                          (>= (rails/buffer-weight buffer-type) weight))
                 (setq weight (rails/buffer-weight buffer-type))
                 (setq type (rails/buffer-type buffer-type))
-                (setq name (rails/buffer-name buffer-type)))))
+                (setq name (rails/buffer-name buffer-type))
+                (setq association-name (rails/buffer-association-name buffer-type))
+                (setq views-dir-name (rails/buffer-views-dir-name buffer-type)))))
           (when (and type name)
             (if rails-buffer
                 (progn
                   (setf (rails/buffer-type rails-buffer) type)
                   (setf (rails/buffer-name rails-buffer) name)
+                  (setf (rails/buffer-association-name rails-buffer) association-name)
+                  (setf (rails/buffer-views-dir-name rails-buffer) views-dir-name)
                   (setf (rails/buffer-file rails-buffer) strip-file)
                   (setf (rails/buffer-weight rails-buffer) weight)
                   rails-buffer)
-              (make-rails/buffer :type type :name name :file strip-file :weight weight))))))))
+              (make-rails/buffer :type type :name name :file strip-file :weight weight
+                                 :association-name association-name :views-dir-name views-dir-name))))))))
 
 (defun rails/goto-item-alist-from-file (root file rails-buffer)
   (let ((goto-item-list '()))
     (dolist (func (rails/bundles-func "goto-item-from-file"))
       (let ((line (apply func (list root (rails/cut-root file) rails-buffer))))
         (when (rails/goto-item-p line)
-          (add-to-list 'goto-item-list line t))))
+          (add-to-list 'goto-item-list line t))
+        (when (listp line)
+          (dolist (it line)
+            (when (rails/goto-item-p it)
+              (add-to-list 'goto-item-list it t))))))
     (list-ext/group-by
      goto-item-list #'(lambda(it) (rails/goto-item-group it)))))
 
 (defun rails/menu-from-goto-item-alist (root title goto-alist)
-  (let (menu item)
+  (let (menu item last-p)
     (dolist (alist goto-alist)
       (let ((group (car alist))
             (list (cadr alist)))
+        (when last-p
+          (add-to-list 'menu '("--" "--") t))
         (dolist (it list)
-          (add-to-list 'menu (cons (rails/goto-item-name it) it) t))))
+          (add-to-list 'menu (cons (rails/goto-item-name it) it) t)))
+      (unless last-p
+        (setq last-p t)))
     (when (> (length menu) 0)
       (add-to-list 'menu title)
       (setq item
@@ -128,30 +144,35 @@
                           (list title
                                 menu)))
       (when item
-        (rails/find-file-by-goto-item root item)))))
+        (if (rails/goto-item-func item)
+            (funcall (rails/goto-item-func item) item)
+          (rails/find-file-by-goto-item root item))))))
 
-(defun rails/find-file-by-goto-item (root goto-item &optional run-hooks)
+(defun rails/find-file-by-goto-item (root goto-item)
   (when goto-item
     (when-bind (file (rails/goto-item-file goto-item))
       (when (rails/file-exist-p root file)
-        (unless (rails/goto-item-action-name goto-item)
-          (setf (rails/goto-item-action-name goto-item)
-                (rails/current-buffer-action-name)))
         (rails/find-file root file)
-        (when run-hooks
-          (run-hooks 'rails/after-goto-file-hook)))
-      (when rails/current-buffer
-        (rails/notify-by-rails-buffer rails/current-buffer)))))
+        (when rails/current-buffer
+          (rails/notify-by-rails-buffer rails/current-buffer))))))
 
 (defun rails/fast-find-file-by-goto-item (root goto-item)
-  (rails/find-file-by-goto-item root goto-item t))
+  (let ((action (rails/current-buffer-action-name)))
+    (rails/find-file-by-goto-item root goto-item)
+    (rails/goto-action-in-current-buffer action)))
 
 (defun rails/current-buffer-action-name ()
   (when (rails/buffer-p rails/current-buffer)
-    (when-bind (func (rails/bundle-func
-                      (string-ext/from-symbol (rails/buffer-type rails/current-buffer))
-                      "current-buffer-action-name"))
-               (funcall func))))
+    (when-bind (func (rails/bundles-func-by-buffer
+                      rails/current-buffer "current-buffer-action-name"))
+      (funcall func))))
+
+(defun rails/goto-action-in-current-buffer (action)
+  (when (and (rails/buffer-p rails/current-buffer)
+             action)
+    (when-bind (func (rails/bundles-func-by-buffer
+                      rails/current-buffer "goto-action-in-current-buffer"))
+      (funcall func action))))
 
 (defun rails/notify (string)
   (message string))
@@ -159,10 +180,9 @@
 (defun rails/notify-by-rails-buffer (rails-buffer)
   (rails/notify
    (format "%s %s"
-           (capitalize (rails/buffer-name rails-buffer))
+           (rails/buffer-name rails-buffer)
            (string-ext/cut (format "%s" (rails/buffer-type rails-buffer)) ":" :begin)
            )))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

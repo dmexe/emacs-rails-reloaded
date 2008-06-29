@@ -39,20 +39,20 @@
 ;; Callbacks
 ;;
 
-(defun rails/helper/goto-item-from-file (root file rails-curent-buffer)
+(defun rails/helper/goto-item-from-file (root file rails-current-buffer)
   (when-bind (type (rails/associated-type-p rails-current-buffer rails/helper/buffer-type))
      (when-bind (file-name
-                 (rails/helper/exist-p root (rails/buffer-name rails-current-buffer)))
+                 (rails/helper/exist-p root (rails/buffer-association-name rails-current-buffer)))
        (make-rails/goto-item :name "Helper"
                              :file file-name))))
 
 (defun rails/helper/determine-type-of-file (rails-root file)
   (when (string-ext/start-p file rails/helper/dir)
-    (let ((name (rails/helper/canonical-name file))
+    (let ((name (rails/helper/canonical-name file)))
       (make-rails/buffer :type   rails/helper/buffer-type
                          :weight rails/helper/buffer-weight
                          :name   name
-                         :association-name name)))))
+                         :association-name name))))
 
 ;; (defun rails/helper/initialize (root file rails-current-buffer)
 ;;   )

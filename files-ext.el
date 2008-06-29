@@ -16,4 +16,8 @@
         (add-to-list 'res obj t)))
     res))
 
+(defun files-ext/file-special-p (file)
+  (or (string= file ".")
+      (string= file "..")))
+
 (provide 'files-ext)

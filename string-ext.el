@@ -76,4 +76,10 @@ else return nil."
             "\\([a-z\\d]\\)\\([A-Z]\\)" "\\1_\\2"
             string))))))
 
+(defun string-ext/empty-p (str) ;(+)
+  "Return t if string STR is not empty."
+  (not (and (stringp str)
+            (not (string-equal "" str))
+            (not (string-match "^ +$" str)))))
+
 (provide 'string-ext)

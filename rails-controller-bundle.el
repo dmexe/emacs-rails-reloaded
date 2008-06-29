@@ -37,25 +37,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Hooks
-;;
-
-(defun rails/controller/after-goto-file-hook ()
-  (when (and (rails/goto-item-p goto-item)
-             (rails/goto-item-action-name goto-item))
-    (rails/ruby/goto-method-in-current-buffer
-     (rails/goto-item-action-name goto-item))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
 ;; Callbacks
 ;;
 
 (defun rails/controller/goto-item-from-file (root file rails-current-buffer)
   (when-bind (type (rails/associated-type-p rails-current-buffer rails/controller/buffer-type))
      (when-bind (file-name
-                 (rails/controller/exist-p root (rails/buffer-name rails-current-buffer)))
+                 (rails/controller/exist-p root (rails/buffer-association-name rails-current-buffer)))
        (make-rails/goto-item :name "Controller"
                              :file file-name))))
 
@@ -67,6 +55,9 @@
 (defun rails/controller/current-buffer-action-name ()
   (rails/ruby/current-method))
 
+(defun rails/controller/goto-action-in-current-buffer (action-name)
+  (rails/ruby/goto-method-in-current-buffer action-name))
+
 (defun rails/controller/determine-type-of-file (rails-root file)
   (when (string-ext/start-p file rails/controller/dir)
     (let ((name (rails/controller/canonical-name file)))
@@ -76,11 +67,8 @@
                          :association-name name
                          :views-dir-name   name))))
 
-(defun rails/controller/initialize (root file rails-current-buffer)
-  (when (and (rails/buffer-p rails/current-buffer)
-             (eq (rails/buffer-type rails/current-buffer)
-                 rails/controller/buffer-type))
-    (add-hook 'rails/after-goto-file-hook 'rails/controller/after-goto-file-hook t t)))
+;; (defun rails/controller/initialize (root file rails-current-buffer)
+;;   )
 
 (defun rails/controller/load ()
   (rails/add-to-associated-types-list rails/controller/buffer-type)

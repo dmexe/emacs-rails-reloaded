@@ -117,6 +117,12 @@ else return nil"
     (if (fboundp name)
         name nil)))
 
+(defun rails/bundles-func-by-buffer (rails-buffer func-name)
+  (when (rails/buffer-p rails-buffer)
+    (rails/bundle-func
+     (string-ext/from-symbol (rails/buffer-type rails-buffer))
+     func-name)))
+
 (defun rails/bundles-func (func-name)
   (let ((list (cadr (assoc func-name rails/bundles-func-list))))
     (if list
