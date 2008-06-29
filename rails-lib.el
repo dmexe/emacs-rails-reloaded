@@ -182,14 +182,15 @@ else return nil"
 (defun rails/define-goto-menu (vec func title)
   (define-key rails-minor-mode-map
     (merge 'vector [menu-bar rails goto-list] vec 'eq)
-    (cons title func)))
+    (cons (concat "Go to " title) func)))
 
 (defmacro rails/define-fast-goto-key (key func)
   `(define-key rails-minor-mode-map (rails/define-short-key ,key) ,func))
 
-(defun rails/define-fast-goto-menu (vec func title)
-  (define-key rails-minor-mode-map
+(defun rails/define-fast-goto-menu (vec func title &optional enable)
+  (define-key-after
+    rails-minor-mode-map
     (merge 'vector [menu-bar rails goto-fast] vec 'eq)
-    (cons title func)))
+    (list 'menu-item (concat "Go to current " title) func :enable t) 'separator))
 
 (provide 'rails-lib)

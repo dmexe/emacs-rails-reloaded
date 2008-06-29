@@ -77,7 +77,6 @@
   (rails/define-goto-menu [controller] 'rails/controller/goto-from-list "Controller")
   (rails/define-fast-goto-menu [controller] 'rails/controller/goto-associated "Controller"))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Interactives

@@ -36,7 +36,7 @@
 (require 'rails-ruby)
 (require 'rails-lib)
 
-(defvar rails/projects '())
+(defconst rails/version "0.99")
 
 (defstruct rails/buffer type name association-name views-dir-name file weight)
 (defstruct rails/goto-item group name file weight func)
@@ -257,9 +257,14 @@
   (let ((map (make-sparse-keymap)))
     (define-keys map
       ([rails] (cons "RoR" (make-sparse-keymap "RubyOnRails")))
-
-      ([rails goto-fast] (cons "Go to from current file..." (make-sparse-keymap)))
-      ([rails goto-list]    (cons "Go to..." (make-sparse-keymap))))
+      ([rails version]    '(menu-item (concat "Version: " rails/version) 'foo :enable nil))
+;;       ([rails separator2] (cons "--" "--"))
+      ([rails separator1] (cons "--" "--"))
+      ([rails goto-fast]  (cons "Go To From Current File" (make-sparse-keymap)))
+      ([rails goto-fast separator] (cons "--" "--"))
+      ([rails goto-fast goto-fast]  (cons "Go to Associated Files with Menu" 'rails/goto-from-current-file))
+      ([rails goto-fast goto]       (cons "Go to Associated File" 'rails/fast-goto-from-current-file))
+      ([rails goto-list]    (cons "Go To" (make-sparse-keymap))))
   map))
 
 (defun rails-minor-mode-default-keymap ()
