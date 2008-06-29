@@ -130,7 +130,7 @@
       (when item
         (rails/goto-from-goto-item root item)))))
 
-(defun rails/goto-from-goto-item (root goto-item)
+(defun rails/goto-from-goto-item (root goto-item &optional run-hooks)
   (when goto-item
     (when-bind (file (rails/goto-item-file goto-item))
       (when (rails/file-exist-p root file)
@@ -138,7 +138,8 @@
           (setf (rails/goto-item-action-name goto-item)
                 (rails/current-buffer-action-name)))
         (rails/find-file root file)
-        (run-hooks 'rails/after-goto-file-hook))
+        (when run-hooks
+          (run-hooks 'rails/after-goto-file-hook)))
       (when rails/current-buffer
         (rails/notify-by-rails-buffer rails/current-buffer)))))
 
@@ -198,7 +199,7 @@
                 (setq weight (rails/goto-item-weight item))
                 (setq goto-item item))))
       (when goto-item
-        (rails/goto-from-goto-item (rails/root) goto-item)))))
+        (rails/goto-from-goto-item (rails/root) goto-item t)))))
 
 (defun rails/initialize-for-current-buffer ()
   (interactive)
