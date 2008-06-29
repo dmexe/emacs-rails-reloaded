@@ -33,12 +33,13 @@
 (require 'list-ext)
 (require 'inflections)
 
+(require 'rails-ruby)
 (require 'rails-lib)
 
 (defvar rails/projects '())
 
-(defstruct rails/buffer type name file weight)
-(defstruct rails/goto-item group name file weight action-name func)
+(defstruct rails/buffer type name association-name views-dir-name file weight)
+(defstruct rails/goto-item group name file weight func action-name)
 
 (defvar rails/current-buffer nil)
 (defvar rails/prev-current-buffer nil)
@@ -51,7 +52,6 @@
 
 (defvar rails/bundles-loaded-p nil)
 
-(defvar rails/ruby/file-suffix ".rb")
 (defvar rails/associated-types-list '())
 
 (defvar rails/after-goto-file-hook nil)
@@ -168,7 +168,6 @@
 ;;
 ;; Interactives
 ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun rails/reload-bundles ()
   (interactive)
@@ -215,14 +214,13 @@
       (set (make-local-variable 'rails/prev-current-buffer)
            nil)
       (rails-minor-mode t)
-      (rails/initialize-bundles (rails/root) file))))
+      (rails/initialize-bundles (rails/root) file rails/current-buffer))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Rails minor mode
 ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun rails-minor-mode-default-keymap ()
   (let ((map (make-keymap)))

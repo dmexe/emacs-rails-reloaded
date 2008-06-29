@@ -155,7 +155,7 @@ else return nil"
 (defun rails/add-to-associated-types-list (type)
   (add-to-list 'rails/associated-types-list type))
 
-(defun rails/associated-type-p (rails-buffer exclude-type)
+(defun rails/associated-type-p (rails-buffer &optional exclude-type)
   (when (rails/buffer-p rails-buffer)
     (let ((type (rails/buffer-type rails-buffer)))
       (unless (eq type exclude-type)
