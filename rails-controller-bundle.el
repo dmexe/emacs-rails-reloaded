@@ -25,13 +25,9 @@
        (rails/fast-find-file-by-goto-item (rails/root) goto-item)))))
 
 (defun rails/controller/fast-goto-item-from-file (root file rails-buffer)
-  (when-bind (type (rails/associated-type-p rails-buffer rails/controller/buffer-type))
-     (when-bind (file-name
-                 (rails/controller/exist-p root (rails/buffer-name rails-buffer)))
-       (make-rails/goto-item :group :default
-                             :name "Controller"
-                             :file file-name
-                             :weight rails/controller/goto-item-weight))))
+  (when-bind (item (rails/controller/goto-item-from-file root file rails-buffer))
+    (setf (rails/goto-item-weight item) rails/controller/goto-item-weight)
+    item))
 
 (defun rails/controller/determine-type-of-file (rails-root file)
   (when (string-ext/start-p file rails/controller/dir)

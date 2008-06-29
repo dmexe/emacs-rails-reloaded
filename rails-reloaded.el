@@ -203,7 +203,7 @@
                 (setq weight (rails/goto-item-weight item))
                 (setq goto-item item))))
       (when goto-item
-        (rails/fast-find-file-by-goto-item (rails/root) goto-item t)))))
+        (rails/fast-find-file-by-goto-item (rails/root) goto-item)))))
 
 (defun rails/initialize-for-current-buffer ()
   (interactive)
