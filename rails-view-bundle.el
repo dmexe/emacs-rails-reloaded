@@ -8,8 +8,15 @@
 (defconst rails/view/fast-goto-item-weight 1)
 (defconst rails/view/buffer-weight 1)
 (defconst rails/view/buffer-type :view)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Variables
+;;
+
 (defvar rails/view/templates-list
   '("html.erb" "js.rjs" "xml.builder" "erb" "builder" "haml" "liquid" "mab"))
+
 (defvar rails/view/templates-history-list nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -84,7 +91,7 @@
     (let ((name (rails/view/association-name file)))
       (make-rails/buffer :type   rails/view/buffer-type
                          :weight rails/view/buffer-weight
-                         :name   (format "%s#%s" name (rails/view/file-to-action-name file))
+                         :name   (format "%s#%s" name (file-name-nondirectory file))
                          :association-name name))))
 
 (defun rails/view/fast-goto-item-from-file (root file rails-current-buffer)

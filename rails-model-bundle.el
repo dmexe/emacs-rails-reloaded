@@ -58,7 +58,9 @@
 (defun rails/model/load ()
   (rails/add-to-associated-types-list rails/model/buffer-type)
   (rails/define-goto-key "m" 'rails/model/goto-from-list)
-  (rails/define-fast-goto-key "m" 'rails/model/goto-associated))
+  (rails/define-goto-menu [model] 'rails/model/goto-from-list "Model")
+  (rails/define-fast-goto-key "m" 'rails/model/goto-associated)
+  (rails/define-fast-goto-menu [model] 'rails/model/goto-associated "Model"))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

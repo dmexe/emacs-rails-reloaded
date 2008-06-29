@@ -149,13 +149,16 @@ else return nil"
     (setq files
           (mapcar
            '(lambda (it) (make-rails/goto-item
-                         :group :default
                          :name  (string-ext/decamelize (rails/buffer-name it))
                          :file  (rails/buffer-file it)))
            files))
     (when append
       (add-to-list 'files append t))
-    (setq files (list (list :default files)))
+    (setq files
+          (list-ext/group-by
+           files
+           #'(lambda(it) (rails/goto-item-group it))))
+    (list files)
     (rails/menu-from-goto-item-alist root title files)))
 
 (defun rails/add-to-associated-types-list (type)
@@ -173,10 +176,20 @@ else return nil"
 (defmacro rails/define-short-key (key)
   `(kbd ,(concat rails-minor-mode-prefix-key " " key)))
 
-(defmacro rails/define-goto-key (key func)
-  `(define-key rails-minor-mode-map (rails/define-key ,(concat "g " key)) ,func))
+(defmacro rails/define-goto-key (goto-key goto-func)
+ `(define-key rails-minor-mode-map (rails/define-key ,(concat "g " goto-key)) ,goto-func))
+
+(defun rails/define-goto-menu (vec func title)
+  (define-key rails-minor-mode-map
+    (merge 'vector [menu-bar rails goto-list] vec 'eq)
+    (cons title func)))
 
 (defmacro rails/define-fast-goto-key (key func)
   `(define-key rails-minor-mode-map (rails/define-short-key ,key) ,func))
+
+(defun rails/define-fast-goto-menu (vec func title)
+  (define-key rails-minor-mode-map
+    (merge 'vector [menu-bar rails goto-fast] vec 'eq)
+    (cons title func)))
 
 (provide 'rails-lib)

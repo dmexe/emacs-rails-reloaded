@@ -15,8 +15,8 @@ not exist."
      (unless (boundp ',key-map)
        (setf ,key-map (make-keymap)))
      ,@(mapcar
-  #'(lambda (key-func)
-      `(define-key ,key-map ,(first key-func) ,(second key-func)))
-  key-funcs)))
+        #'(lambda (key-func)
+            `(define-key ,key-map ,(first key-func) ,(second key-func)))
+        key-funcs)))
 
 (provide 'core-ext)

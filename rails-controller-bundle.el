@@ -73,7 +73,9 @@
 (defun rails/controller/load ()
   (rails/add-to-associated-types-list rails/controller/buffer-type)
   (rails/define-goto-key "c" 'rails/controller/goto-from-list)
-  (rails/define-fast-goto-key "c" 'rails/controller/goto-associated))
+  (rails/define-fast-goto-key "c" 'rails/controller/goto-associated)
+  (rails/define-goto-menu [controller] 'rails/controller/goto-from-list "Controller")
+  (rails/define-fast-goto-menu [controller] 'rails/controller/goto-associated "Controller"))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

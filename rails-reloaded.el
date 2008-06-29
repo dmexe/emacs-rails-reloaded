@@ -159,7 +159,9 @@
 (defun rails/fast-find-file-by-goto-item (root goto-item)
   (let ((action (rails/current-buffer-action-name)))
     (rails/find-file-by-goto-item root goto-item)
-    (rails/goto-action-in-current-buffer action)))
+    (when action
+      (rails/goto-action-in-current-buffer action)
+      (rails/notify-by-rails-buffer rails/current-buffer action))))
 
 (defun rails/current-buffer-action-name ()
   (when (rails/buffer-p rails/current-buffer)
@@ -177,12 +179,16 @@
 (defun rails/notify (string)
   (message string))
 
-(defun rails/notify-by-rails-buffer (rails-buffer)
+(defun rails/notify-by-rails-buffer (rails-buffer &optional action-name)
   (rails/notify
-   (format "%s %s"
-           (rails/buffer-name rails-buffer)
-           (string-ext/cut (format "%s" (rails/buffer-type rails-buffer)) ":" :begin)
-           )))
+   (if action-name
+       (format "%s %s#%s"
+               (string-ext/cut (format "%s" (rails/buffer-type rails-buffer)) ":" :begin)
+               (rails/buffer-name rails-buffer)
+               action-name)
+     (format "%s %s"
+             (string-ext/cut (format "%s" (rails/buffer-type rails-buffer)) ":" :begin)
+             (rails/buffer-name rails-buffer)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -193,7 +199,7 @@
   (interactive)
   (setq rails/bundles-loaded-p nil)
   (setq rails/bundles-func-list nil)
-  (setq rails-minor-mode-map (rails-minor-mode-default-keymap))
+  (rails-minor-mode-reset-keymap)
   (rails/load-bundles))
 
 (defun rails/goto-from-current-file ()
@@ -242,9 +248,24 @@
 ;; Rails minor mode
 ;;
 
+(defun rails-minor-mode-reset-keymap ()
+  (setf rails-minor-mode-map (rails-minor-mode-default-keymap))
+  (setf (cdr (assoc 'rails-minor-mode minor-mode-map-alist))
+        rails-minor-mode-map))
+
+(defun rails-minor-mode-menu-bar-map ()
+  (let ((map (make-sparse-keymap)))
+    (define-keys map
+      ([rails] (cons "RoR" (make-sparse-keymap "RubyOnRails")))
+
+      ([rails goto-fast] (cons "Go to from current file..." (make-sparse-keymap)))
+      ([rails goto-list]    (cons "Go to..." (make-sparse-keymap))))
+  map))
+
 (defun rails-minor-mode-default-keymap ()
   (let ((map (make-keymap)))
     (define-keys map
+      ([menu-bar] (rails-minor-mode-menu-bar-map))
       ((rails/define-short-key "<down>") 'rails/goto-from-current-file)
       ((rails/define-short-key "<up>")   'rails/fast-goto-from-current-file))
     map))

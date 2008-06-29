@@ -60,7 +60,9 @@
 (defun rails/helper/load ()
   (rails/add-to-associated-types-list rails/helper/buffer-type)
   (rails/define-goto-key "h" 'rails/helper/goto-from-list)
-  (rails/define-fast-goto-key "h" 'rails/helper/goto-associated))
+  (rails/define-goto-menu [helper] 'rails/helper/goto-from-list "Helper")
+  (rails/define-fast-goto-key "h" 'rails/helper/goto-associated)
+  (rails/define-fast-goto-menu [helper] 'rails/helper/goto-associated "Helper"))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -71,7 +73,8 @@
 (defun rails/helper/goto-from-list ()
   (interactive)
   (let ((file (buffer-file-name))
-        (test-helper (make-rails/goto-item :name "TestHelper"
+        (test-helper (make-rails/goto-item :group :test
+                                           :name "TestHelper"
                                            :file "test/test_helper.rb")))
     (rails/with-root file
       (rails/directory-to-goto-menu (rails/root)
