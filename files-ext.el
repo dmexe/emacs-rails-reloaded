@@ -1,9 +1,5 @@
 (require 'find-recursive)
 
-(defun files-ext/directory-of-file(file-name)
-  "Return the parent directory of a file named FILE-NAME."
-  (replace-regexp-in-string "[^/]*$" "" file-name))
-
 (defun files-ext/find-recursive-files (filter-func regexp directory)
   "Return a list of files, found in DIRECTORY and match them to FILE-REGEXP."
   (let ((files

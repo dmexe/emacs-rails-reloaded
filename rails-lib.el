@@ -94,7 +94,7 @@ else return nil"
   "Return RAILS_ROOT if FILE is a part of a Rails application,
 else return nil"
   (when file
-    (let ((curdir (files-ext/directory-of-file (expand-file-name file)))
+    (let ((curdir (file-name-directory (expand-file-name file)))
           (max 10)
           (found nil))
       (while (and (not found) (> max 0))

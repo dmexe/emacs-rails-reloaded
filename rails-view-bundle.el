@@ -26,7 +26,7 @@
 
 (defun rails/view/association-name (file)
   (let* ((name (string-ext/cut file rails/view/dir :begin))
-         (name (files-ext/directory-of-file name))
+         (name (file-name-directory name))
          (name (string-ext/cut name "/" :end)))
     name))
 
@@ -62,7 +62,7 @@
     (dolist (file files)
       (when (not (files-ext/file-special-p file))
         (add-to-list 'res (make-rails/goto-item :group :view
-                                                :name file
+                                                :name (file-name-nondirectory file)
                                                 :file (concat path file))
                      t)))
     res))
