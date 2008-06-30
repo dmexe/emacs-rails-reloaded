@@ -29,10 +29,10 @@
     (when (rails/file-exist-p root file)
       file)))
 
-(defun rails/controller/controller-p (root file)
-  (when-bind (buf (rails/determine-type-of-file root (concat rails/controller/dir file)))
-    (when (eq rails/controller/buffer-type (rails/buffer-type buf))
-      buf)))
+(defun rails/controller/controller-p (file)
+  (rails/with-root file
+    (when-bind (buf (rails/determine-type-of-file (rails/root) (rails/cut-root file)))
+      (eq rails/controller/buffer-type (rails/buffer-type buf)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -101,6 +101,7 @@
       (rails/directory-to-goto-menu (rails/root)
                                     rails/controller/dir
                                     "Select a Controller"
-                                    'rails/controller/controller-p))))
+                                    :filter-by 'rails/controller/controller-p
+                                    :name-by (funcs-chain file-name-sans-extension string-ext/decamelize)))))
 
 (provide 'rails-controller-bundle)

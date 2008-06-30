@@ -27,3 +27,6 @@
     (assert-not-equal map (make-sparse-keymap))
     (assert-equal (lookup-key map "\C-c a") 'foo)
     (assert-equal (lookup-key map "\C-c b") 'bar)))
+
+(deftest funcs-chain core-ext
+  (assert-equal "A" (funcall (funcs-chain capitalize string-to-list car char-to-string) "Abcd")))

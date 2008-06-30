@@ -58,13 +58,13 @@ rails-root exist.
         (flet ((rails/root (&optional file) ,root))
           ,@body)))))
 
-(defmacro rails/in-root (file &rest body)
-  "Set the default directory to the Rails root directory of FILE while
-BODY is executed."
-  (let ((root (gensym)))
-    `(rails/with-root ,file
-      (let ((default-dir (rails/root file)))
-        ,@body))))
+;; (defmacro rails/in-root (file &rest body)
+;;   "Set the default directory to the Rails root directory of FILE while
+;; BODY is executed."
+;;   (let ((root (gensym)))
+;;     `(rails/with-root ,file
+;;       (let ((default-dir (rails/root file)))
+;;         ,@body))))
 
 (defmacro rails/when-root (file &rest body)
   `(when (rails/root ,file)
@@ -78,7 +78,8 @@ BODY is executed."
 (defun rails/find-existing-root-for(file)
   "Search RAILS_ROOT for FILE in `rails/projects' and return,
 else return nil"
-  (let ((project (car rails/projects))
+  (let ((file (expand-file-name file))
+        (project (car rails/projects))
         (projects (cdr rails/projects))
         (root))
     (while (and (not root)
@@ -141,25 +142,37 @@ else return nil"
 (defun rails/find-file (root file)
   (find-file (concat root file)))
 
-(defun rails/directory-to-goto-menu (root dir title func &optional regexp append)
-  (when-bind (files (files-ext/find-recursive-files
-                     '(lambda (it) (funcall func root it))
-                     regexp
-                     (concat root dir)))
-    (setq files
-          (mapcar
-           '(lambda (it) (make-rails/goto-item
-                         :name  (string-ext/decamelize (rails/buffer-name it))
-                         :file  (rails/buffer-file it)))
-           files))
-    (when append
-      (add-to-list 'files append t))
-    (setq files
-          (list-ext/group-by
-           files
-           #'(lambda(it) (rails/goto-item-group it))))
-    (list files)
-    (rails/menu-from-goto-item-alist root title files)))
+(defun rails/group-by-goto-item-group (goto-items)
+  (list-ext/group-by goto-items 'rails/goto-item-group))
+
+(defun rails/directory-to-goto-menu (root dir title &rest options)
+  (let ((files
+         (files-ext/find-recursive-files '(lambda (it)
+                                            (unless (files-ext/file-special-p it) it))
+                                         (list-ext/options-value :regexp options)
+                                         (concat root dir)))
+        (filter-by
+         (or (list-ext/options-value :filter-by options)
+             'stringp))
+        (name-by
+         (or (list-ext/options-value :name-by options)
+             'file-name-nondirectory))
+        (append-items (list-ext/options-value :append options))
+        goto-items)
+    (when files
+      (setq goto-items
+        (loop for file in files
+              for allow = (funcall filter-by (concat root dir file))
+              when allow
+              collect (make-rails/goto-item
+                       :name (funcall name-by file)
+                       :file (concat dir file))))
+    (when append-items
+      (dolist (it append-items)
+        (add-to-list 'goto-items it t)))
+    (setq goto-items (rails/group-by-goto-item-group goto-items))
+    (rails/menu-from-goto-item-alist root title goto-items))
+    goto-items))
 
 (defun rails/add-to-associated-types-list (type)
   (add-to-list 'rails/associated-types-list type))

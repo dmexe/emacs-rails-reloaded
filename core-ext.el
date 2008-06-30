@@ -19,4 +19,10 @@ not exist."
             `(define-key ,key-map ,(first key-func) ,(second key-func)))
         key-funcs)))
 
+(defmacro funcs-chain (&rest list-of-funcs)
+  `(lambda(it)
+     (dolist (l (quote ,list-of-funcs))
+       (setq it (funcall l it)))
+     it))
+
 (provide 'core-ext)

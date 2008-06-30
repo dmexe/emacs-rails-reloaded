@@ -28,10 +28,10 @@
     (when (rails/file-exist-p root file)
       file)))
 
-(defun rails/helper/helper-p (root file)
-  (when-bind (buf (rails/determine-type-of-file root (concat rails/helper/dir file)))
-    (when (eq rails/helper/buffer-type (rails/buffer-type buf))
-      buf)))
+(defun rails/helper/helper-p (file)
+  (rails/with-root file
+    (when-bind (buf (rails/determine-type-of-file (rails/root) (rails/cut-root file)))
+      (eq rails/helper/buffer-type (rails/buffer-type buf)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -80,9 +80,9 @@
       (rails/directory-to-goto-menu (rails/root)
                                     rails/helper/dir
                                     "Select a Helper"
-                                    'rails/helper/helper-p
-                                    nil
-                                    test-helper))))
+                                    :filter-by 'rails/helper/helper-p
+                                    :name-by (funcs-chain file-name-sans-extension string-ext/decamelize)
+                                    :append (list test-helper)))))
 
 (defun rails/helper/goto-associated ()
   (interactive)

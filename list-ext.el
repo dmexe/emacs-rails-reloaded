@@ -19,4 +19,7 @@
          (list (car it) (nreverse (cadr it))))
      (nreverse res))))
 
+(defun list-ext/options-value (key list)
+  (cadr (memq key list)))
+
 (provide 'list-ext)

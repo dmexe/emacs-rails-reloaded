@@ -26,11 +26,10 @@
       (when (rails/file-exist-p root file)
         file))))
 
-(defun rails/model/model-p (root file)
-  (when-bind (buf (rails/determine-type-of-file root (concat rails/model/dir file)))
-    (when (eq rails/model/buffer-type (rails/buffer-type buf))
-      buf)))
-
+(defun rails/model/model-p (file)
+  (rails/with-root file
+    (when-bind (buf (rails/determine-type-of-file (rails/root) (rails/cut-root file)))
+      (eq rails/model/buffer-type (rails/buffer-type buf)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -75,7 +74,8 @@
       (rails/directory-to-goto-menu (rails/root)
                                     rails/model/dir
                                     "Select a Model"
-                                    'rails/model/model-p))))
+                                    :filter-by 'rails/model/model-p
+                                    :name-by (funcs-chain file-name-sans-extension string-ext/decamelize)))))
 
 (defun rails/model/goto-associated ()
   (interactive)

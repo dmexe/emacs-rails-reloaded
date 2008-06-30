@@ -14,9 +14,10 @@
     res))
 
 (defun files-ext/file-special-p (file)
-  (or (string= file ".")
-      (string= file "..")
-      (string-ext/start-p file "#")
-      (string-ext/start-p file "~")))
+  (let ((file (file-name-nondirectory file)))
+    (or (string= file ".")
+        (string= file "..")
+        (string-ext/start-p file "#")
+        (string-ext/start-p file "~"))))
 
 (provide 'files-ext)
