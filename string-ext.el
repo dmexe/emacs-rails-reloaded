@@ -1,9 +1,3 @@
-(defun string-ext/cut-safe (string cut from)
-  (let ((str (string-ext/cut string cut from)))
-    (if str
-        str
-      string)))
-
 (defun string-ext/cut (string cut from)
   "Cut from STRING fragment CUT from FROM,
 FROM must equal :begin or :end. Return result string,
@@ -16,6 +10,12 @@ else return nil."
           (string-ext/end-p string cut))
      (substring string 0 (- (length string) (length cut))))))
 ;;    (t string)))
+
+(defun string-ext/cut-safe (string cut from)
+  (let ((str (string-ext/cut string cut from)))
+    (if str
+        str
+      string)))
 
 (defun string-ext/from-symbol (sym)
   "Convert symbol SYM to string."
