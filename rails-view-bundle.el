@@ -30,14 +30,14 @@
          (name (string-ext/cut name "/" :end)))
     name))
 
-(defun rails/view/exist-p (root association-name)
+(defun rails/view/exist-p (root views-name)
   (let ((file (concat rails/view/dir
-                      (pluralize-string association-name))))
+                      (pluralize-string views-name))))
     (when (rails/file-exist-p root file)
       file)))
 
-(defun rails/view/files-for-action (root association-name action-name)
-  (when-bind (files (rails/view/files root association-name))
+(defun rails/view/files-for-action (root views-name action-name)
+  (when-bind (files (rails/view/files root views-name))
     (let ((mask (concat action-name "."))
           res)
       (dolist (file files)
@@ -54,8 +54,8 @@
         (setq res t)))
     res))
 
-(defun rails/view/files (root association-name)
-  (let* ((path (concat rails/view/dir (pluralize-string association-name) "/"))
+(defun rails/view/files (root views-name)
+  (let* ((path (concat rails/view/dir (pluralize-string views-name) "/"))
          (rpath (concat root path))
          (files (directory-files rpath))
          res)
@@ -82,8 +82,8 @@
 (defun rails/view/goto-item-from-file (root file rails-current-buffer)
   (when-bind (type (rails/associated-type-p rails-current-buffer nil))
      (when-bind (file-name
-                 (rails/view/exist-p root (rails/buffer-association-name rails-current-buffer)))
-       (rails/view/files root (rails/buffer-association-name rails-current-buffer)))))
+                 (rails/view/exist-p root (rails/buffer-views-name rails-current-buffer)))
+       (rails/view/files root (rails/buffer-views-name rails-current-buffer)))))
 
 (defun rails/view/determine-type-of-file (rails-root file)
   (when (and (string-ext/start-p file rails/view/dir)
@@ -97,9 +97,9 @@
 (defun rails/view/fast-goto-item-from-file (root file rails-current-buffer)
   (when (rails/associated-type-p rails-current-buffer rails/view/buffer-type)
     (when-bind (action-name (rails/current-buffer-action-name))
-      (when-bind (association-name (rails/buffer-association-name rails-current-buffer))
-        (when (rails/view/exist-p root association-name)
-          (let ((items (rails/view/files-for-action root association-name action-name)))
+      (when-bind (views-name (rails/buffer-views-name rails-current-buffer))
+        (when (rails/view/exist-p root views-name)
+          (let ((items (rails/view/files-for-action root views-name action-name)))
             (case (length items)
               (1
                (rails/find-file-by-goto-item root (car items)))
@@ -136,15 +136,15 @@
   (when (and (rails/buffer-p rails/current-buffer)
              (rails/associated-type-p rails/current-buffer nil))
     (when-bind (action-name (rails/current-buffer-action-name))
-      (when-bind (association-name (rails/buffer-association-name rails/current-buffer))
-        (when (rails/view/exist-p (rails/root) association-name)
-          (let ((association-name (pluralize-string association-name))
+      (when-bind (views-name (rails/buffer-views-name rails/current-buffer))
+        (when (rails/view/exist-p (rails/root) views-name)
+          (let ((views-name (pluralize-string views-name))
                 (path (concat (rails/root)
                               rails/view/dir
-                              association-name "/")))
+                              views-name "/")))
             (let ((name (completing-read
                          (format "Create view %s#%s."
-                                 (string-ext/decamelize association-name) action-name)
+                                 (string-ext/decamelize views-name) action-name)
                          rails/view/templates-list
                          nil
                          nil

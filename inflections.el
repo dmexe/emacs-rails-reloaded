@@ -106,7 +106,7 @@
   (:irregular "sex" "sexes")
   (:irregular "move" "moves")
 
-  (:uncountable "equipment" "information" "rice" "money" "species" "series" "fish" "sheep" "news"))
+  (:uncountable "dashboard" "equipment" "information" "rice" "money" "species" "series" "fish" "sheep" "news"))
 
 (defun singularize-string (str)
   (when (stringp str)

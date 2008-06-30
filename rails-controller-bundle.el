@@ -64,8 +64,7 @@
       (make-rails/buffer :type   rails/controller/buffer-type
                          :weight rails/controller/buffer-weight
                          :name   name
-                         :association-name name
-                         :views-dir-name   name))))
+                         :association-name (pluralize-string name)))))
 
 ;; (defun rails/controller/initialize (root file rails-current-buffer)
 ;;   )

@@ -49,7 +49,7 @@
       (make-rails/buffer :type   rails/model/buffer-type
                          :weight rails/model/buffer-weight
                          :name   name
-                         :association-name name))))
+                         :association-name (pluralize-string name)))))
 
 ;; (defun rails/model/initialize (root file rails-current-buffer)
 ;; )

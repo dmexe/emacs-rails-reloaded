@@ -38,19 +38,29 @@
 
 (defconst rails/version "0.99")
 
-(defstruct rails/buffer type name association-name views-dir-name file weight)
+(defstruct rails/buffer type
+                        name
+                        association-name
+                        file
+                        (weight 0)
+                        (views-name association-name)
+                        (tests-name association-name))
+
 (defstruct rails/goto-item group name file weight func)
 
 (defvar rails/current-buffer nil)
 (defvar rails/prev-current-buffer nil)
 
-(defvar rails/bundles-list '(controller
+(defvar rails/bundles-list '(
+                             controller
                              helper
                              model
-                             view))
+                             unit-test
+                             view
+                             ))
 
 (defvar rails/bundles-func-list '())
-
+(defvar rails/bundles-group-list '())
 (defvar rails/bundles-loaded-p nil)
 
 (defvar rails/associated-types-list '())
@@ -78,40 +88,30 @@
   (if (and rails-buffer
            (string= (rails/cut-root file) (rails/buffer-file rails-buffer))
            (rails/buffer-type rails-buffer)
-           (rails/buffer-name rails-buffer))
+           (rails/buffer-name rails-buffer)
+           (rails/buffer-association-name rails-buffer))
       rails-buffer
     (progn
       (let ((strip-file (rails/cut-root file))
-            type
-            name
-            association-name
-            views-dir-name
+            found-rails-buffer
             (weight 0))
         (when strip-file
           (dolist (func (rails/bundles-func "determine-type-of-file"))
-            (when-bind (buffer-type (apply func (list root strip-file)))
-              (when (and (rails/buffer-p buffer-type)
-                         (rails/buffer-type buffer-type)
-                         (rails/buffer-name buffer-type)
-                         (rails/buffer-weight buffer-type)
-                         (>= (rails/buffer-weight buffer-type) weight))
-                (setq weight (rails/buffer-weight buffer-type))
-                (setq type (rails/buffer-type buffer-type))
-                (setq name (rails/buffer-name buffer-type))
-                (setq association-name (rails/buffer-association-name buffer-type))
-                (setq views-dir-name (rails/buffer-views-dir-name buffer-type)))))
-          (when (and type name)
+            (when-bind (buf (apply func (list root strip-file)))
+              (when (and (rails/buffer-p buf)
+                         (rails/buffer-type buf)
+                         (rails/buffer-name buf)
+                         (rails/buffer-association-name buf)
+                         (rails/buffer-weight buf)
+                         (> (rails/buffer-weight buf) weight))
+                (setq found-rails-buffer (copy-rails/buffer buf))
+                (setq weight (rails/buffer-weight buf))
+                (unless (rails/buffer-file found-rails-buffer)
+                  (setf (rails/buffer-file found-rails-buffer) strip-file)))))
+          (when (rails/buffer-p found-rails-buffer)
             (if rails-buffer
-                (progn
-                  (setf (rails/buffer-type rails-buffer) type)
-                  (setf (rails/buffer-name rails-buffer) name)
-                  (setf (rails/buffer-association-name rails-buffer) association-name)
-                  (setf (rails/buffer-views-dir-name rails-buffer) views-dir-name)
-                  (setf (rails/buffer-file rails-buffer) strip-file)
-                  (setf (rails/buffer-weight rails-buffer) weight)
-                  rails-buffer)
-              (make-rails/buffer :type type :name name :file strip-file :weight weight
-                                 :association-name association-name :views-dir-name views-dir-name))))))))
+                (setq rails-buffer (copy-rails/buffer found-rails-buffer))
+              found-rails-buffer)))))))
 
 (defun rails/goto-item-alist-from-file (root file rails-buffer)
   (let ((goto-item-list '()))
@@ -132,7 +132,7 @@
       (let ((group (car alist))
             (list (cadr alist)))
         (when last-p
-          (add-to-list 'menu '("--" "--") t))
+          (add-to-list 'menu (list "--" group) t))
         (dolist (it list)
           (add-to-list 'menu (cons (rails/goto-item-name it) it) t)))
       (unless last-p

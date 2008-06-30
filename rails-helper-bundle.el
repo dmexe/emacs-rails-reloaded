@@ -52,7 +52,7 @@
       (make-rails/buffer :type   rails/helper/buffer-type
                          :weight rails/helper/buffer-weight
                          :name   name
-                         :association-name name))))
+                         :association-name (pluralize-string name)))))
 
 ;; (defun rails/helper/initialize (root file rails-current-buffer)
 ;;   )
