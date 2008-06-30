@@ -1,3 +1,4 @@
+(require 'string-ext)
 (require 'find-recursive)
 
 (defun files-ext/find-recursive-files (filter-func regexp directory)
@@ -14,6 +15,8 @@
 
 (defun files-ext/file-special-p (file)
   (or (string= file ".")
-      (string= file "..")))
+      (string= file "..")
+      (string-ext/start-p file "#")
+      (string-ext/start-p file "~")))
 
 (provide 'files-ext)
