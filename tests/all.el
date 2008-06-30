@@ -1,4 +1,5 @@
-(require 'elunit)
+(load "elunit")
+(elunit-clear-suites)
 
 (defsuite ext nil)
 
