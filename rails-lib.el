@@ -71,7 +71,7 @@ BODY is executed."
        ,@body))
 
 (defun rails/cut-root (file)
-  (if (string-ext/start-p file "/")
+  (if (file-name-absolute-p file)
       (string-ext/cut file (rails/root file) :begin)
     file))
 

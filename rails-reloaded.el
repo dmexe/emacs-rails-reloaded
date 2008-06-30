@@ -159,7 +159,8 @@
 (defun rails/fast-find-file-by-goto-item (root goto-item)
   (let ((action (rails/current-buffer-action-name)))
     (rails/find-file-by-goto-item root goto-item)
-    (when action
+    (when (and action
+               (rails/bundles-func-by-buffer rails/current-buffer "goto-action-in-current-buffer"))
       (rails/goto-action-in-current-buffer action)
       (rails/notify-by-rails-buffer rails/current-buffer action))))
 
