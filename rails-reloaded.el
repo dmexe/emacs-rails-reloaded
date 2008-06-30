@@ -138,15 +138,30 @@
       (unless last-p
         (setq last-p t)))
     (when (> (length menu) 0)
-      (add-to-list 'menu title)
-      (setq item
-            (x-popup-menu (list '(300 50) (get-buffer-window (current-buffer)))
-                          (list title
-                                menu)))
-      (when item
+      (when (setq item (rails/menu-display-using-ido title menu))
         (if (rails/goto-item-func item)
             (funcall (rails/goto-item-func item) item)
           (rails/find-file-by-goto-item root item))))))
+
+(defun rails/menu-display-using-popup (title menu)
+  (add-to-list 'menu title)
+  (x-popup-menu (list '(300 50) (get-buffer-window (current-buffer)))
+                (list title
+                      menu)))
+
+(defun rails/menu-display-using-ido (title menu)
+  (let (choices value)
+    (dolist (item menu) ; filter
+      (let ((name (car item))
+            (goto (cdr item)))
+        (when (rails/goto-item-p goto)
+          (add-to-list 'choices (cons name goto) t))))
+    (when-bind (value
+                (ido-completing-read (format "%s: " title)
+                                     (mapcar 'car choices)
+                                     nil
+                                     t))
+      (cdr (find value choices :test 'string= :key 'car)))))
 
 (defun rails/find-file-by-goto-item (root goto-item)
   (when goto-item
