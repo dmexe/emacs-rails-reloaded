@@ -36,17 +36,12 @@
 (require 'rails-ruby)
 (require 'rails-lib)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Variables
+;;
+
 (defconst rails/version "0.99")
-
-(defstruct rails/buffer type
-                        name
-                        association-name
-                        file
-                        (weight 0)
-                        (views-name association-name)
-                        (tests-name association-name))
-
-(defstruct rails/goto-item group name file weight func)
 
 (defvar rails/current-buffer nil)
 
@@ -62,12 +57,50 @@
 
 (defvar rails/associated-types-list '())
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Customized variables
+;;
+
+(defgroup rails nil
+  "Edit Rails projects with Emacs."
+  :group 'programming
+  :prefix "rails/")
+
+(defcustom rails/disabled-bundles '()
+  "Disabled bundles."
+  :group 'rails
+  :type '(repeat (symbol :tag "Bundle name")))
+
 (defcustom rails/display-menu-method nil
   "Display menu method."
   :group 'rails
   :type '(choice (const :tag "Default" nil)
                  (const :tag "Using Popup Menu" popup)
                  (const :tag "Using ido-completion" ido)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Structures
+;;
+
+(defstruct rails/buffer type
+                        name
+                        association-name
+                        file
+                        (weight 0)
+                        (views-name association-name)
+                        (tests-name association-name))
+
+(defstruct rails/goto-item group name file weight func)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Begin functions
+;;
 
 (defun rails/load-bundles ()
   "Loading bundles from `rails/bundles'."
@@ -254,7 +287,6 @@
     (define-keys map
       ([rails] (cons "RoR" (make-sparse-keymap "RubyOnRails")))
       ([rails version]    '(menu-item (concat "Version: " rails/version) 'foo :enable nil))
-;;       ([rails separator2] (cons "--" "--"))
       ([rails separator1] (cons "--" "--"))
       ([rails goto-fast]  (cons "Go To From Current File" (make-sparse-keymap)))
       ([rails goto-fast separator] (cons "--" "--"))
