@@ -174,6 +174,35 @@ else return nil"
     (rails/menu-from-goto-item-alist root title goto-items))
     goto-items))
 
+(defun rails/display-menu (title menu)
+  (let ((func
+         (cond
+          ((eq rails/display-menu-method 'popup)
+           'rails/display-menu-using-popup)
+          (t
+           'rails/display-menu-using-ido))))
+    (funcall func title menu)))
+
+(defun rails/display-menu-using-popup (title menu)
+  (add-to-list 'menu title)
+  (x-popup-menu (list '(300 50) (get-buffer-window (current-buffer)))
+                (list title
+                      menu)))
+
+(defun rails/display-menu-using-ido (title menu)
+  (let (choices value)
+    (dolist (item menu) ; filter
+      (let ((name (car item))
+            (goto (cdr item)))
+        (when (rails/goto-item-p goto)
+          (add-to-list 'choices (cons name goto) t))))
+    (when-bind (value
+                (ido-completing-read (format "%s: " title)
+                                     (mapcar 'car choices)
+                                     nil
+                                     t))
+      (cdr (find value choices :test 'string= :key 'car)))))
+
 (defun rails/add-to-associated-types-list (type)
   (add-to-list 'rails/associated-types-list type))
 
