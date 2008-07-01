@@ -36,12 +36,14 @@
 (defun rails/root (&optional file)
   "Return RAILS_ROOT for FILE, if FILE not set using `buffer-file-name' instead it.
 If RAILS_ROOT not found, return nil."
-  (let (root
-        (file (if file file (buffer-file-name))))
-    (cond
-     ((setq root (rails/find-existing-root-for file)))
-     ((setq root (rails/find-root-for file))))
-    root))
+  (let ((file (or file
+                  (buffer-file-name))))
+    (unless  (and rails/search-root-in-dirs
+                  (files-ext/file-in-directories-p
+                   (rails/search-root-in-dirs)))
+      (or
+       (rails/find-existing-root-for file)
+       (rails/find-root-for file)))))
 
 (defmacro* rails/with-root (file &body body)
   "If you use `rails-project:root' or functions related on it

@@ -80,6 +80,11 @@
                  (const :tag "Using Popup Menu" popup)
                  (const :tag "Using ido-completion" ido)))
 
+(defcustom rails/search-root-in-dirs nil
+  "Set this variable to search rails root only in them."
+  :group 'rails
+  :type '(repeat (string :tag "Directory")))
+
 (defcustom rails-minor-mode-hook nil
   "Hook run when entering Rails minor mode."
   :type 'hook

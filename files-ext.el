@@ -20,4 +20,17 @@
         (string-ext/start-p file "#")
         (string-ext/start-p file "~"))))
 
+(defun files-ext/file-in-directory-p (dir file)
+  (string-ext/start-p (expand-file-name file)
+                      (expand-file-name dir)))
+
+(defun files-ext/file-in-directories-p (dir-list file)
+  (let (res)
+    (mapcar
+     '(lambda (it)
+        (when (files-ext/file-in-directory-p it file)
+          (setq res t)))
+     dir-list)
+    res))
+
 (provide 'files-ext)
