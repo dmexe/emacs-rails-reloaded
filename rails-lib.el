@@ -31,16 +31,33 @@
 (require 'string-ext)
 (require 'list-ext)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Variables
+;;
+
 (defvar rails/projects '())
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Customized variables
+;;
+
+(defcustom rails/search-files-in-dirs nil
+  "Set this variable to search rails root only in them."
+  :group 'rails
+  :type '(repeat (string :tag "Directory")))
+
 
 (defun rails/root (&optional file)
   "Return RAILS_ROOT for FILE, if FILE not set using `buffer-file-name' instead it.
 If RAILS_ROOT not found, return nil."
   (let ((file (or file
                   (buffer-file-name))))
-    (unless  (and rails/search-root-in-dirs
+    (unless  (and rails/search-files-in-dirs
                   (files-ext/file-in-directories-p
-                   (rails/search-root-in-dirs)))
+                   rails/search-files-in-dirs file))
       (or
        (rails/find-existing-root-for file)
        (rails/find-root-for file)))))
