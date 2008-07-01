@@ -88,11 +88,11 @@
 
 (defstruct rails/buffer type
                         name
-                        association-name
+                        resource-name
                         file
                         (weight 0)
-                        (views-name association-name)
-                        (tests-name association-name))
+                        (views-name resource-name)
+                        (tests-name resource-name))
 
 (defstruct rails/goto-item group name file weight func)
 
@@ -124,7 +124,7 @@
            (string= (rails/cut-root file) (rails/buffer-file rails-buffer))
            (rails/buffer-type rails-buffer)
            (rails/buffer-name rails-buffer)
-           (rails/buffer-association-name rails-buffer))
+           (rails/buffer-resource-name rails-buffer))
       rails-buffer
     (progn
       (let ((strip-file (rails/cut-root file))
@@ -136,7 +136,7 @@
               (when (and (rails/buffer-p buf)
                          (rails/buffer-type buf)
                          (rails/buffer-name buf)
-                         (rails/buffer-association-name buf)
+                         (rails/buffer-resource-name buf)
                          (rails/buffer-weight buf)
                          (> (rails/buffer-weight buf) weight))
                 (setq found-rails-buffer (copy-rails/buffer buf))

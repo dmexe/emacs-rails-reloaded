@@ -20,9 +20,9 @@
          (name (string-ext/cut name rails/helper/file-suffix :end)))
     name))
 
-(defun rails/helper/exist-p (root association-name)
+(defun rails/helper/exist-p (root resource-name)
   (let ((file (concat rails/helper/dir
-                      (pluralize-string association-name)
+                      (pluralize-string resource-name)
                       rails/helper/file-suffix
                       rails/ruby/file-suffix)))
     (when (rails/file-exist-p root file)
@@ -42,7 +42,7 @@
 (defun rails/helper/goto-item-from-file (root file rails-current-buffer)
   (when-bind (type (rails/associated-type-p rails-current-buffer rails/helper/buffer-type))
      (when-bind (file-name
-                 (rails/helper/exist-p root (rails/buffer-association-name rails-current-buffer)))
+                 (rails/helper/exist-p root (rails/buffer-resource-name rails-current-buffer)))
        (make-rails/goto-item :name "Helper"
                              :file file-name))))
 
@@ -52,7 +52,7 @@
       (make-rails/buffer :type   rails/helper/buffer-type
                          :weight rails/helper/buffer-weight
                          :name   name
-                         :association-name (pluralize-string name)))))
+                         :resource-name (pluralize-string name)))))
 
 ;; (defun rails/helper/initialize (root file rails-current-buffer)
 ;;   )

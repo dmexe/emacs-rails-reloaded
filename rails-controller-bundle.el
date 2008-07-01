@@ -21,9 +21,9 @@
          (name (string-ext/cut-safe name rails/controller/file-suffix :end)))
     name))
 
-(defun rails/controller/exist-p (root association-name)
+(defun rails/controller/exist-p (root resource-name)
   (let ((file (concat rails/controller/dir
-                      (pluralize-string association-name)
+                      (pluralize-string resource-name)
                       rails/controller/file-suffix
                       rails/ruby/file-suffix)))
     (when (rails/file-exist-p root file)
@@ -43,7 +43,7 @@
 (defun rails/controller/goto-item-from-file (root file rails-current-buffer)
   (when-bind (type (rails/associated-type-p rails-current-buffer rails/controller/buffer-type))
      (when-bind (file-name
-                 (rails/controller/exist-p root (rails/buffer-association-name rails-current-buffer)))
+                 (rails/controller/exist-p root (rails/buffer-resource-name rails-current-buffer)))
        (make-rails/goto-item :name "Controller"
                              :file file-name))))
 
@@ -64,7 +64,7 @@
       (make-rails/buffer :type   rails/controller/buffer-type
                          :weight rails/controller/buffer-weight
                          :name   name
-                         :association-name (pluralize-string name)))))
+                         :resource-name (pluralize-string name)))))
 
 ;; (defun rails/controller/initialize (root file rails-current-buffer)
 ;;   )

@@ -24,7 +24,7 @@
 ;; Functions
 ;;
 
-(defun rails/view/association-name (file)
+(defun rails/view/resource-name (file)
   (let* ((name (string-ext/cut file rails/view/dir :begin))
          (name (file-name-directory name))
          (name (string-ext/cut name "/" :end)))
@@ -88,11 +88,11 @@
 (defun rails/view/determine-type-of-file (rails-root file)
   (when (and (string-ext/start-p file rails/view/dir)
              (not (rails/view/excluded-dir-p file)))
-    (let ((name (rails/view/association-name file)))
+    (let ((name (rails/view/resource-name file)))
       (make-rails/buffer :type   rails/view/buffer-type
                          :weight rails/view/buffer-weight
                          :name   (format "%s#%s" name (file-name-nondirectory file))
-                         :association-name name))))
+                         :resource-name name))))
 
 (defun rails/view/fast-goto-item-from-file (root file rails-current-buffer)
   (when (rails/associated-type-p rails-current-buffer rails/view/buffer-type)

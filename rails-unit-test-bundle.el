@@ -53,7 +53,7 @@
       (make-rails/buffer :type   rails/unit-test/buffer-type
                          :weight rails/unit-test/buffer-weight
                          :name   name
-                         :association-name (pluralize-string name)))))
+                         :resource-name (pluralize-string name)))))
 
 ;; (defun rails/model/initialize (root file rails-current-buffer)
 ;; )

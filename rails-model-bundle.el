@@ -18,10 +18,10 @@
          (name (string-ext/cut name rails/model/dir :begin)))
     name))
 
-(defun rails/model/exist-p (root association-name)
-  (when association-name
+(defun rails/model/exist-p (root resource-name)
+  (when resource-name
     (let ((file (concat rails/model/dir
-                        (singularize-string association-name)
+                        (singularize-string resource-name)
                         rails/ruby/file-suffix)))
       (when (rails/file-exist-p root file)
         file))))
@@ -39,7 +39,7 @@
 (defun rails/model/goto-item-from-file (root file rails-current-buffer)
   (when-bind (type (rails/associated-type-p rails-current-buffer rails/model/buffer-type))
      (when-bind (file-name
-                 (rails/model/exist-p root (rails/buffer-association-name rails-current-buffer)))
+                 (rails/model/exist-p root (rails/buffer-resource-name rails-current-buffer)))
        (make-rails/goto-item :name "Model"
                              :file file-name))))
 
@@ -49,7 +49,7 @@
       (make-rails/buffer :type   rails/model/buffer-type
                          :weight rails/model/buffer-weight
                          :name   name
-                         :association-name (pluralize-string name)))))
+                         :resource-name (pluralize-string name)))))
 
 ;; (defun rails/model/initialize (root file rails-current-buffer)
 ;; )
