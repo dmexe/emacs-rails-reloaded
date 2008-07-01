@@ -40,7 +40,7 @@
 ;;
 
 (defun rails/unit-test/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/associated-type-p rails-current-buffer rails/unit-test/buffer-type))
+  (when-bind (type (rails/resource-type-p rails-current-buffer rails/unit-test/buffer-type))
      (when-bind (file-name
                  (rails/unit-test/exist-p root (rails/buffer-tests-name rails-current-buffer)))
        (make-rails/goto-item :group :test
@@ -59,11 +59,12 @@
 ;; )
 
 (defun rails/unit-test/load ()
-  (rails/add-to-associated-types-list rails/unit-test/buffer-type)
+  (rails/add-to-resource-types-list rails/unit-test/buffer-type)
+  (rails/add-to-layouts-alist :model rails/unit-test/buffer-type)
   (rails/define-goto-key "u" 'rails/unit-test/goto-from-list)
   (rails/define-goto-menu [unit-test] 'rails/unit-test/goto-from-list "Unit Test")
-  (rails/define-fast-goto-key "u" 'rails/unit-test/goto-associated)
-  (rails/define-fast-goto-menu [unit-test] 'rails/unit-test/goto-associated "Unit Test"))
+  (rails/define-fast-goto-key "u" 'rails/unit-test/goto-current)
+  (rails/define-fast-goto-menu [unit-test] 'rails/unit-test/goto-current "Unit Test"))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -81,7 +82,7 @@
                                     :filter-by 'rails/unit-test/unit-test-p
                                     :name-by (funcs-chain file-name-sans-extension string-ext/decamelize)))))
 
-(defun rails/unit-test/goto-associated ()
+(defun rails/unit-test/goto-current ()
   (interactive)
   (let ((file (buffer-file-name))
         (rails-buffer rails/current-buffer))

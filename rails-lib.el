@@ -124,17 +124,31 @@ else return nil"
      (string-ext/from-symbol (rails/buffer-type rails-buffer))
      func-name)))
 
-(defun rails/bundles-func (func-name)
+(defun rails/bundles-func (func-name &optional layout)
   (let ((list (cadr (assoc func-name rails/bundles-func-list))))
     (if list
-        list
+        (rails/bundles-func-filter-by-layout layout list)
       (progn
         (dolist (bundle rails/bundles-list)
           (let ((func (rails/bundle-func bundle func-name)))
             (when func
-              (add-to-list 'list func t))))
+              (add-to-list 'list (cons func bundle)   t))))
         (push (list func-name list) rails/bundles-func-list)
-        list))))
+        (rails/bundles-func-filter-by-layout layout list)))))
+
+(defun rails/bundles-func-filter-by-layout (layout func-list)
+  (if layout
+      (let* ((childs (cadr (assoc layout rails/layouts-alist)))
+             (childs (cons layout childs))
+             (childs (mapcar
+                      (lambda (sym)
+                        (intern (substring (symbol-name sym) 1)))
+                      childs)))
+        (loop for (func . bundle) in func-list
+              for allow = (memq bundle childs)
+              when allow
+              collect func))
+    (mapcar 'car func-list)))
 
 (defun rails/file-exist-p (root file)
   (file-exists-p (concat root file)))
@@ -203,14 +217,32 @@ else return nil"
                                      t))
       (cdr (find value choices :test 'string= :key 'car)))))
 
-(defun rails/add-to-associated-types-list (type)
-  (add-to-list 'rails/associated-types-list type))
+(defun rails/add-to-resource-types-list (type)
+  (add-to-list 'rails/resource-types-list type))
 
-(defun rails/associated-type-p (rails-buffer &optional exclude-type)
+(defun rails/resource-type-p (rails-buffer &optional exclude-type)
   (when (rails/buffer-p rails-buffer)
     (let ((type (rails/buffer-type rails-buffer)))
       (unless (eq type exclude-type)
-        (find type rails/associated-types-list)))))
+        (find type rails/resource-types-list)))))
+
+(defun rails/add-to-layouts-alist (layout child)
+  (let ((exist (find layout rails/layouts-alist :key 'car)))
+    (unless exist
+      (add-to-list 'rails/layouts-alist (list layout '())))
+    (setf (cadr (find layout rails/layouts-alist :key 'car))
+          (cons child (cadr exist)))
+    rails/layouts-alist))
+
+(defun rails/layout-p (layout child)
+  (when-bind (exist (cadr (find layout rails/layouts-alist :key 'car)))
+    (memq child exist)))
+
+(defun rails/layout-for-type (type)
+  (or (car (find type rails/layouts-alist :key 'car))
+      (loop for layout in (mapcar 'car rails/layouts-alist)
+            for allow = (rails/layout-p layout type)
+            when allow do (return layout))))
 
 (defmacro rails/define-key (key)
   `(kbd ,(concat rails-minor-mode-prefix-key " " rails-minor-mode-prefix2-key  " " key)))

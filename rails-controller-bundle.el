@@ -41,7 +41,7 @@
 ;;
 
 (defun rails/controller/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/associated-type-p rails-current-buffer rails/controller/buffer-type))
+  (when-bind (type (rails/resource-type-p rails-current-buffer rails/controller/buffer-type))
      (when-bind (file-name
                  (rails/controller/exist-p root (rails/buffer-resource-name rails-current-buffer)))
        (make-rails/goto-item :name "Controller"
@@ -66,22 +66,19 @@
                          :name   name
                          :resource-name (pluralize-string name)))))
 
-;; (defun rails/controller/initialize (root file rails-current-buffer)
-;;   )
-
 (defun rails/controller/load ()
-  (rails/add-to-associated-types-list rails/controller/buffer-type)
+  (rails/add-to-resource-types-list rails/controller/buffer-type)
   (rails/define-goto-key "c" 'rails/controller/goto-from-list)
-  (rails/define-fast-goto-key "c" 'rails/controller/goto-associated)
+  (rails/define-fast-goto-key "c" 'rails/controller/goto-current)
   (rails/define-goto-menu [controller] 'rails/controller/goto-from-list "Controller")
-  (rails/define-fast-goto-menu [controller] 'rails/controller/goto-associated "Controller"))
+  (rails/define-fast-goto-menu [controller] 'rails/controller/goto-current "Controller"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Interactives
 ;;
 
-(defun rails/controller/goto-associated ()
+(defun rails/controller/goto-current ()
   (interactive)
   (let ((file (buffer-file-name))
         (rails-buffer rails/current-buffer))

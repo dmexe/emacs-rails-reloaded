@@ -55,8 +55,8 @@
 (defvar rails/bundles-group-list '())
 (defvar rails/bundles-loaded-p nil)
 
-(defvar rails/associated-types-list '())
-
+(defvar rails/resource-types-list '())
+(defvar rails/layouts-alist '())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -73,13 +73,17 @@
   :group 'rails
   :type '(repeat (symbol :tag "Bundle name")))
 
-(defcustom rails/display-menu-method nil
+(defcustom rails/display-menu-method 'popup
   "Display menu method."
   :group 'rails
   :type '(choice (const :tag "Default" nil)
                  (const :tag "Using Popup Menu" popup)
                  (const :tag "Using ido-completion" ido)))
 
+(defcustom rails-minor-mode-hook nil
+  "Hook run when entering Rails minor mode."
+  :type 'hook
+  :group 'rails)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -230,6 +234,7 @@
   (interactive)
   (setq rails/bundles-loaded-p nil)
   (setq rails/bundles-func-list nil)
+  (setq rails/layouts-alist nil)
   (rails-minor-mode-reset-keymap)
   (rails/load-bundles))
 
@@ -252,7 +257,9 @@
         (weight 0)
         goto-item)
     (rails/with-root file
-      (dolist (func (rails/bundles-func "fast-goto-item-from-file"))
+      (dolist (func (rails/bundles-func
+                     "fast-goto-item-from-file"
+                     (rails/layout-for-type (rails/buffer-type rails/current-buffer))))
         (let ((item (funcall func (rails/root) (rails/cut-root file) rails/current-buffer)))
           (when (and (rails/goto-item-p item)
                      (>= (rails/goto-item-weight item) weight))
@@ -290,8 +297,8 @@
       ([rails separator1] (cons "--" "--"))
       ([rails goto-fast]  (cons "Go To From Current File" (make-sparse-keymap)))
       ([rails goto-fast separator] (cons "--" "--"))
-      ([rails goto-fast goto-fast]  (cons "Go to Associated Files with Menu" 'rails/goto-from-current-file))
-      ([rails goto-fast goto]       (cons "Go to Associated File" 'rails/fast-goto-from-current-file))
+      ([rails goto-fast goto-fast]  (cons "Go to with Menu" 'rails/goto-from-current-file))
+      ([rails goto-fast goto]       (cons "Go to" 'rails/fast-goto-from-current-file))
       ([rails goto-list]    (cons "Go To" (make-sparse-keymap))))
   map))
 
@@ -312,6 +319,7 @@
   "RubyOnRails"
   nil
   " RoR"
-  rails-minor-mode-map)
+  rails-minor-mode-map
+  (run-hooks 'rails-minor-mode-hook))
 
 (provide 'rails-reloaded)

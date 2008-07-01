@@ -4,9 +4,9 @@
 ;;
 
 (defconst rails/model/dir "app/models/")
+(defconst rails/model/fast-goto-item-weight 1)
 (defconst rails/model/buffer-weight 1)
 (defconst rails/model/buffer-type :model)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -37,7 +37,7 @@
 ;;
 
 (defun rails/model/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/associated-type-p rails-current-buffer rails/model/buffer-type))
+  (when-bind (type (rails/resource-type-p rails-current-buffer rails/model/buffer-type))
      (when-bind (file-name
                  (rails/model/exist-p root (rails/buffer-resource-name rails-current-buffer)))
        (make-rails/goto-item :name "Model"
@@ -51,15 +51,17 @@
                          :name   name
                          :resource-name (pluralize-string name)))))
 
-;; (defun rails/model/initialize (root file rails-current-buffer)
-;; )
+(defun rails/model/fast-goto-item-from-file (root file rails-current-buffer)
+  (when-bind (item (rails/model/goto-item-from-file root file rails-current-buffer))
+    (setf (rails/goto-item-weight item) rails/model/fast-goto-item-weight)
+    item))
 
 (defun rails/model/load ()
-  (rails/add-to-associated-types-list rails/model/buffer-type)
+  (rails/add-to-resource-types-list rails/model/buffer-type)
   (rails/define-goto-key "m" 'rails/model/goto-from-list)
   (rails/define-goto-menu [model] 'rails/model/goto-from-list "Model")
-  (rails/define-fast-goto-key "m" 'rails/model/goto-associated)
-  (rails/define-fast-goto-menu [model] 'rails/model/goto-associated "Model"))
+  (rails/define-fast-goto-key "m" 'rails/model/goto-current)
+  (rails/define-fast-goto-menu [model] 'rails/model/goto-current "Model"))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -77,7 +79,7 @@
                                     :filter-by 'rails/model/model-p
                                     :name-by (funcs-chain file-name-sans-extension string-ext/decamelize)))))
 
-(defun rails/model/goto-associated ()
+(defun rails/model/goto-current ()
   (interactive)
   (let ((file (buffer-file-name))
         (rails-buffer rails/current-buffer))

@@ -40,7 +40,7 @@
 ;;
 
 (defun rails/helper/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/associated-type-p rails-current-buffer rails/helper/buffer-type))
+  (when-bind (type (rails/resource-type-p rails-current-buffer rails/helper/buffer-type))
      (when-bind (file-name
                  (rails/helper/exist-p root (rails/buffer-resource-name rails-current-buffer)))
        (make-rails/goto-item :name "Helper"
@@ -54,15 +54,13 @@
                          :name   name
                          :resource-name (pluralize-string name)))))
 
-;; (defun rails/helper/initialize (root file rails-current-buffer)
-;;   )
-
 (defun rails/helper/load ()
-  (rails/add-to-associated-types-list rails/helper/buffer-type)
+  (rails/add-to-resource-types-list rails/helper/buffer-type)
+  (rails/add-to-layouts-alist :controller rails/helper/buffer-type)
   (rails/define-goto-key "h" 'rails/helper/goto-from-list)
   (rails/define-goto-menu [helper] 'rails/helper/goto-from-list "Helper")
-  (rails/define-fast-goto-key "h" 'rails/helper/goto-associated)
-  (rails/define-fast-goto-menu [helper] 'rails/helper/goto-associated "Helper"))
+  (rails/define-fast-goto-key "h" 'rails/helper/goto-current)
+  (rails/define-fast-goto-menu [helper] 'rails/helper/goto-current "Helper"))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -84,7 +82,7 @@
                                     :name-by (funcs-chain file-name-sans-extension string-ext/decamelize)
                                     :append (list test-helper)))))
 
-(defun rails/helper/goto-associated ()
+(defun rails/helper/goto-current ()
   (interactive)
   (let ((file (buffer-file-name))
         (rails-buffer rails/current-buffer))

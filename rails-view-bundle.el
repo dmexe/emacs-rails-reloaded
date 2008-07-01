@@ -80,7 +80,7 @@
 ;;
 
 (defun rails/view/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/associated-type-p rails-current-buffer nil))
+  (when-bind (type (rails/resource-type-p rails-current-buffer nil))
      (when-bind (file-name
                  (rails/view/exist-p root (rails/buffer-views-name rails-current-buffer)))
        (rails/view/files root (rails/buffer-views-name rails-current-buffer)))))
@@ -95,7 +95,7 @@
                          :resource-name name))))
 
 (defun rails/view/fast-goto-item-from-file (root file rails-current-buffer)
-  (when (rails/associated-type-p rails-current-buffer rails/view/buffer-type)
+  (when (rails/resource-type-p rails-current-buffer rails/view/buffer-type)
     (when-bind (action-name (rails/current-buffer-action-name))
       (when-bind (views-name (rails/buffer-views-name rails-current-buffer))
         (when (rails/view/exist-p root views-name)
@@ -120,11 +120,9 @@
              (eq (rails/buffer-type rails/current-buffer) rails/view/buffer-type))
     (rails/view/file-to-action-name (rails/buffer-file rails/current-buffer))))
 
-;; (defun rails/helper/initialize (root file rails-current-buffer)
-;;   )
-
 (defun rails/view/load ()
-  (rails/add-to-associated-types-list rails/view/buffer-type))
+  (rails/add-to-resource-types-list rails/view/buffer-type)
+  (rails/add-to-layouts-alist :controller rails/view/buffer-type))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -134,7 +132,7 @@
 (defun rails/view/create-view-for-current-buffer (&optional goto-item)
   (interactive)
   (when (and (rails/buffer-p rails/current-buffer)
-             (rails/associated-type-p rails/current-buffer nil))
+             (rails/resource-type-p rails/current-buffer nil))
     (when-bind (action-name (rails/current-buffer-action-name))
       (when-bind (views-name (rails/buffer-views-name rails/current-buffer))
         (when (rails/view/exist-p (rails/root) views-name)
