@@ -331,7 +331,7 @@ Structure of this list:
     (define-keys map
       ([rails] (cons "RoR" (make-sparse-keymap "RubyOnRails")))
       ([rails version]    '(menu-item (concat "Version: " rails/version) 'foo :enable nil))
-      ([rails separator1] (cons "--" "--"))
+      ([rails separator] (cons "--" "--"))
       ([rails goto-fast]  (cons "Go To From Current File" (make-sparse-keymap)))
       ([rails goto-fast separator] (cons "--" "--"))
       ([rails goto-fast goto-fast]  (cons "Go to with Menu" 'rails/goto-from-current-file))

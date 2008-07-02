@@ -131,7 +131,12 @@
 
 (defun rails/view/load ()
   (rails/add-to-resource-types-list rails/view/buffer-type)
-  (rails/add-to-layouts-alist :controller rails/view/buffer-type))
+  (rails/add-to-layouts-alist :controller rails/view/buffer-type)
+
+  (let ((map (make-sparse-keymap)))
+    (define-keys map
+      ([new] (cons "Create a new view for current file" 'rails/view/create-view-for-current-buffer)))
+    (rails/add-to-bundles-menu "View" [view] map)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
