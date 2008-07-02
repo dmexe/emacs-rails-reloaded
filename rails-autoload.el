@@ -27,18 +27,8 @@
 
 ;;; Code:
 
-(autoload 'rails/initialize-for-current-buffer "rails-reloaded" nil t)
-(autoload 'rails/root "rails-lib" nil t)
-
-
-(add-hook 'find-file-hooks 'rails/find-file-hook)
-
-(defun rails/find-file-hook ()
-  (when (rails/root (buffer-file-name))
-    (rails/initialize-for-current-buffer)))
-
-
 (defun rails/bytecompile ()
+  "Byte compile rails-reloaded library."
   (interactive)
   (require 'rails-reloaded)
   (mapcar
@@ -48,9 +38,10 @@
          (byte-compile-file file)))
    (directory-files
     (file-name-directory (locate-library "rails-reloaded"))
-    t "\\.el$")))
+    t "\\.el\\'")))
 
 (defun rails/selftest ()
+  "Run unit tests for rails-reloaded library."
   (interactive)
   (load-file
    (concat
@@ -58,5 +49,33 @@
      (locate-library "rails-reloaded"))
     "tests/all.el"))
   (message (format "rails/selftest: done")))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Setup autoload
+;;
+
+(defun rails/find-file-hook ()
+  "Activate `rails-minor-mode' if opened file inside RAILS_ROOT."
+  (when (rails/root (buffer-file-name))
+    (rails/initialize-for-current-buffer)))
+
+(defun rails/setup-auto-modes-alist ()
+  (let ((modes
+         '((ruby-mode "\\.rb\\'" "\\.rake\\'" "Rakefile\\'" "\\.rjs\\'" "\\.rxml\\'" "\\.builder\\'")
+           (html-mode "\\.erb\\'" "\\.rhtml\\'"))))
+    (dolist (mode-line modes)
+      (loop for regexp in (cdr mode-line)
+            for allow = (not (find regexp auto-mode-alist :key 'car :test 'string=))
+            when allow
+            do
+            (setq auto-mode-alist (cons (cons regexp (car mode-line)) auto-mode-alist))))))
+
+(autoload 'rails/initialize-for-current-buffer "rails-reloaded" nil t)
+(autoload 'rails/root "rails-lib" nil t)
+
+(add-hook 'find-file-hooks 'rails/find-file-hook)
+(rails/setup-auto-modes-alist)
 
 (provide 'rails-autoload)

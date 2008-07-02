@@ -135,6 +135,12 @@ else return nil"
           (setq rails/projects (list-ext/uniq (add-to-list 'rails/projects root)))
           root)))))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Bundles functions
+;;
+
 (defun rails/bundle-func (bundle-symbol func-name)
   (let* ((name (string-ext/from-symbol bundle-symbol))
          (name (concat "rails/" name "/" func-name))
@@ -174,11 +180,23 @@ else return nil"
               collect func))
     (mapcar 'car func-list)))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Files functions
+;;
+
 (defun rails/file-exist-p (root file)
   (file-exists-p (concat root file)))
 
 (defun rails/find-file (root file)
   (find-file (concat root file)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Goto item functions
+;;
 
 (defun rails/group-by-goto-item-group (goto-items)
   (list-ext/group-by goto-items 'rails/goto-item-group))
@@ -212,6 +230,12 @@ else return nil"
     (rails/menu-from-goto-item-alist root title goto-items))
     goto-items))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Menu functions
+;;
+
 (defun rails/display-menu (title menu)
   (let ((func
          (cond
@@ -242,6 +266,12 @@ else return nil"
                                      t))
       (cdr (find value choices :test 'string= :key 'car)))))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Resources and layouts functions
+;;
+
 (defun rails/add-to-resource-types-list (type)
   (add-to-list 'rails/resource-types-list type))
 
@@ -268,6 +298,12 @@ else return nil"
       (loop for layout in (mapcar 'car rails/layouts-alist)
             for allow = (rails/layout-p layout type)
             when allow do (return layout))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Keys and menus functions
+;;
 
 (defmacro rails/define-key (key)
   `(kbd ,(concat rails-minor-mode-prefix-key " " rails-minor-mode-prefix2-key  " " key)))
