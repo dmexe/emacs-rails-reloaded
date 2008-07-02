@@ -38,4 +38,25 @@
     (rails/initialize-for-current-buffer)))
 
 
+(defun rails/bytecompile ()
+  (interactive)
+  (require 'rails-reloaded)
+  (mapcar
+   #'(lambda (file)
+       (unless (string= (file-name-nondirectory file)
+                        "rails-bytecompile.el")
+         (byte-compile-file file)))
+   (directory-files
+    (file-name-directory (locate-library "rails-reloaded"))
+    t "\\.el$")))
+
+(defun rails/selftest ()
+  (interactive)
+  (load-file
+   (concat
+    (file-name-directory
+     (locate-library "rails-reloaded"))
+    "tests/all.el"))
+  (message (format "rails/selftest: done")))
+
 (provide 'rails-autoload)

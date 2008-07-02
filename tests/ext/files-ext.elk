@@ -1,0 +1,45 @@
+(unless (featurep 'rails-test-helper)
+  (load-file "../test-helper.el"))
+
+
+(require 'core-ext)
+(require 'files-ext)
+(rails/tests/load "ext/test-helper")
+
+(deftest "`files-ext/file-special-p'"
+  (assert-t (files-ext/file-special-p "."))
+  (assert-t (files-ext/file-special-p ".."))
+  (assert-t (files-ext/file-special-p "#foo.bar"))
+  (assert-t (files-ext/file-special-p "~foo.bar"))
+  (assert-nil (files-ext/file-special-p "foo.bar")))
+
+(deftest "`files-ext/find-recursive-files'"
+  (let ((path (concat rails/tests/path "ext/"))
+        (files '("core-ext" "files-ext" "inflections" "list-ext" "string-ext")))
+    (assert-equal files
+                  (files-ext/find-recursive-files
+                   'file-name-sans-extension
+                   "\\.elk"
+                   path))))
+
+(deftest "`files-ext/file-in-directory-p'"
+  (assert-t (files-ext/file-in-directory-p
+             "/Users/dima/"
+             "/Users/dima/foo.bar"))
+  (assert-t (files-ext/file-in-directory-p
+             "../"  "./foo"))
+  (assert-t (files-ext/file-in-directory-p
+             "../"  "../foo"))
+  (assert-nil (files-ext/file-in-directory-p
+               "../"  "../../foo")))
+
+(deftest "`files-ext/file-in-directories-p'"
+  (assert-t (files-ext/file-in-directories-p
+             '("/Users/dima/" "/Users/joe/")
+             "/Users/dima/foo.bar"))
+  (assert-t (files-ext/file-in-directories-p
+             '("../" "/tmp")   "./foo"))
+  (assert-t (files-ext/file-in-directories-p
+             '("/tmp" "../" )  "../foo"))
+  (assert-nil (files-ext/file-in-directories-p
+               '("../" "/tmp")  "../../foo")))
