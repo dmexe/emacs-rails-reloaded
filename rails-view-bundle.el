@@ -83,7 +83,16 @@
   (when-bind (type (rails/resource-type-p rails-current-buffer nil))
      (when-bind (file-name
                  (rails/view/exist-p root (rails/buffer-views-name rails-current-buffer)))
-       (rails/view/files root (rails/buffer-views-name rails-current-buffer)))))
+       (let ((files
+              (rails/view/files root (rails/buffer-views-name rails-current-buffer)))
+             (new-view
+              (make-rails/goto-item :group :new-view
+                                    :name "Create a new view"
+                                    :func 'rails/view/create-view-for-current-buffer)))
+         (if files
+             (progn (add-to-list 'files new-view t)
+                    files)
+           new-view)))))
 
 (defun rails/view/determine-type-of-file (rails-root file)
   (when (and (string-ext/start-p file rails/view/dir)
@@ -132,25 +141,29 @@
 (defun rails/view/create-view-for-current-buffer (&optional goto-item)
   (interactive)
   (when (and (rails/buffer-p rails/current-buffer)
-             (rails/resource-type-p rails/current-buffer nil))
-    (when-bind (action-name (rails/current-buffer-action-name))
-      (when-bind (views-name (rails/buffer-views-name rails/current-buffer))
-        (when (rails/view/exist-p (rails/root) views-name)
-          (let ((views-name (pluralize-string views-name))
-                (path (concat (rails/root)
-                              rails/view/dir
-                              views-name "/")))
+             (rails/resource-type-p rails/current-buffer)
+             (rails/buffer-views-name rails/current-buffer))
+    (let* ((action-name (rails/current-buffer-action-name))
+           (views-name (pluralize-string (rails/buffer-views-name rails/current-buffer)))
+           (path (concat (rails/root) rails/view/dir views-name "/")))
+      (when (rails/view/exist-p (rails/root) views-name)
+        (if (not action-name)
             (let ((name (completing-read
-                         (format "Create view %s#%s."
-                                 (string-ext/decamelize views-name) action-name)
-                         rails/view/templates-list
-                         nil
-                         nil
-                         (or (car rails/view/templates-history-list)
-                             (car rails/view/templates-list))
-                         'rails/view/templates-history-list
-                         (car rails/view/templates-list))))
-              (when (not (string-ext/empty-p name))
-                (find-file (format "%s%s.%s" path action-name name))))))))))
+                         (format "Create %s view: " (string-ext/decamelize views-name))
+                         nil)))
+              (unless (string-ext/empty-p name)
+                (find-file (format "%s/%s" path name))))
+          (let ((name (completing-read
+                       (format "Create view %s#%s."
+                               (string-ext/decamelize views-name) action-name)
+                       rails/view/templates-list
+                       nil
+                       nil
+                       (or (car rails/view/templates-history-list)
+                           (car rails/view/templates-list))
+                       'rails/view/templates-history-list
+                       (car rails/view/templates-list))))
+            (unless (string-ext/empty-p name)
+              (find-file (format "%s%s.%s" path action-name name)))))))))
 
 (provide 'rails-view-bundle)
