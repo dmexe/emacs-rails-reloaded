@@ -136,7 +136,7 @@
   (let ((map (make-sparse-keymap)))
     (define-keys map
       ([new] (cons "Create a new view for current file" 'rails/view/create-view-for-current-buffer)))
-    (rails/add-to-bundles-menu "View" [view] map)))
+    (rails/add-to-bundles-menu "View" map)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

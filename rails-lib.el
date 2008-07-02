@@ -328,7 +328,7 @@ else return nil"
     (merge 'vector [menu-bar rails goto-fast] vec 'eq)
     (list 'menu-item (concat "Go to current " title) func :enable t) 'separator))
 
-(defun rails/add-to-bundles-menu (title vec menumap)
+(defun rails/add-to-bundles-menu (title menumap)
   (unless (lookup-key rails-minor-mode-map
                       [menu-bar rails bundles-title])
     (define-key-after rails-minor-mode-map
@@ -338,7 +338,8 @@ else return nil"
       [menu-bar rails bundles-separator]
       (cons "--" "--") 'bundles-title))
   (define-key-after rails-minor-mode-map
-    (merge 'vector [menu-bar rails] [view] 'eq) (cons (concat title " Bundle") menumap)
+    (merge 'vector '(menu-bar rails) (list (intern (downcase title))) 'eq)
+    (cons (concat title " Bundle") menumap)
     'bundles-title))
 
 (provide 'rails-lib)
