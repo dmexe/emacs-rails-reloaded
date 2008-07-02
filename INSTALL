@@ -7,4 +7,7 @@ Basic steps to setup:
      (require 'rails-autoload)
 
  3. To bytecompile after emacs restarted, type:
-     [M-x] load-library [RET] rails-bytecompile
+     [M-x] rails/bytecompile
+
+ 4. Optional: run unit tests for rails-reloaded:
+     [M-x] rails/selftest

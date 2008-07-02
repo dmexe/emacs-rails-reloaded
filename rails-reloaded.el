@@ -33,7 +33,9 @@
 ;;   2. Put in your .emacs file:
 ;;      (require 'rails-autoload)
 ;;   3. To bytecompile after emacs restarted, type:
-;;      [M-x] load-library [RET] rails-bytecompile
+;;      [M-x] rails/bytecompile
+;;   4. Optional: run unit tests for rails-reloaded:
+;;      [M-x] rails/selftest
 
 ;;; Code:
 
@@ -67,7 +69,7 @@ To disable bundle loading setup the `rails/disabled-bundles' variable.")
 (defvar rails/bundles-func-list '()
   "Cached bundles functions, don't edit the list manualy.
 
-Structure of they list:
+Structure of this list:
 
 ((\"not-existing-func\" nil)
  (\"func-name\"

@@ -215,7 +215,8 @@ else return nil"
 (defun rails/display-menu (title menu)
   (let ((func
          (cond
-          ((eq rails/display-menu-method 'popup)
+          ((and (eq rails/display-menu-method 'popup)
+                window-system)
            'rails/display-menu-using-popup)
           (t
            'rails/display-menu-using-ido))))

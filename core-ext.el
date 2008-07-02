@@ -17,7 +17,8 @@ not exist."
      ,@(mapcar
         #'(lambda (key-func)
             `(define-key ,key-map ,(first key-func) ,(second key-func)))
-        key-funcs)))
+        key-funcs)
+     ,key-map))
 
 (defmacro funcs-chain (&rest list-of-funcs)
   `(lambda(it)
