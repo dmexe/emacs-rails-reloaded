@@ -72,9 +72,8 @@
                              (fboundp (car mode)))
             when allow
             do
-            (progn
-              (setq auto-mode-alist (cons (cons regexp (car mode)) auto-mode-alist))
-              (modify-coding-system-alist 'file regexp 'utf-8))))))
+            (setq auto-mode-alist (cons (cons regexp (car mode)) auto-mode-alist))))))
+
 
 (autoload 'rails/initialize-for-current-buffer "rails-reloaded" nil t)
 (autoload 'rails/root "rails-lib" nil t)
