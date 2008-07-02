@@ -144,7 +144,7 @@
 ;;
 
 (defun rails/view/create-view-for-current-buffer (&optional goto-item)
-  (interactive)
+  (interactive "p")
   (when (and (rails/buffer-p rails/current-buffer)
              (rails/resource-type-p rails/current-buffer)
              (rails/buffer-views-name rails/current-buffer))
@@ -152,7 +152,8 @@
            (views-name (pluralize-string (rails/buffer-views-name rails/current-buffer)))
            (path (concat (rails/root) rails/view/dir views-name "/")))
       (when (rails/view/exist-p (rails/root) views-name)
-        (if (not action-name)
+        (if (or (not action-name)
+                (integerp goto-item)) ; called interactive
             (let ((name (completing-read
                          (format "Create %s view: " (string-ext/decamelize views-name))
                          nil)))
@@ -161,9 +162,7 @@
           (let ((name (completing-read
                        (format "Create view %s#%s."
                                (string-ext/decamelize views-name) action-name)
-                       rails/view/templates-list
-                       nil
-                       nil
+                       rails/view/templates-list nil nil
                        (or (car rails/view/templates-history-list)
                            (car rails/view/templates-list))
                        'rails/view/templates-history-list
