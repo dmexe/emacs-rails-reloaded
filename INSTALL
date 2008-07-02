@@ -1,0 +1,10 @@
+Basic steps to setup:
+
+ 1. Setup  `load-path':
+     (setq load-path (cons (expand-file-name "~/.emacs.d/rails-reloaded") load-path))
+
+ 2. Put in your .emacs file:
+     (require 'rails-autoload)
+
+ 3. To bytecompile after emacs restarted, type:
+     [M-x] load-library [RET] rails-bytecompile

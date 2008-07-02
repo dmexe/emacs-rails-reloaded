@@ -25,6 +25,16 @@
 ;; along with this program; if not, write to the Free Software
 ;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+;;; Commentary:
+
+;; Basic steps to setup:
+;;   1. Setup  `load-path':
+;;      (setq load-path (cons (expand-file-name "~/.emacs.d/rails-reloaded") load-path))
+;;   2. Put in your .emacs file:
+;;      (require 'rails-autoload)
+;;   3. To bytecompile after emacs restarted, type:
+;;      [M-x] load-library [RET] rails-bytecompile
+
 ;;; Code:
 
 (require 'core-ext)
