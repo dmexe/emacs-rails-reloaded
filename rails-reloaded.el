@@ -51,7 +51,8 @@
 ;; Variables
 ;;
 
-(defconst rails/version "0.99")
+(defconst rails/version "0.99"
+  "emacs-rails version string")
 
 (defvar rails/current-buffer nil)
 
@@ -59,11 +60,25 @@
                              helper
                              model
                              unit-test
-                             view))
+                             view)
+  "List of availabled bundles, don't edit the list manualy.
+To disable bundle loading setup the `rails/disabled-bundles' variable.")
 
-(defvar rails/bundles-func-list '())
+(defvar rails/bundles-func-list '()
+  "Cached bundles functions, don't edit the list manualy.
+
+Structure of they list:
+
+((\"not-existing-func\" nil)
+ (\"func-name\"
+   (rails/bundle/func . bundle)
+   (rails/an-bundle/func . an-bundle))
+ ...)")
+
 (defvar rails/bundles-group-list '())
-(defvar rails/bundles-loaded-p nil)
+
+(defvar rails/bundles-loaded-p nil
+  "Non nil if all bundles from rails/bundles list are loaded.")
 
 (defvar rails/resource-types-list '())
 (defvar rails/layouts-alist '())
@@ -113,7 +128,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Begin functions
+;; Begin functions list
 ;;
 
 (defun rails/load-bundles ()
@@ -294,6 +309,16 @@
 ;; Rails minor mode
 ;;
 
+(defcustom rails-minor-mode-prefix-key "\C-c"
+  "Key prefix for Rails minor mode."
+  :group 'rails
+  :type 'string)
+
+(defcustom rails-minor-mode-prefix2-key "\C-c"
+  "Additional key prefix for Rails minor mode."
+  :group 'rails
+  :type 'string)
+
 (defun rails-minor-mode-reset-keymap ()
   (setf rails-minor-mode-map (rails-minor-mode-default-keymap))
   (setf (cdr (assoc 'rails-minor-mode minor-mode-map-alist))
@@ -320,16 +345,11 @@
       ((rails/define-short-key "<up>")   'rails/fast-goto-from-current-file))
     map))
 
-(defvar rails-minor-mode-prefix-key "\C-c")
-(defvar rails-minor-mode-prefix2-key "\C-c")
-
 (defvar rails-minor-mode-map (rails-minor-mode-default-keymap))
 
 (define-minor-mode rails-minor-mode
   "RubyOnRails"
   nil
-  " RoR"
-  rails-minor-mode-map
-  (run-hooks 'rails-minor-mode-hook))
+  " RoR")
 
 (provide 'rails-reloaded)

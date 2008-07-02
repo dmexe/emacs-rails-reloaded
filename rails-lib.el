@@ -45,10 +45,15 @@
 ;;
 
 (defcustom rails/search-files-in-dirs nil
-  "Set this variable to search rails root only in them."
+  "Set this variable to search rails files only in them."
   :group 'rails
-  :type '(repeat (string :tag "Directory")))
+  :type '(repeat (directory :tag "Directory")))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; rails/root functions
+;;
 
 (defun rails/root (&optional file)
   "Return RAILS_ROOT for FILE, if FILE not set using `buffer-file-name' instead it.
