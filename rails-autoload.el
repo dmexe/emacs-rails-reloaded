@@ -62,15 +62,17 @@
     (rails/initialize-for-current-buffer)))
 
 (defun rails/setup-auto-modes-alist ()
+  "Added default ruby/rails filetypes to `auto-mode-alist' if not defined."
   (let ((modes
          '((ruby-mode "\\.rb\\'" "\\.rake\\'" "Rakefile\\'" "\\.rjs\\'" "\\.rxml\\'" "\\.builder\\'")
            (html-mode "\\.erb\\'" "\\.rhtml\\'"))))
-    (dolist (mode-line modes)
-      (loop for regexp in (cdr mode-line)
-            for allow = (not (find regexp auto-mode-alist :key 'car :test 'string=))
+    (dolist (mode modes)
+      (loop for regexp in (cdr mode)
+            for allow = (and (not (find regexp auto-mode-alist :key 'car :test 'string=))
+                             (fboundp (car mode)))
             when allow
             do
-            (setq auto-mode-alist (cons (cons regexp (car mode-line)) auto-mode-alist))))))
+            (setq auto-mode-alist (cons (cons regexp (car mode)) auto-mode-alist))))))
 
 (autoload 'rails/initialize-for-current-buffer "rails-reloaded" nil t)
 (autoload 'rails/root "rails-lib" nil t)
