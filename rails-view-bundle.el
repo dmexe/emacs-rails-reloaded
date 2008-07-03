@@ -62,7 +62,7 @@
     (dolist (file files)
       (when (not (files-ext/file-special-p file))
         (add-to-list 'res (make-rails/goto-item :group :view
-                                                :name (file-name-nondirectory file)
+                                                :name (rails/view/decorate-file-name file)
                                                 :file (concat path file))
                      t)))
     res))
@@ -73,6 +73,11 @@
       (unless (string-ext/start-p action-name "_")
         action-name))))
 
+(defun rails/view/decorate-file-name (file)
+  (let ((file (file-name-nondirectory file)))
+    (if (string-ext/start-p file "_" )
+        (format "Partial: %s" (string-ext/cut file "_" :begin))
+      (format "View: %s" file))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -82,9 +87,11 @@
 (defun rails/view/goto-item-from-file (root file rails-current-buffer)
   (when-bind (type (rails/resource-type-p rails-current-buffer nil))
      (when-bind (file-name
-                 (rails/view/exist-p root (rails/buffer-views-name rails-current-buffer)))
+                 (rails/view/exist-p
+                  root (rails/buffer-views-name rails-current-buffer)))
        (let ((files
-              (rails/view/files root (rails/buffer-views-name rails-current-buffer))))
+              (rails/view/files
+               root (rails/buffer-views-name rails-current-buffer))))
          files))))
 
 (defun rails/view/determine-type-of-file (rails-root file)
