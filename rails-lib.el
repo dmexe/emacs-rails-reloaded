@@ -155,30 +155,31 @@ else return nil"
      func-name)))
 
 (defun rails/bundles-func (func-name &optional layout)
-  (let ((list (cadr (assoc func-name rails/bundles-func-list))))
-    (if list
-        (rails/bundles-func-filter-by-layout layout list)
+  (let ((key (car (assoc func-name rails/bundles-func-list)))
+        (alist (cadr (assoc func-name rails/bundles-func-list))))
+    (if key
+        (rails/bundles-func-filter-by-layout layout alist)
       (progn
         (dolist (bundle rails/bundles-list)
           (let ((func (rails/bundle-func bundle func-name)))
             (when func
-              (add-to-list 'list (cons func bundle)   t))))
-        (push (list func-name list) rails/bundles-func-list)
-        (rails/bundles-func-filter-by-layout layout list)))))
+              (add-to-list 'alist (cons func bundle) t))))
+        (push (list func-name alist) rails/bundles-func-list)
+        (rails/bundles-func-filter-by-layout layout alist)))))
 
 (defun rails/bundles-func-filter-by-layout (layout func-list)
-  (if layout
-      (let* ((childs (cadr (assoc layout rails/layouts-alist)))
-             (childs (cons layout childs))
-             (childs (mapcar
-                      (lambda (sym)
-                        (intern (substring (symbol-name sym) 1)))
-                      childs)))
-        (loop for (func . bundle) in func-list
-              for allow = (memq bundle childs)
-              when allow
-              collect func))
-    (mapcar 'car func-list)))
+  (when func-list
+    (if layout
+        (let* ((names (find layout rails/layouts-list :key 'car))
+               (names (mapcar
+                       (lambda (sym)
+                         (intern (substring (symbol-name sym) 1)))
+                       names)))
+          (loop for (func . bundle) in func-list
+                for allow = (memq bundle names)
+                when allow
+                collect func))
+      (mapcar 'car func-list))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -214,6 +215,8 @@ else return nil"
          (or (list-ext/options-value :name-by options)
              'file-name-nondirectory))
         (append-items (list-ext/options-value :append options))
+        (reverse (list-ext/options-value :reverse options))
+        (limit (list-ext/options-value :limit options))
         goto-items)
     (when files
       (setq goto-items
@@ -223,11 +226,16 @@ else return nil"
               collect (make-rails/goto-item
                        :name (funcall name-by file)
                        :file (concat dir file))))
-    (when append-items
-      (dolist (it append-items)
-        (add-to-list 'goto-items it t)))
-    (setq goto-items (rails/group-by-goto-item-group goto-items))
-    (rails/menu-from-goto-item-alist root title goto-items))
+      (when reverse
+        (setq goto-items (reverse goto-items)))
+      (when (and limit
+                 (< limit (length goto-items)))
+        (nbutlast goto-items (- (length goto-items) limit)))
+      (when append-items
+        (dolist (it append-items)
+          (add-to-list 'goto-items it t)))
+      (setq goto-items (rails/group-by-goto-item-group goto-items))
+      (rails/menu-from-goto-item-alist root title goto-items))
     goto-items))
 
 
@@ -281,21 +289,20 @@ else return nil"
       (unless (eq type exclude-type)
         (find type rails/resource-types-list)))))
 
-(defun rails/add-to-layouts-alist (layout child)
-  (let ((exist (find layout rails/layouts-alist :key 'car)))
-    (unless exist
-      (add-to-list 'rails/layouts-alist (list layout '())))
-    (setf (cadr (find layout rails/layouts-alist :key 'car))
-          (cons child (cadr exist)))
-    rails/layouts-alist))
+(defun rails/add-to-layouts-list (layout child)
+  (let ((exist (find layout rails/layouts-list :key 'car)))
+    (if exist
+        (setf (cdr (find layout rails/layouts-list :key 'car))
+              (cdr (append exist (list child))))
+      (add-to-list 'rails/layouts-list (list layout child)))
+    rails/layouts-list))
 
 (defun rails/layout-p (layout child)
-  (when-bind (exist (cadr (find layout rails/layouts-alist :key 'car)))
-    (memq child exist)))
+  (car (memq child (find layout rails/layouts-list :key 'car))))
 
 (defun rails/layout-for-type (type)
-  (or (car (find type rails/layouts-alist :key 'car))
-      (loop for layout in (mapcar 'car rails/layouts-alist)
+  (or (car (find type rails/layouts-list :key 'car))
+      (loop for layout in (mapcar 'car rails/layouts-list)
             for allow = (rails/layout-p layout type)
             when allow do (return layout))))
 

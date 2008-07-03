@@ -56,7 +56,7 @@
 
 (defun rails/helper/load ()
   (rails/add-to-resource-types-list rails/helper/buffer-type)
-  (rails/add-to-layouts-alist :controller rails/helper/buffer-type)
+  (rails/add-to-layouts-list :controller rails/helper/buffer-type)
   (rails/define-goto-key "h" 'rails/helper/goto-from-list)
   (rails/define-goto-menu [helper] 'rails/helper/goto-from-list "Helper")
   (rails/define-fast-goto-key "h" 'rails/helper/goto-current)

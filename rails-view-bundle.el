@@ -84,15 +84,8 @@
      (when-bind (file-name
                  (rails/view/exist-p root (rails/buffer-views-name rails-current-buffer)))
        (let ((files
-              (rails/view/files root (rails/buffer-views-name rails-current-buffer)))
-             (new-view
-              (make-rails/goto-item :group :new-view
-                                    :name "Create a new view"
-                                    :func 'rails/view/create-view-for-current-buffer)))
-         (if files
-             (progn (add-to-list 'files new-view t)
-                    files)
-           new-view)))))
+              (rails/view/files root (rails/buffer-views-name rails-current-buffer))))
+         files))))
 
 (defun rails/view/determine-type-of-file (rails-root file)
   (when (and (string-ext/start-p file rails/view/dir)
@@ -131,7 +124,7 @@
 
 (defun rails/view/load ()
   (rails/add-to-resource-types-list rails/view/buffer-type)
-  (rails/add-to-layouts-alist :controller rails/view/buffer-type)
+  (rails/add-to-layouts-list :controller rails/view/buffer-type)
 
   (let ((map (make-sparse-keymap)))
     (define-keys map

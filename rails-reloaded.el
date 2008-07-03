@@ -61,7 +61,9 @@
 (defvar rails/bundles-list '(controller
                              helper
                              model
+                             migration
                              unit-test
+                             functional-test
                              view)
   "List of availabled bundles, don't edit the list manualy.
 To disable bundle loading setup the `rails/disabled-bundles' variable.")
@@ -83,7 +85,7 @@ Structure of this list:
   "Non nil if all bundles from rails/bundles list are loaded.")
 
 (defvar rails/resource-types-list '())
-(defvar rails/layouts-alist '())
+(defvar rails/layouts-list '())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -261,7 +263,7 @@ Structure of this list:
   (interactive)
   (setq rails/bundles-loaded-p nil)
   (setq rails/bundles-func-list nil)
-  (setq rails/layouts-alist nil)
+  (setq rails/layouts-list nil)
   (rails-minor-mode-reset-keymap)
   (rails/load-bundles))
 
@@ -334,8 +336,8 @@ Structure of this list:
       ([rails separator] (cons "--" "--"))
       ([rails goto-fast]  (cons "Go To From Current File" (make-sparse-keymap)))
       ([rails goto-fast separator] (cons "--" "--"))
-      ([rails goto-fast goto-fast]  (cons "Go to with Menu" 'rails/goto-from-current-file))
-      ([rails goto-fast goto]       (cons "Go to" 'rails/fast-goto-from-current-file))
+      ([rails goto-fast goto-fast]  (cons "Go to..." 'rails/goto-from-current-file))
+      ([rails goto-fast goto]       (cons "Toggle" 'rails/fast-goto-from-current-file))
       ([rails goto-list]    (cons "Go To" (make-sparse-keymap))))
   map))
 

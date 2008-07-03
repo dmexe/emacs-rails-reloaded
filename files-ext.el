@@ -17,6 +17,7 @@
   (let ((file (file-name-nondirectory file)))
     (or (string= file ".")
         (string= file "..")
+        (string-ext/start-p file ".#")
         (string-ext/start-p file "#")
         (string-ext/start-p file "~"))))
 
