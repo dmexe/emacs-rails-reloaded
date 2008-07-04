@@ -103,26 +103,6 @@
                          :name   (format "%s#%s" name (file-name-nondirectory file))
                          :resource-name name))))
 
-(defun rails/view/fast-goto-item-from-file (root file rails-current-buffer)
-  (when (rails/resource-type-p rails-current-buffer rails/view/buffer-type)
-    (when-bind (action-name (rails/current-buffer-action-name))
-      (when-bind (views-name (rails/buffer-views-name rails-current-buffer))
-        (when (rails/view/exist-p root views-name)
-          (let ((items (rails/view/files-for-action root views-name action-name)))
-            (case (length items)
-              (1
-               (rails/find-file-by-goto-item root (car items)))
-              (0
-               (rails/view/create-view-for-current-buffer))
-              (t
-               (let ((create-item (make-rails/goto-item :group :new-view
-                                                        :name "Create a new view"
-                                                        :func 'rails/view/create-view-for-current-buffer)))
-                 (rails/menu-from-goto-item-alist root
-                                                  "Select file..."
-                                                  (list (list :view items)
-                                                        (list :new-view (list create-item)))))))))))))
-
 (defun rails/view/current-buffer-action-name ()
   (when (and (rails/buffer-p rails/current-buffer)
              (rails/buffer-file rails/current-buffer)
@@ -132,6 +112,9 @@
 (defun rails/view/load ()
   (rails/add-to-resource-types-list rails/view/buffer-type)
   (rails/add-to-layouts-list :controller rails/view/buffer-type)
+
+  (rails/define-fast-goto-key "v" 'rails/view/goto-current)
+  (rails/define-fast-goto-menu [view] 'rails/view/goto-current "View")
 
   (let ((map (make-sparse-keymap)))
     (define-keys map
@@ -143,13 +126,35 @@
 ;; Interactives
 ;;
 
+(defun rails/view/goto-current ()
+  (interactive)
+  (rails/with-root (buffer-file-name)
+    (when (rails/resource-type-p rails/current-buffer rails/view/buffer-type)
+      (when-bind (action-name (rails/current-buffer-action-name))
+        (when-bind (views-name (rails/buffer-views-name rails/current-buffer))
+          (when (rails/view/exist-p (rails/root) views-name)
+            (let ((items (rails/view/files-for-action (rails/root) views-name action-name)))
+              (case (length items)
+                (1
+                 (rails/find-file-by-goto-item (rails/root) (car items)))
+                (0
+                (rails/view/create-view-for-current-buffer))
+                (t
+                (let ((create-item (make-rails/goto-item :group :new-view
+                                                         :name "Create a new view"
+                                                         :func 'rails/view/create-view-for-current-buffer)))
+                  (rails/menu-from-goto-item-alist (rails/root)
+                                                   "Select file..."
+                                                   (list (list :view items)
+                                                         (list :new-view (list create-item))))))))))))))
+
 (defun rails/view/create-view-for-current-buffer (&optional goto-item)
   (interactive "p")
   (when (and (rails/buffer-p rails/current-buffer)
              (rails/resource-type-p rails/current-buffer)
              (rails/buffer-views-name rails/current-buffer))
     (let* ((action-name (rails/current-buffer-action-name))
-           (views-name (pluralize-string (rails/buffer-views-name rails/current-buffer)))
+           (views-name (rails/buffer-views-name rails/current-buffer))
            (path (concat (rails/root) rails/view/dir views-name "/")))
       (when (rails/view/exist-p (rails/root) views-name)
         (if (or (not action-name)

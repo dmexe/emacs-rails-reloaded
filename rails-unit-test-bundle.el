@@ -57,7 +57,6 @@
 
 (defun rails/unit-test/load ()
   (rails/add-to-resource-types-list rails/unit-test/buffer-type)
-  (rails/add-to-layouts-list :model rails/unit-test/buffer-type)
   (rails/define-goto-key "u" 'rails/unit-test/goto-from-list)
   (rails/define-goto-menu [unit-test] 'rails/unit-test/goto-from-list "Unit Test")
   (rails/define-fast-goto-key "u" 'rails/unit-test/goto-current)

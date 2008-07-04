@@ -1,0 +1,95 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Constants
+;;
+
+(defconst rails/fixture/dir "test/fixtures/")
+(defconst rails/fixture/fast-goto-item-weight 1)
+(defconst rails/fixture/buffer-weight 1)
+(defconst rails/fixture/buffer-type :fixture)
+(defconst rails/fixture/file-suffix ".yml")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Functions
+;;
+
+(defun rails/fixture/canonical-name (file)
+  (let* ((name (file-name-sans-extension file))
+         (name (string-ext/cut name rails/fixture/dir :begin)))
+    name))
+
+(defun rails/fixture/exist-p (root resource-name)
+  (when resource-name
+    (let ((file (concat rails/fixture/dir
+                        resource-name
+                        rails/fixture/file-suffix)))
+      (when (rails/file-exist-p root file)
+        file))))
+
+(defun rails/fixture/fixture-p (file)
+  (rails/with-root file
+    (when-bind (buf (rails/determine-type-of-file (rails/root) (rails/cut-root file)))
+      (eq rails/fixture/buffer-type (rails/buffer-type buf)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Callbacks
+;;
+
+(defun rails/fixture/goto-item-from-file (root file rails-current-buffer)
+  (when-bind (type (rails/resource-type-p rails-current-buffer rails/fixture/buffer-type))
+     (when-bind (file-name
+                 (rails/fixture/exist-p root (rails/buffer-resource-name rails-current-buffer)))
+       (make-rails/goto-item :group :test
+                             :name "Fixture"
+                             :file file-name))))
+
+(defun rails/fixture/determine-type-of-file (rails-root file)
+  (when (string-ext/start-p file rails/fixture/dir)
+    (let ((name (rails/fixture/canonical-name file)))
+      (make-rails/buffer :type   rails/fixture/buffer-type
+                         :weight rails/fixture/buffer-weight
+                         :name   name
+                         :resource-name (pluralize-string name)))))
+
+(defun rails/fixture/fast-goto-item-from-file (root file rails-current-buffer)
+  (when-bind (item (rails/fixture/goto-item-from-file root file rails-current-buffer))
+    (setf (rails/goto-item-weight item) rails/fixture/fast-goto-item-weight)
+    item))
+
+(defun rails/fixture/load ()
+  (rails/add-to-resource-types-list rails/fixture/buffer-type)
+  (rails/add-to-layouts-list :unit-test rails/fixture/buffer-type)
+  (rails/define-goto-key "x" 'rails/fixture/goto-from-list)
+  (rails/define-goto-menu [fixture] 'rails/fixture/goto-from-list "Fixture")
+  (rails/define-fast-goto-key "x" 'rails/fixture/goto-current)
+  (rails/define-fast-goto-menu [fixture] 'rails/fixture/goto-current "Fixture"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Interactives
+;;
+
+(defun rails/fixture/goto-from-list ()
+  (interactive)
+  (let ((file (buffer-file-name)))
+    (rails/with-root file
+      (rails/directory-to-goto-menu (rails/root)
+                                    rails/fixture/dir
+                                    "Select a Fixture"
+                                    :name-by 'file-name-sans-extension))))
+
+(defun rails/fixture/goto-current ()
+  (interactive)
+  (let ((file (buffer-file-name))
+        (rails-buffer rails/current-buffer))
+    (rails/with-root file
+      (when-bind
+       (goto-item
+        (rails/fixture/goto-item-from-file (rails/root)
+                                           (rails/cut-root file)
+                                           rails-buffer))
+       (rails/fast-find-file-by-goto-item (rails/root) goto-item)))))
+
+(provide 'rails-fixture-bundle)

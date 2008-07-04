@@ -64,6 +64,7 @@
                              migration
                              unit-test
                              functional-test
+                             fixture
                              view)
   "List of availabled bundles, don't edit the list manualy.
 To disable bundle loading setup the `rails/disabled-bundles' variable.")
