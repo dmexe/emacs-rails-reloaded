@@ -187,7 +187,9 @@ else return nil"
 
 (defun rails/add-to-bundles-group (group bundle)
   (if (find group rails/bundles-group-list :key 'car :test 'string=)
-      (push bundle (cdr (find group rails/bundles-group-list :key 'car :test 'string=)))
+      (progn
+        (push bundle (cdr (find group rails/bundles-group-list :key 'car :test 'string=)))
+        (rails/add-to-bundles-group-menu group))
     (add-to-list 'rails/bundles-group-list (list group bundle))))
 
 (defun rails/bundle-group (bundle)
@@ -360,17 +362,27 @@ else return nil"
     (list 'menu-item (concat "Go to current " title) func :enable t) 'separator))
 
 (defun rails/add-to-bundles-menu (title menumap)
-  (unless (lookup-key rails-minor-mode-map
-                      [menu-bar rails bundles-title])
-    (define-key-after rails-minor-mode-map
-      [menu-bar rails bundles-title]
-      '(menu-item "Bundles:" "--" :enable nil) 'separator)
-    (define-key-after rails-minor-mode-map
-      [menu-bar rails bundles-separator]
-      (cons "--" "--") 'bundles-title))
+;;   (unless (lookup-key rails-minor-mode-map
+;;                       [menu-bar rails bundles-title])
+;;     (define-key-after rails-minor-mode-map
+;;       [menu-bar rails bundles-title]
+;;       '(menu-item "Bundles:" "--" :enable nil) 'separator)
+;;     (define-key-after rails-minor-mode-map
+;;       [menu-bar rails bundles-separator]
+;;       (cons "--" "--") 'bundles-title))
   (define-key-after rails-minor-mode-map
     (merge 'vector [menu-bar rails] (list (string-ext/safe-symbol title)) 'eq)
     (cons (concat title " Bundle") menumap)
     'bundles-title))
+
+(defun rails/add-to-bundles-group-menu (title)
+  (unless (lookup-key rails-minor-mode-map
+                      [menu-bar rails bundles-groups])
+    (define-key-after rails-minor-mode-map
+      [menu-bar rails bundles-groups]
+      (cons "Bundles Groups" (make-sparse-keymap)) 'bundles-separator))
+    (define-key rails-minor-mode-map
+      (merge 'vector [menu-bar rails bundles-groups] (list (string-ext/safe-symbol title)) 'eq)
+      (list  'menu-item title 'identity :button (cons :toggle '(lambda () t)))))
 
 (provide 'rails-lib)

@@ -357,6 +357,8 @@ Structure of this list:
     (define-keys map
       ([rails] (cons "RoR" (make-sparse-keymap "RubyOnRails")))
       ([rails version]            '(menu-item (concat "Version: " rails/version) 'foo :enable nil))
+      ([rails bundles-separator]   (cons "--" "--"))
+      ([rails bundles-title]      '(menu-item "Bundles:" "--" :enable nil))
       ([rails separator]           (cons "--" "--"))
       ([rails toggle]              (cons "Go To From Current File" (make-sparse-keymap)))
       ([rails toggle separator]      (cons "--" "--"))
