@@ -68,3 +68,7 @@
   (assert (string-ext/empty-p ""))
   (assert (string-ext/empty-p "  "))
   (assert-nil (string-ext/empty-p " as ")))
+
+(deftest "`string-ext/safe-symbol'"
+  (assert-equal 'test (string-ext/safe-symbol "Test"))
+  (assert-equal 'test-foo (string-ext/safe-symbol "Test Foo")))

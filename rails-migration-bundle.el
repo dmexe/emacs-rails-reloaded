@@ -4,7 +4,6 @@
 ;;
 
 (defconst rails/migration/dir "db/migrate/")
-(defconst rails/migration/buffer-weight 1)
 (defconst rails/migration/buffer-type :migration)
 (defconst rails/migration/file-id-mask "[0-9]+")
 (defconst rails/migration/resource-file-mask
@@ -48,16 +47,19 @@
   (when (string-ext/start-p file rails/migration/dir)
     (let ((res (rails/migration/resource-of-file file)))
       (make-rails/buffer :type   rails/migration/buffer-type
-                         :weight rails/migration/buffer-weight
                          :name   (rails/migration/format-file-name file)
                          :resource-name res))))
 
 (defun rails/migration/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/resource-type-p rails-current-buffer rails/migration/buffer-type))
-     (when-bind (file-name
-                 (rails/migration/exist-p root (rails/buffer-resource-name rails-current-buffer)))
-       (make-rails/goto-item :name "Migration"
-                             :file file-name))))
+  (when (rails/resource-type-of-buffer rails-current-buffer
+                                       :exclude rails/migration/buffer-type)
+    (when-bind (file-name
+                (rails/migration/exist-p root (rails/buffer-resource-name rails-current-buffer)))
+      (make-rails/goto-item :name "Migration"
+                            :file file-name))))
+
+(defalias 'rails/migration/goto-item-from-rails-buffer
+          'rails/migration/goto-item-from-file)
 
 (defun rails/migration/load ()
   (rails/add-to-resource-types-list rails/migration/buffer-type)
@@ -87,9 +89,9 @@
   (interactive)
   (rails/with-current-buffer
    (when-bind (goto-item
-               (rails/migration/goto-item-from-file (rails/root)
-                                                    (rails/cut-root (buffer-file-name))
-                                                    rails/current-buffer))
+               (rails/migration/goto-item-from-rails-buffer (rails/root)
+                                                            (rails/cut-root (buffer-file-name))
+                                                            rails/current-buffer))
      (rails/toggle-file-by-goto-item (rails/root) goto-item))))
 
 (provide 'rails-migration-bundle)

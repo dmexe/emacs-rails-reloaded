@@ -5,8 +5,6 @@
 
 (defconst rails/controller/dir "app/controllers/")
 (defconst rails/controller/file-suffix "_controller")
-(defconst rails/controller/goto-item-weight 1)
-(defconst rails/controller/buffer-weight 1)
 (defconst rails/controller/buffer-type :controller)
 
 
@@ -44,24 +42,19 @@
   (when (string-ext/start-p file rails/controller/dir)
     (let ((name (rails/controller/canonical-name file)))
       (make-rails/buffer :type   rails/controller/buffer-type
-                         :weight rails/controller/buffer-weight
                          :name   name
                          :resource-name (pluralize-string name)))))
 
 (defun rails/controller/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/resource-type-p rails-current-buffer rails/controller/buffer-type))
+  (when (rails/resource-type-of-buffer rails-current-buffer
+                                       :exclude rails/controller/buffer-type)
      (when-bind (file-name
                  (rails/controller/exist-p root (rails/buffer-resource-name rails-current-buffer)))
        (make-rails/goto-item :name "Controller"
                              :file file-name))))
 
-
-(defun rails/controller/goto-item-from-rails-buffer (root file rails-current-buffer)
-  (unless (eq (rails/buffer-type rails-current-buffer)
-              rails/controller/buffer-type)
-    (when-bind (item (rails/controller/goto-item-from-file root file rails-current-buffer))
-      (setf (rails/goto-item-weight item) rails/controller/goto-item-weight)
-      item)))
+(defalias 'rails/controller/goto-item-from-rails-buffer
+          'rails/controller/goto-item-from-file)
 
 (defun rails/controller/current-buffer-action-name ()
   (rails/ruby/current-method))

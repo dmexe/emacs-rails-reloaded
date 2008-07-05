@@ -5,7 +5,6 @@
 
 (defconst rails/unit-test/dir "test/unit/")
 (defconst rails/unit-test/file-suffix "_test")
-(defconst rails/unit-test/buffer-weight 1)
 (defconst rails/unit-test/buffer-type :unit-test)
 
 
@@ -43,17 +42,20 @@
   (when (string-ext/start-p file rails/unit-test/dir)
     (let ((name (rails/unit-test/canonical-name file)))
       (make-rails/buffer :type   rails/unit-test/buffer-type
-                         :weight rails/unit-test/buffer-weight
                          :name   name
                          :resource-name (pluralize-string name)))))
 
 (defun rails/unit-test/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/resource-type-p rails-current-buffer rails/unit-test/buffer-type))
-     (when-bind (file-name
-                 (rails/unit-test/exist-p root (rails/buffer-tests-name rails-current-buffer)))
-       (make-rails/goto-item :group :test
-                             :name "Unit Test"
-                             :file file-name))))
+  (when (rails/resource-type-of-buffer rails-current-buffer
+                                       :exclude rails/unit-test/buffer-type)
+    (when-bind (file-name
+                (rails/unit-test/exist-p root (rails/buffer-tests-name rails-current-buffer)))
+      (make-rails/goto-item :group :test
+                            :name "Unit Test"
+                            :file file-name))))
+
+(defalias 'rails/unit-test/goto-item-from-rails-buffer
+          'rails/unit-test/goto-item-from-file)
 
 (defun rails/unit-test/load ()
   (rails/add-to-resource-types-list rails/unit-test/buffer-type)
@@ -81,9 +83,9 @@
   (interactive)
   (rails/with-current-buffer
    (when-bind (goto-item
-               (rails/unit-test/goto-item-from-file (rails/root)
-                                                    (rails/cut-root (buffer-file-name))
-                                                    rails/current-buffer))
+               (rails/unit-test/goto-item-from-rails-buffer (rails/root)
+                                                            (rails/cut-root (buffer-file-name))
+                                                            rails/current-buffer))
      (rails/toggle-file-by-goto-item (rails/root) goto-item))))
 
 (provide 'rails-unit-test-bundle)

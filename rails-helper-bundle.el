@@ -5,7 +5,6 @@
 
 (defconst rails/helper/dir "app/helpers/")
 (defconst rails/helper/file-suffix "_helper")
-(defconst rails/helper/buffer-weight 1)
 (defconst rails/helper/buffer-type :helper)
 
 
@@ -43,16 +42,16 @@
   (when (string-ext/start-p file rails/helper/dir)
     (let ((name (rails/helper/canonical-name file)))
       (make-rails/buffer :type   rails/helper/buffer-type
-                         :weight rails/helper/buffer-weight
                          :name   name
                          :resource-name (pluralize-string name)))))
 
 (defun rails/helper/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/resource-type-p rails-current-buffer rails/helper/buffer-type))
-     (when-bind (file-name
-                 (rails/helper/exist-p root (rails/buffer-resource-name rails-current-buffer)))
-       (make-rails/goto-item :name "Helper"
-                             :file file-name))))
+  (when (rails/resource-type-of-buffer rails-current-buffer
+                                       :exclude rails/helper/buffer-type)
+    (when-bind (file-name
+                (rails/helper/exist-p root (rails/buffer-resource-name rails-current-buffer)))
+      (make-rails/goto-item :name "Helper"
+                            :file file-name))))
 
 (defun rails/helper/load ()
   (rails/add-to-resource-types-list rails/helper/buffer-type)
@@ -71,15 +70,15 @@
 (defun rails/helper/goto-from-list ()
   (interactive)
   (rails/with-current-buffer
-  (let ((test-helper (make-rails/goto-item :group :test
-                                           :name "TestHelper"
-                                           :file "test/test_helper.rb")))
-    (rails/directory-to-goto-menu (rails/root)
-                                  rails/helper/dir
-                                  "Select a Helper"
-                                  :filter-by 'rails/helper/helper-p
-                                  :name-by (funcs-chain file-name-sans-extension string-ext/decamelize)
-                                  :append (list test-helper)))))
+   (let ((test-helper (make-rails/goto-item :group :test
+                                            :name "TestHelper"
+                                            :file "test/test_helper.rb")))
+     (rails/directory-to-goto-menu (rails/root)
+                                   rails/helper/dir
+                                   "Select a Helper"
+                                   :filter-by 'rails/helper/helper-p
+                                   :name-by (funcs-chain file-name-sans-extension string-ext/decamelize)
+                                   :append (list test-helper)))))
 
 (defun rails/helper/goto-current ()
   (interactive)

@@ -5,7 +5,6 @@
 
 (defconst rails/functional-test/dir "test/functional/")
 (defconst rails/functional-test/file-suffix "_controller_test")
-(defconst rails/functional-test/buffer-weight 1)
 (defconst rails/functional-test/buffer-type :functional-test)
 
 
@@ -43,17 +42,20 @@
   (when (string-ext/start-p file rails/functional-test/dir)
     (let ((name (rails/functional-test/canonical-name file)))
       (make-rails/buffer :type   rails/functional-test/buffer-type
-                         :weight rails/functional-test/buffer-weight
                          :name   name
                          :resource-name (pluralize-string name)))))
 
 (defun rails/functional-test/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/resource-type-p rails-current-buffer rails/functional-test/buffer-type))
-     (when-bind (file-name
-                 (rails/functional-test/exist-p root (rails/buffer-tests-name rails-current-buffer)))
+  (when (rails/resource-type-of-buffer rails-current-buffer
+                                       :exclude rails/functional-test/buffer-type)
+    (when-bind (file-name
+                (rails/functional-test/exist-p root (rails/buffer-tests-name rails-current-buffer)))
        (make-rails/goto-item :group :test
                              :name "Functional Test"
                              :file file-name))))
+
+(defalias 'rails/functional-test/goto-item-from-rails-buffer
+          'rails/functional-test/goto-item-from-file)
 
 (defun rails/functional-test/load ()
   (rails/add-to-resource-types-list rails/functional-test/buffer-type)

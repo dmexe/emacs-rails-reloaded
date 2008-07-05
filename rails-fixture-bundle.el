@@ -4,8 +4,6 @@
 ;;
 
 (defconst rails/fixture/dir "test/fixtures/")
-(defconst rails/fixture/goto-item-weight 1)
-(defconst rails/fixture/buffer-weight 1)
 (defconst rails/fixture/buffer-type :fixture)
 (defconst rails/fixture/file-suffix ".yml")
 
@@ -41,22 +39,20 @@
   (when (string-ext/start-p file rails/fixture/dir)
     (let ((name (rails/fixture/canonical-name file)))
       (make-rails/buffer :type   rails/fixture/buffer-type
-                         :weight rails/fixture/buffer-weight
                          :name   name
                          :resource-name (pluralize-string name)))))
 
 (defun rails/fixture/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/resource-type-p rails-current-buffer rails/fixture/buffer-type))
-     (when-bind (file-name
-                 (rails/fixture/exist-p root (rails/buffer-resource-name rails-current-buffer)))
-       (make-rails/goto-item :group :test
-                             :name "Fixture"
-                             :file file-name))))
+  (when (rails/resource-type-of-buffer rails-current-buffer
+                                       :exclude rails/fixture/buffer-type)
+    (when-bind (file-name
+                (rails/fixture/exist-p root (rails/buffer-resource-name rails-current-buffer)))
+      (make-rails/goto-item :group :test
+                            :name "Fixture"
+                            :file file-name))))
 
-(defun rails/fixture/goto-item-from-rails-buffer (root file rails-current-buffer)
-  (when-bind (item (rails/fixture/goto-item-from-file root file rails-current-buffer))
-    (setf (rails/goto-item-weight item) rails/fixture/goto-item-weight)
-    item))
+(defalias 'rails/fixture/goto-item-from-rails-buffer
+          'rails/fixture/goto-item-from-file)
 
 (defun rails/fixture/load ()
   (rails/add-to-resource-types-list rails/fixture/buffer-type)

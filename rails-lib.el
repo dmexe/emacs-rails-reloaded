@@ -287,10 +287,10 @@ else return nil"
 (defun rails/add-to-resource-types-list (type)
   (add-to-list 'rails/resource-types-list type))
 
-(defun rails/resource-type-p (rails-buffer &optional exclude-type)
+(defun rails/resource-type-of-buffer (rails-buffer &rest options)
   (when (rails/buffer-p rails-buffer)
     (let ((type (rails/buffer-type rails-buffer)))
-      (unless (eq type exclude-type)
+      (unless (eq type (opt-val :exclude options))
         (find type rails/resource-types-list)))))
 
 (defun rails/add-to-layouts-list (layout child)
@@ -308,7 +308,8 @@ else return nil"
   (or (car (find type rails/layouts-list :key 'car))
       (loop for layout in (mapcar 'car rails/layouts-list)
             for allow = (rails/layout-p layout type)
-            when allow do (return layout))))
+            when allow do (return layout))
+      type))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

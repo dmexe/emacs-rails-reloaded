@@ -5,8 +5,6 @@
 
 (defconst rails/view/dir "app/views/")
 (defconst rails/view/excluded-dir '("layouts"))
-(defconst rails/view/goto-item-weight 1)
-(defconst rails/view/buffer-weight 1)
 (defconst rails/view/buffer-type :view)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -89,19 +87,39 @@
              (not (rails/view/excluded-dir-p file)))
     (let ((name (rails/view/resource-name file)))
       (make-rails/buffer :type   rails/view/buffer-type
-                         :weight rails/view/buffer-weight
                          :name   (format "%s#%s" name (file-name-nondirectory file))
                          :resource-name name))))
 
 (defun rails/view/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/resource-type-p rails-current-buffer nil))
-     (when-bind (file-name
-                 (rails/view/exist-p
-                  root (rails/buffer-views-name rails-current-buffer)))
+  (when (rails/resource-type-of-buffer rails-current-buffer
+                                       :exclude rails/view/buffer-type)
+     (when-bind (file-name (rails/view/exist-p
+                            root (rails/buffer-views-name rails-current-buffer)))
        (let ((files
               (rails/view/files
                root (rails/buffer-views-name rails-current-buffer))))
          files))))
+
+(defun rails/view/goto-item-from-rails-buffer (root file rails-current-buffer)
+  (when (rails/resource-type-of-buffer rails-current-buffer
+                                       :exclude rails/view/buffer-type)
+    (when-bind (action-name (rails/current-buffer-action-name))
+      (when-bind (views-name (rails/buffer-views-name rails/current-buffer))
+        (when (rails/view/exist-p (rails/root) views-name)
+          (let ((items (rails/view/files-for-action (rails/root) views-name action-name)))
+              (case (length items)
+                (1
+                 (car items))
+                (0
+                 (rails/view/create-view-for-current-buffer))
+                (t
+                 (let ((create-item (make-rails/goto-item :group :new-view
+                                                          :name "Create a new view"
+                                                          :func 'rails/view/create-view-for-current-buffer)))
+                   (rails/menu-from-goto-item-alist (rails/root)
+                                                    "Select file..."
+                                                    (list (list :view items)
+                                                          (list :new-view (list create-item)))))))))))))
 
 (defun rails/view/current-buffer-action-name ()
   (when (and (rails/buffer-p rails/current-buffer)
@@ -129,29 +147,16 @@
 (defun rails/view/goto-current ()
   (interactive)
   (rails/with-current-buffer
-    (when (rails/resource-type-p rails/current-buffer rails/view/buffer-type)
-      (when-bind (action-name (rails/current-buffer-action-name))
-        (when-bind (views-name (rails/buffer-views-name rails/current-buffer))
-          (when (rails/view/exist-p (rails/root) views-name)
-            (let ((items (rails/view/files-for-action (rails/root) views-name action-name)))
-              (case (length items)
-                (1
-                 (rails/find-file-by-goto-item (rails/root) (car items)))
-                (0
-                (rails/view/create-view-for-current-buffer))
-                (t
-                (let ((create-item (make-rails/goto-item :group :new-view
-                                                         :name "Create a new view"
-                                                         :func 'rails/view/create-view-for-current-buffer)))
-                  (rails/menu-from-goto-item-alist (rails/root)
-                                                   "Select file..."
-                                                   (list (list :view items)
-                                                         (list :new-view (list create-item))))))))))))))
+   (when-bind (goto-item
+               (rails/view/goto-item-from-rails-buffer (rails/root)
+                                                       (rails/cut-root (buffer-file-name))
+                                                       rails/current-buffer))
+     (rails/toggle-file-by-goto-item (rails/root) goto-item))))
 
 (defun rails/view/create-view-for-current-buffer (&optional goto-item)
   (interactive "p")
   (rails/with-current-buffer
-   (when (and (rails/resource-type-p rails/current-buffer)
+   (when (and (rails/resource-type-of-buffer rails/current-buffer)
               (rails/buffer-views-name rails/current-buffer))
     (let* ((action-name (rails/current-buffer-action-name))
            (views-name (rails/buffer-views-name rails/current-buffer))
@@ -173,6 +178,8 @@
                        'rails/view/templates-history-list
                        (car rails/view/templates-list))))
             (unless (string-ext/empty-p name)
-              (find-file (format "%s%s.%s" path action-name name))))))))))
+              (when (find-file (format "%s%s.%s" path action-name name))
+                (make-rails/goto-item :name name
+                                      :file (rails/cut-root (buffer-file-name))))))))))))
 
 (provide 'rails-view-bundle)

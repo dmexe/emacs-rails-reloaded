@@ -124,11 +124,15 @@ Structure of this list:
                         name
                         resource-name
                         file
-                        (weight 0)
+                        (weight 1)
                         (views-name resource-name)
                         (tests-name resource-name))
 
-(defstruct rails/goto-item group name file weight func)
+(defstruct rails/goto-item group
+                           name
+                           file
+                           (weight 1)
+                           func)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -193,7 +197,7 @@ Structure of this list:
             (when (rails/goto-item-p it)
               (add-to-list 'goto-item-list it t))))))
     (list-ext/group-by
-     goto-item-list #'(lambda(it) (rails/goto-item-group it)))))
+     goto-item-list #'(lambda (it) (rails/goto-item-group it)))))
 
 (defun rails/menu-from-goto-item-alist (root title goto-alist)
   (let (menu item last-p)
@@ -215,10 +219,12 @@ Structure of this list:
 (defun rails/find-file-by-goto-item (root goto-item)
   (when goto-item
     (when-bind (file (rails/goto-item-file goto-item))
-      (when (rails/file-exist-p root file)
+      (when (and (not (string= (concat root file) (buffer-file-name)))
+                 (rails/file-exist-p root file))
         (rails/find-file root file)
         (when rails/current-buffer
-          (rails/notify-by-rails-buffer rails/current-buffer))))))
+          (rails/notify-by-rails-buffer rails/current-buffer))))
+    goto-item))
 
 (defun rails/toggle-file-by-goto-item (root goto-item)
   (let ((action (rails/current-buffer-action-name)))
@@ -226,7 +232,8 @@ Structure of this list:
     (when (and action
                (rails/bundles-func-by-buffer rails/current-buffer "goto-action-in-current-buffer"))
       (rails/goto-action-in-current-buffer action)
-      (rails/notify-by-rails-buffer rails/current-buffer action))))
+      (rails/notify-by-rails-buffer rails/current-buffer action))
+    goto-item))
 
 (defun rails/current-buffer-action-name ()
   (when (rails/buffer-p rails/current-buffer)
@@ -270,16 +277,14 @@ Structure of this list:
 
 (defun rails/goto-from-current-file ()
   (interactive)
-  (when (rails/buffer-p rails/current-buffer)
-    (let ((file (buffer-file-name)))
-      (rails/with-root file
-        (let ((list (rails/goto-item-alist-from-file
-                     (rails/root)
-                     file
-                     rails/current-buffer))
-              (title (capitalize (string-ext/from-symbol
-                                  (rails/buffer-type rails/current-buffer)))))
-          (rails/menu-from-goto-item-alist (rails/root) (format "Go to from %s to..." title) list))))))
+  (rails/with-current-buffer
+   (let ((list (rails/goto-item-alist-from-file
+                (rails/root)
+                (buffer-file-name)
+                rails/current-buffer))
+         (title (capitalize (string-ext/from-symbol
+                             (rails/buffer-type rails/current-buffer)))))
+     (rails/menu-from-goto-item-alist (rails/root) (format "Go to from %s to..." title) list))))
 
 (defun rails/toggle-current-file ()
   (interactive)

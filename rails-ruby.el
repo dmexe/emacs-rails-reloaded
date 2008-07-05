@@ -11,11 +11,17 @@
 
 (defun rails/ruby/goto-method-in-current-buffer (action)
     (let* (pos
-           (re (format "^ *def +\\(%s\\)" (regexp-quote action))))
+           (cur-pos (point))
+           (re (format "^ *def +\\<\\(%s\\)\\>" (regexp-quote action))))
     (save-excursion
       (goto-char (point-min))
-      (when-bind (action-pos (re-search-forward re nil t))
-        (setq pos action-pos)))
+      (when-bind (start-pos (re-search-forward re nil t))
+        (setq pos start-pos)
+        (when (fboundp 'ruby-end-of-defun)
+          (ruby-end-of-defun)
+          (when (and (< cur-pos (point))
+                     (> cur-pos start-pos))
+            (setq pos nil)))))
     (when pos
       (goto-char pos)
       (beginning-of-line))))
