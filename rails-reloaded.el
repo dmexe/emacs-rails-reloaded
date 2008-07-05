@@ -87,6 +87,8 @@ Structure of this list:
 
 (defvar rails/resource-types-list '())
 (defvar rails/layouts-list '())
+(defvar rails/linked-types-alist '())
+(defvar rails/bundles-group-list '())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -269,9 +271,12 @@ Structure of this list:
 
 (defun rails/reload-bundles ()
   (interactive)
-  (setq rails/bundles-loaded-p nil)
-  (setq rails/bundles-func-list nil)
-  (setq rails/layouts-list nil)
+  (setq rails/bundles-loaded-p    nil)
+  (setq rails/bundles-func-list   nil)
+  (setq rails/bundles-group-list  nil)
+  (setq rails/layouts-list        nil)
+  (setq rails/resource-types-list nil)
+  (setq rails/linked-types-alist  nil)
   (rails-minor-mode-reset-keymap)
   (rails/load-bundles))
 
@@ -302,6 +307,20 @@ Structure of this list:
            (setq goto-item item))))
      (when goto-item
        (rails/toggle-file-by-goto-item (rails/root) goto-item)))))
+
+(defun rails/toggle-current-file-by-link ()
+  (interactive)
+  (rails/with-current-buffer
+   (let* ((type (rails/buffer-type rails/current-buffer))
+          (link-to (or (rails/type-link-for :tests type)                               ; the directly link
+                       (rails/type-link-for :tests (rails/layout-for-type type)))))    ; link to the layout
+     (when link-to
+       (when-bind (func (rails/bundle-func link-to "goto-item-from-rails-buffer"))
+         (let ((goto-item (funcall func (rails/root)
+                                   (rails/cut-root (buffer-file-name))
+                                   rails/current-buffer)))
+           (when (rails/goto-item-p goto-item)
+             (rails/toggle-file-by-goto-item (rails/root) goto-item))))))))
 
 (defun rails/initialize-for-current-buffer ()
   (interactive)
@@ -337,13 +356,14 @@ Structure of this list:
   (let ((map (make-sparse-keymap)))
     (define-keys map
       ([rails] (cons "RoR" (make-sparse-keymap "RubyOnRails")))
-      ([rails version]    '(menu-item (concat "Version: " rails/version) 'foo :enable nil))
-      ([rails separator] (cons "--" "--"))
-      ([rails toggle]  (cons "Go To From Current File" (make-sparse-keymap)))
-      ([rails toggle separator] (cons "--" "--"))
-      ([rails toggle goto]  (cons "Go to..." 'rails/goto-from-current-file))
-      ([rails toggle toggle]       (cons "Toggle" 'rails/toggle-current-file))
-      ([rails goto]    (cons "Go To" (make-sparse-keymap))))
+      ([rails version]            '(menu-item (concat "Version: " rails/version) 'foo :enable nil))
+      ([rails separator]           (cons "--" "--"))
+      ([rails toggle]              (cons "Go To From Current File" (make-sparse-keymap)))
+      ([rails toggle separator]      (cons "--" "--"))
+      ([rails toggle toggle-test]    (cons "Toggle Test/Implementation" 'rails/toggle-current-file-by-link))
+      ([rails toggle goto]           (cons "Go to..." 'rails/goto-from-current-file))
+      ([rails toggle toggle]         (cons "Toggle" 'rails/toggle-current-file))
+      ([rails goto]                (cons "Go To" (make-sparse-keymap))))
   map))
 
 (defun rails-minor-mode-default-keymap ()
@@ -351,7 +371,8 @@ Structure of this list:
     (define-keys map
       ([menu-bar] (rails-minor-mode-menu-bar-map))
       ((rails/define-short-key "<down>") 'rails/goto-from-current-file)
-      ((rails/define-short-key "<up>")   'rails/toggle-current-file))
+      ((rails/define-short-key "<up>")   'rails/toggle-current-file)
+      ((rails/define-short-key "t")   'rails/toggle-current-file-by-link))
     map))
 
 (defvar rails-minor-mode-map (rails-minor-mode-default-keymap))

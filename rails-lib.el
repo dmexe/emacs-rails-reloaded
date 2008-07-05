@@ -185,6 +185,15 @@ else return nil"
                 collect func))
       (mapcar 'car func-list))))
 
+(defun rails/add-to-bundles-group (group bundle)
+  (if (find group rails/bundles-group-list :key 'car :test 'string=)
+      (push bundle (cdr (find group rails/bundles-group-list :key 'car :test 'string=)))
+    (add-to-list 'rails/bundles-group-list (list group bundle))))
+
+(defun rails/bundle-group (bundle)
+  (loop for group in rails/bundles-group-list
+        for found = (find bundle (cdr group))
+        when found do (return (car group))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -281,7 +290,7 @@ else return nil"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Resources and layouts functions
+;; Resources, layouts, type links and functions
 ;;
 
 (defun rails/add-to-resource-types-list (type)
@@ -305,12 +314,22 @@ else return nil"
   (car (memq child (find layout rails/layouts-list :key 'car))))
 
 (defun rails/layout-for-type (type)
-  (or (car (find type rails/layouts-list :key 'car))
-      (loop for layout in (mapcar 'car rails/layouts-list)
+  (or (car (find type rails/layouts-list :key 'car))        ; TYPE is the layout
+      (loop for layout in (mapcar 'car rails/layouts-list)  ; TYPE inside the layout
             for allow = (rails/layout-p layout type)
             when allow do (return layout))
-      type))
+      type))                                                ; TYPE is the layout, but not defined
 
+(defun rails/add-type-link (group type link)
+  (if (find group rails/linked-types-alist :key 'car)
+      (push (cons type link) (cdr (find group rails/linked-types-alist :key 'car)))
+    (add-to-list 'rails/linked-types-alist (list group (cons type link)))))
+
+(defun rails/type-link-for (group type)
+  (when-bind (group (find group rails/linked-types-alist :key 'car))
+    (let ((links (cdr group)))
+      (or (cdr (find type links :key 'car))
+          (car (find type links :key 'cdr))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

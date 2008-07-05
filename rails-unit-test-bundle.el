@@ -58,6 +58,8 @@
           'rails/unit-test/goto-item-from-file)
 
 (defun rails/unit-test/load ()
+  (rails/add-type-link :tests :model rails/unit-test/buffer-type)
+  (rails/add-to-bundles-group "Test::Unit" rails/unit-test/buffer-type)
   (rails/add-to-resource-types-list rails/unit-test/buffer-type)
   (rails/define-goto-key "u" 'rails/unit-test/goto-from-list)
   (rails/define-goto-menu  "Unit Test" 'rails/unit-test/goto-from-list)
