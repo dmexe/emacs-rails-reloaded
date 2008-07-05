@@ -4,7 +4,7 @@
 ;;
 
 (defconst rails/fixture/dir "test/fixtures/")
-(defconst rails/fixture/fast-goto-item-weight 1)
+(defconst rails/fixture/goto-item-weight 1)
 (defconst rails/fixture/buffer-weight 1)
 (defconst rails/fixture/buffer-type :fixture)
 (defconst rails/fixture/file-suffix ".yml")
@@ -37,14 +37,6 @@
 ;; Callbacks
 ;;
 
-(defun rails/fixture/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/resource-type-p rails-current-buffer rails/fixture/buffer-type))
-     (when-bind (file-name
-                 (rails/fixture/exist-p root (rails/buffer-resource-name rails-current-buffer)))
-       (make-rails/goto-item :group :test
-                             :name "Fixture"
-                             :file file-name))))
-
 (defun rails/fixture/determine-type-of-file (rails-root file)
   (when (string-ext/start-p file rails/fixture/dir)
     (let ((name (rails/fixture/canonical-name file)))
@@ -53,18 +45,26 @@
                          :name   name
                          :resource-name (pluralize-string name)))))
 
-(defun rails/fixture/fast-goto-item-from-file (root file rails-current-buffer)
+(defun rails/fixture/goto-item-from-file (root file rails-current-buffer)
+  (when-bind (type (rails/resource-type-p rails-current-buffer rails/fixture/buffer-type))
+     (when-bind (file-name
+                 (rails/fixture/exist-p root (rails/buffer-resource-name rails-current-buffer)))
+       (make-rails/goto-item :group :test
+                             :name "Fixture"
+                             :file file-name))))
+
+(defun rails/fixture/goto-item-from-rails-buffer (root file rails-current-buffer)
   (when-bind (item (rails/fixture/goto-item-from-file root file rails-current-buffer))
-    (setf (rails/goto-item-weight item) rails/fixture/fast-goto-item-weight)
+    (setf (rails/goto-item-weight item) rails/fixture/goto-item-weight)
     item))
 
 (defun rails/fixture/load ()
   (rails/add-to-resource-types-list rails/fixture/buffer-type)
   (rails/add-to-layouts-list :unit-test rails/fixture/buffer-type)
   (rails/define-goto-key "x" 'rails/fixture/goto-from-list)
-  (rails/define-goto-menu [fixture] 'rails/fixture/goto-from-list "Fixture")
-  (rails/define-fast-goto-key "x" 'rails/fixture/goto-current)
-  (rails/define-fast-goto-menu [fixture] 'rails/fixture/goto-current "Fixture"))
+  (rails/define-goto-menu "Fixture" 'rails/fixture/goto-from-list)
+  (rails/define-toggle-key "x" 'rails/fixture/goto-current)
+  (rails/define-toggle-menu "Fixture" 'rails/fixture/goto-current))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -73,23 +73,19 @@
 
 (defun rails/fixture/goto-from-list ()
   (interactive)
-  (let ((file (buffer-file-name)))
-    (rails/with-root file
-      (rails/directory-to-goto-menu (rails/root)
-                                    rails/fixture/dir
-                                    "Select a Fixture"
-                                    :name-by 'file-name-sans-extension))))
+  (rails/with-current-buffer
+   (rails/directory-to-goto-menu (rails/root)
+                                 rails/fixture/dir
+                                 "Select a Fixture"
+                                 :name-by 'file-name-sans-extension)))
 
 (defun rails/fixture/goto-current ()
   (interactive)
-  (let ((file (buffer-file-name))
-        (rails-buffer rails/current-buffer))
-    (rails/with-root file
-      (when-bind
-       (goto-item
-        (rails/fixture/goto-item-from-file (rails/root)
-                                           (rails/cut-root file)
-                                           rails-buffer))
-       (rails/fast-find-file-by-goto-item (rails/root) goto-item)))))
+  (rails/with-current-buffer
+   (when-bind (goto-item
+               (rails/fixture/goto-item-from-file (rails/root)
+                                                  (rails/cut-root (buffer-file-name))
+                                                  rails/current-buffer))
+     (rails/toggle-file-by-goto-item (rails/root) goto-item))))
 
 (provide 'rails-fixture-bundle)

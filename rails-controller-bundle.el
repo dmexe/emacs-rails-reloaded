@@ -5,7 +5,7 @@
 
 (defconst rails/controller/dir "app/controllers/")
 (defconst rails/controller/file-suffix "_controller")
-(defconst rails/controller/fast-goto-item-weight 5)
+(defconst rails/controller/goto-item-weight 1)
 (defconst rails/controller/buffer-weight 1)
 (defconst rails/controller/buffer-type :controller)
 
@@ -40,24 +40,6 @@
 ;; Callbacks
 ;;
 
-(defun rails/controller/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/resource-type-p rails-current-buffer rails/controller/buffer-type))
-     (when-bind (file-name
-                 (rails/controller/exist-p root (rails/buffer-resource-name rails-current-buffer)))
-       (make-rails/goto-item :name "Controller"
-                             :file file-name))))
-
-(defun rails/controller/fast-goto-item-from-file (root file rails-current-buffer)
-  (when-bind (item (rails/controller/goto-item-from-file root file rails-current-buffer))
-    (setf (rails/goto-item-weight item) rails/controller/fast-goto-item-weight)
-    item))
-
-(defun rails/controller/current-buffer-action-name ()
-  (rails/ruby/current-method))
-
-(defun rails/controller/goto-action-in-current-buffer (action-name)
-  (rails/ruby/goto-method-in-current-buffer action-name))
-
 (defun rails/controller/determine-type-of-file (rails-root file)
   (when (string-ext/start-p file rails/controller/dir)
     (let ((name (rails/controller/canonical-name file)))
@@ -66,12 +48,33 @@
                          :name   name
                          :resource-name (pluralize-string name)))))
 
+(defun rails/controller/goto-item-from-file (root file rails-current-buffer)
+  (when-bind (type (rails/resource-type-p rails-current-buffer rails/controller/buffer-type))
+     (when-bind (file-name
+                 (rails/controller/exist-p root (rails/buffer-resource-name rails-current-buffer)))
+       (make-rails/goto-item :name "Controller"
+                             :file file-name))))
+
+
+(defun rails/controller/goto-item-from-rails-buffer (root file rails-current-buffer)
+  (unless (eq (rails/buffer-type rails-current-buffer)
+              rails/controller/buffer-type)
+    (when-bind (item (rails/controller/goto-item-from-file root file rails-current-buffer))
+      (setf (rails/goto-item-weight item) rails/controller/goto-item-weight)
+      item)))
+
+(defun rails/controller/current-buffer-action-name ()
+  (rails/ruby/current-method))
+
+(defun rails/controller/goto-action-in-current-buffer (action-name)
+  (rails/ruby/goto-method-in-current-buffer action-name))
+
 (defun rails/controller/load ()
   (rails/add-to-resource-types-list rails/controller/buffer-type)
   (rails/define-goto-key "c" 'rails/controller/goto-from-list)
-  (rails/define-fast-goto-key "c" 'rails/controller/goto-current)
-  (rails/define-goto-menu [controller] 'rails/controller/goto-from-list "Controller")
-  (rails/define-fast-goto-menu [controller] 'rails/controller/goto-current "Controller"))
+  (rails/define-toggle-key "c" 'rails/controller/goto-current)
+  (rails/define-goto-menu "Controller" 'rails/controller/goto-from-list)
+  (rails/define-toggle-menu  "Controller" 'rails/controller/goto-current))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -80,24 +83,20 @@
 
 (defun rails/controller/goto-current ()
   (interactive)
-  (let ((file (buffer-file-name))
-        (rails-buffer rails/current-buffer))
-    (rails/with-root file
-      (when-bind
-       (goto-item
-        (rails/controller/goto-item-from-file (rails/root)
-                                              (rails/cut-root file)
-                                              rails-buffer))
-       (rails/fast-find-file-by-goto-item (rails/root) goto-item)))))
+  (rails/with-current-buffer
+   (when-bind (goto-item
+               (rails/controller/goto-item-from-rails-buffer (rails/root)
+                                                             (rails/cut-root (buffer-file-name))
+                                                             rails/current-buffer))
+     (rails/toggle-file-by-goto-item (rails/root) goto-item))))
 
 (defun rails/controller/goto-from-list ()
   (interactive)
-  (let ((file (buffer-file-name)))
-    (rails/with-root file
-      (rails/directory-to-goto-menu (rails/root)
-                                    rails/controller/dir
-                                    "Select a Controller"
-                                    :filter-by 'rails/controller/controller-p
-                                    :name-by (funcs-chain file-name-sans-extension string-ext/decamelize)))))
+  (rails/with-current-buffer
+   (rails/directory-to-goto-menu (rails/root)
+                                 rails/controller/dir
+                                 "Select a Controller"
+                                 :filter-by 'rails/controller/controller-p
+                                 :name-by (funcs-chain file-name-sans-extension string-ext/decamelize))))
 
 (provide 'rails-controller-bundle)

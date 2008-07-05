@@ -39,14 +39,6 @@
 ;; Callbacks
 ;;
 
-(defun rails/functional-test/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/resource-type-p rails-current-buffer rails/functional-test/buffer-type))
-     (when-bind (file-name
-                 (rails/functional-test/exist-p root (rails/buffer-tests-name rails-current-buffer)))
-       (make-rails/goto-item :group :test
-                             :name "Functional Test"
-                             :file file-name))))
-
 (defun rails/functional-test/determine-type-of-file (rails-root file)
   (when (string-ext/start-p file rails/functional-test/dir)
     (let ((name (rails/functional-test/canonical-name file)))
@@ -55,12 +47,20 @@
                          :name   name
                          :resource-name (pluralize-string name)))))
 
+(defun rails/functional-test/goto-item-from-file (root file rails-current-buffer)
+  (when-bind (type (rails/resource-type-p rails-current-buffer rails/functional-test/buffer-type))
+     (when-bind (file-name
+                 (rails/functional-test/exist-p root (rails/buffer-tests-name rails-current-buffer)))
+       (make-rails/goto-item :group :test
+                             :name "Functional Test"
+                             :file file-name))))
+
 (defun rails/functional-test/load ()
   (rails/add-to-resource-types-list rails/functional-test/buffer-type)
   (rails/define-goto-key "f" 'rails/functional-test/goto-from-list)
-  (rails/define-goto-menu [functional-test] 'rails/functional-test/goto-from-list "Functional Test")
-  (rails/define-fast-goto-key "f" 'rails/functional-test/goto-current)
-  (rails/define-fast-goto-menu [functional-test] 'rails/functional-test/goto-current "Functional Test"))
+  (rails/define-goto-menu  "Functional Test" 'rails/functional-test/goto-from-list)
+  (rails/define-toggle-key "f" 'rails/functional-test/goto-current)
+  (rails/define-toggle-menu  "Functional Test" 'rails/functional-test/goto-current))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -70,23 +70,19 @@
 
 (defun rails/functional-test/goto-from-list ()
   (interactive)
-  (let ((file (buffer-file-name)))
-    (rails/with-root file
-      (rails/directory-to-goto-menu (rails/root)
-                                    rails/functional-test/dir
-                                    "Select a Functional Test"
-                                    :name-by (funcs-chain file-name-sans-extension string-ext/decamelize)))))
+  (rails/with-current-buffer
+   (rails/directory-to-goto-menu (rails/root)
+                                 rails/functional-test/dir
+                                 "Select a Functional Test"
+                                 :name-by (funcs-chain file-name-sans-extension string-ext/decamelize))))
 
 (defun rails/functional-test/goto-current ()
   (interactive)
-  (let ((file (buffer-file-name))
-        (rails-buffer rails/current-buffer))
-    (rails/with-root file
-      (when-bind
-       (goto-item
-        (rails/functional-test/goto-item-from-file (rails/root)
-                                                   (rails/cut-root file)
-                                                   rails-buffer))
-       (rails/fast-find-file-by-goto-item (rails/root) goto-item)))))
+  (rails/with-current-buffer
+   (when-bind (goto-item
+               (rails/functional-test/goto-item-from-file (rails/root)
+                                                          (rails/cut-root (buffer-file-name))
+                                                          rails/current-buffer))
+       (rails/toggle-file-by-goto-item (rails/root) goto-item))))
 
 (provide 'rails-functional-test-bundle)

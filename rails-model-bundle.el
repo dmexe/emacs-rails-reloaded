@@ -59,9 +59,9 @@
 (defun rails/model/load ()
   (rails/add-to-resource-types-list rails/model/buffer-type)
   (rails/define-goto-key "m" 'rails/model/goto-from-list)
-  (rails/define-goto-menu [model] 'rails/model/goto-from-list "Model")
-  (rails/define-fast-goto-key "m" 'rails/model/goto-current)
-  (rails/define-fast-goto-menu [model] 'rails/model/goto-current "Model"))
+  (rails/define-goto-menu  "Model" 'rails/model/goto-from-list)
+  (rails/define-toggle-key "m" 'rails/model/goto-current)
+  (rails/define-toggle-menu  "Model" 'rails/model/goto-current))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -71,24 +71,20 @@
 
 (defun rails/model/goto-from-list ()
   (interactive)
-  (let ((file (buffer-file-name)))
-    (rails/with-root file
-      (rails/directory-to-goto-menu (rails/root)
-                                    rails/model/dir
-                                    "Select a Model"
-                                    :filter-by 'rails/model/model-p
-                                    :name-by (funcs-chain file-name-sans-extension string-ext/decamelize)))))
+  (rails/with-current-buffer
+   (rails/directory-to-goto-menu (rails/root)
+                                 rails/model/dir
+                                 "Select a Model"
+                                 :filter-by 'rails/model/model-p
+                                 :name-by (funcs-chain file-name-sans-extension string-ext/decamelize))))
 
 (defun rails/model/goto-current ()
   (interactive)
-  (let ((file (buffer-file-name))
-        (rails-buffer rails/current-buffer))
-    (rails/with-root file
-      (when-bind
-       (goto-item
-        (rails/model/goto-item-from-file (rails/root)
-                                         (rails/cut-root file)
-                                         rails-buffer))
-       (rails/fast-find-file-by-goto-item (rails/root) goto-item)))))
+  (rails/with-current-buffer
+   (when-bind (goto-item
+               (rails/model/goto-item-from-file (rails/root)
+                                                (rails/cut-root (buffer-file-name))
+                                                rails/current-buffer))
+     (rails/toggle-file-by-goto-item (rails/root) goto-item))))
 
 (provide 'rails-model-bundle)

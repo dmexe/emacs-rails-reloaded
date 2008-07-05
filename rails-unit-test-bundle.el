@@ -39,14 +39,6 @@
 ;; Callbacks
 ;;
 
-(defun rails/unit-test/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/resource-type-p rails-current-buffer rails/unit-test/buffer-type))
-     (when-bind (file-name
-                 (rails/unit-test/exist-p root (rails/buffer-tests-name rails-current-buffer)))
-       (make-rails/goto-item :group :test
-                             :name "Unit Test"
-                             :file file-name))))
-
 (defun rails/unit-test/determine-type-of-file (rails-root file)
   (when (string-ext/start-p file rails/unit-test/dir)
     (let ((name (rails/unit-test/canonical-name file)))
@@ -55,12 +47,20 @@
                          :name   name
                          :resource-name (pluralize-string name)))))
 
+(defun rails/unit-test/goto-item-from-file (root file rails-current-buffer)
+  (when-bind (type (rails/resource-type-p rails-current-buffer rails/unit-test/buffer-type))
+     (when-bind (file-name
+                 (rails/unit-test/exist-p root (rails/buffer-tests-name rails-current-buffer)))
+       (make-rails/goto-item :group :test
+                             :name "Unit Test"
+                             :file file-name))))
+
 (defun rails/unit-test/load ()
   (rails/add-to-resource-types-list rails/unit-test/buffer-type)
   (rails/define-goto-key "u" 'rails/unit-test/goto-from-list)
-  (rails/define-goto-menu [unit-test] 'rails/unit-test/goto-from-list "Unit Test")
-  (rails/define-fast-goto-key "u" 'rails/unit-test/goto-current)
-  (rails/define-fast-goto-menu [unit-test] 'rails/unit-test/goto-current "Unit Test"))
+  (rails/define-goto-menu  "Unit Test" 'rails/unit-test/goto-from-list)
+  (rails/define-toggle-key "u" 'rails/unit-test/goto-current)
+  (rails/define-toggle-menu  "Unit Test" 'rails/unit-test/goto-current))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -70,24 +70,20 @@
 
 (defun rails/unit-test/goto-from-list ()
   (interactive)
-  (let ((file (buffer-file-name)))
-    (rails/with-root file
-      (rails/directory-to-goto-menu (rails/root)
-                                    rails/unit-test/dir
-                                    "Select a Unit Test"
-                                    :filter-by 'rails/unit-test/unit-test-p
-                                    :name-by (funcs-chain file-name-sans-extension string-ext/decamelize)))))
+  (rails/with-current-buffer
+   (rails/directory-to-goto-menu (rails/root)
+                                 rails/unit-test/dir
+                                 "Select a Unit Test"
+                                 :filter-by 'rails/unit-test/unit-test-p
+                                 :name-by (funcs-chain file-name-sans-extension string-ext/decamelize))))
 
 (defun rails/unit-test/goto-current ()
   (interactive)
-  (let ((file (buffer-file-name))
-        (rails-buffer rails/current-buffer))
-    (rails/with-root file
-      (when-bind
-       (goto-item
-        (rails/unit-test/goto-item-from-file (rails/root)
-                                             (rails/cut-root file)
-                                             rails-buffer))
-       (rails/fast-find-file-by-goto-item (rails/root) goto-item)))))
+  (rails/with-current-buffer
+   (when-bind (goto-item
+               (rails/unit-test/goto-item-from-file (rails/root)
+                                                    (rails/cut-root (buffer-file-name))
+                                                    rails/current-buffer))
+     (rails/toggle-file-by-goto-item (rails/root) goto-item))))
 
 (provide 'rails-unit-test-bundle)

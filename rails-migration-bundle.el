@@ -44,13 +44,6 @@
 ;; Callbacks
 ;;
 
-(defun rails/migration/goto-item-from-file (root file rails-current-buffer)
-  (when-bind (type (rails/resource-type-p rails-current-buffer rails/migration/buffer-type))
-     (when-bind (file-name
-                 (rails/migration/exist-p root (rails/buffer-resource-name rails-current-buffer)))
-       (make-rails/goto-item :name "Migration"
-                             :file file-name))))
-
 (defun rails/migration/determine-type-of-file (rails-root file)
   (when (string-ext/start-p file rails/migration/dir)
     (let ((res (rails/migration/resource-of-file file)))
@@ -59,13 +52,20 @@
                          :name   (rails/migration/format-file-name file)
                          :resource-name res))))
 
+(defun rails/migration/goto-item-from-file (root file rails-current-buffer)
+  (when-bind (type (rails/resource-type-p rails-current-buffer rails/migration/buffer-type))
+     (when-bind (file-name
+                 (rails/migration/exist-p root (rails/buffer-resource-name rails-current-buffer)))
+       (make-rails/goto-item :name "Migration"
+                             :file file-name))))
+
 (defun rails/migration/load ()
   (rails/add-to-resource-types-list rails/migration/buffer-type)
   (rails/add-to-layouts-list :model rails/migration/buffer-type)
   (rails/define-goto-key "g" 'rails/migration/goto-from-list)
-  (rails/define-goto-menu [migration] 'rails/migration/goto-from-list "Migration")
-  (rails/define-fast-goto-key "g" 'rails/migration/goto-current)
-  (rails/define-fast-goto-menu [migration] 'rails/migration/goto-current "Migration"))
+  (rails/define-goto-menu  "Migration" 'rails/migration/goto-from-list)
+  (rails/define-toggle-key "g" 'rails/migration/goto-current)
+  (rails/define-toggle-menu  "Migration" 'rails/migration/goto-current))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -75,25 +75,21 @@
 
 (defun rails/migration/goto-from-list ()
   (interactive)
-  (let ((file (buffer-file-name)))
-    (rails/with-root file
-      (rails/directory-to-goto-menu (rails/root)
-                                    rails/migration/dir
-                                    "Select a Migration"
-                                    :reverse t
-                                    :limit 25
-                                    :name-by 'rails/migration/format-file-name))))
+  (rails/with-current-buffer
+   (rails/directory-to-goto-menu (rails/root)
+                                 rails/migration/dir
+                                 "Select a Migration"
+                                 :reverse t
+                                 :limit 25
+                                 :name-by 'rails/migration/format-file-name)))
 
 (defun rails/migration/goto-current ()
   (interactive)
-  (let ((file (buffer-file-name))
-        (rails-buffer rails/current-buffer))
-    (rails/with-root file
-      (when-bind
-       (goto-item
-        (rails/migration/goto-item-from-file (rails/root)
-                                             (rails/cut-root file)
-                                             rails-buffer))
-       (rails/fast-find-file-by-goto-item (rails/root) goto-item)))))
+  (rails/with-current-buffer
+   (when-bind (goto-item
+               (rails/migration/goto-item-from-file (rails/root)
+                                                    (rails/cut-root (buffer-file-name))
+                                                    rails/current-buffer))
+     (rails/toggle-file-by-goto-item (rails/root) goto-item))))
 
 (provide 'rails-migration-bundle)

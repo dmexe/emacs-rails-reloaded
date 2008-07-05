@@ -5,7 +5,7 @@
 
 (defconst rails/view/dir "app/views/")
 (defconst rails/view/excluded-dir '("layouts"))
-(defconst rails/view/fast-goto-item-weight 1)
+(defconst rails/view/goto-item-weight 1)
 (defconst rails/view/buffer-weight 1)
 (defconst rails/view/buffer-type :view)
 
@@ -84,6 +84,15 @@
 ;; Callbacks
 ;;
 
+(defun rails/view/determine-type-of-file (rails-root file)
+  (when (and (string-ext/start-p file rails/view/dir)
+             (not (rails/view/excluded-dir-p file)))
+    (let ((name (rails/view/resource-name file)))
+      (make-rails/buffer :type   rails/view/buffer-type
+                         :weight rails/view/buffer-weight
+                         :name   (format "%s#%s" name (file-name-nondirectory file))
+                         :resource-name name))))
+
 (defun rails/view/goto-item-from-file (root file rails-current-buffer)
   (when-bind (type (rails/resource-type-p rails-current-buffer nil))
      (when-bind (file-name
@@ -93,15 +102,6 @@
               (rails/view/files
                root (rails/buffer-views-name rails-current-buffer))))
          files))))
-
-(defun rails/view/determine-type-of-file (rails-root file)
-  (when (and (string-ext/start-p file rails/view/dir)
-             (not (rails/view/excluded-dir-p file)))
-    (let ((name (rails/view/resource-name file)))
-      (make-rails/buffer :type   rails/view/buffer-type
-                         :weight rails/view/buffer-weight
-                         :name   (format "%s#%s" name (file-name-nondirectory file))
-                         :resource-name name))))
 
 (defun rails/view/current-buffer-action-name ()
   (when (and (rails/buffer-p rails/current-buffer)
@@ -113,8 +113,8 @@
   (rails/add-to-resource-types-list rails/view/buffer-type)
   (rails/add-to-layouts-list :controller rails/view/buffer-type)
 
-  (rails/define-fast-goto-key "v" 'rails/view/goto-current)
-  (rails/define-fast-goto-menu [view] 'rails/view/goto-current "View")
+  (rails/define-toggle-key "v" 'rails/view/goto-current)
+  (rails/define-toggle-menu  "View" 'rails/view/goto-current)
 
   (let ((map (make-sparse-keymap)))
     (define-keys map
@@ -128,7 +128,7 @@
 
 (defun rails/view/goto-current ()
   (interactive)
-  (rails/with-root (buffer-file-name)
+  (rails/with-current-buffer
     (when (rails/resource-type-p rails/current-buffer rails/view/buffer-type)
       (when-bind (action-name (rails/current-buffer-action-name))
         (when-bind (views-name (rails/buffer-views-name rails/current-buffer))
@@ -150,9 +150,9 @@
 
 (defun rails/view/create-view-for-current-buffer (&optional goto-item)
   (interactive "p")
-  (when (and (rails/buffer-p rails/current-buffer)
-             (rails/resource-type-p rails/current-buffer)
-             (rails/buffer-views-name rails/current-buffer))
+  (rails/with-current-buffer
+   (when (and (rails/resource-type-p rails/current-buffer)
+              (rails/buffer-views-name rails/current-buffer))
     (let* ((action-name (rails/current-buffer-action-name))
            (views-name (rails/buffer-views-name rails/current-buffer))
            (path (concat (rails/root) rails/view/dir views-name "/")))
@@ -173,6 +173,6 @@
                        'rails/view/templates-history-list
                        (car rails/view/templates-list))))
             (unless (string-ext/empty-p name)
-              (find-file (format "%s%s.%s" path action-name name)))))))))
+              (find-file (format "%s%s.%s" path action-name name))))))))))
 
 (provide 'rails-view-bundle)

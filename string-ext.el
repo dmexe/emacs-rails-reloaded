@@ -82,4 +82,9 @@ else return nil."
             (not (string-equal "" str))
             (not (string-match "^ +$" str)))))
 
+(defun string-ext/safe-symbol (str)
+  "Return symbol from STR and replace and non word chars to '-'."
+  (intern (replace-regexp-in-string "\\W" "-"
+           (downcase str))))
+
 (provide 'string-ext)

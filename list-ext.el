@@ -22,4 +22,6 @@
 (defun list-ext/options-value (key list)
   (cadr (memq key list)))
 
+(defalias 'opt-val 'list-ext/options-value)
+
 (provide 'list-ext)

@@ -220,7 +220,7 @@ Structure of this list:
         (when rails/current-buffer
           (rails/notify-by-rails-buffer rails/current-buffer))))))
 
-(defun rails/fast-find-file-by-goto-item (root goto-item)
+(defun rails/toggle-file-by-goto-item (root goto-item)
   (let ((action (rails/current-buffer-action-name)))
     (rails/find-file-by-goto-item root goto-item)
     (when (and action
@@ -281,33 +281,32 @@ Structure of this list:
                                   (rails/buffer-type rails/current-buffer)))))
           (rails/menu-from-goto-item-alist (rails/root) (format "Go to from %s to..." title) list))))))
 
-(defun rails/fast-goto-from-current-file ()
+(defun rails/toggle-current-file ()
   (interactive)
-  (let ((file (buffer-file-name))
-        (weight 0)
-        goto-item)
-    (rails/with-root file
-      (dolist (func (rails/bundles-func
-                     "fast-goto-item-from-file"
-                     (rails/layout-for-type (rails/buffer-type rails/current-buffer))))
-        (let ((item (funcall func (rails/root) (rails/cut-root file) rails/current-buffer)))
-          (when (and (rails/goto-item-p item)
-                     (>= (rails/goto-item-weight item) weight))
-                (setq weight (rails/goto-item-weight item))
-                (setq goto-item item))))
-      (when goto-item
-        (rails/fast-find-file-by-goto-item (rails/root) goto-item)))))
+  (rails/with-current-buffer
+   (let ((file (rails/cut-root (buffer-file-name)))
+         (weight 0)
+         goto-item)
+     (dolist (func (rails/bundles-func
+                    "goto-item-from-rails-buffer"
+                    (rails/layout-for-type (rails/buffer-type rails/current-buffer))))
+       (let ((item (funcall func (rails/root) file rails/current-buffer)))
+         (when (and (rails/goto-item-p item)
+                    (>= (rails/goto-item-weight item) weight))
+           (setq weight (rails/goto-item-weight item))
+           (setq goto-item item))))
+     (when goto-item
+       (rails/toggle-file-by-goto-item (rails/root) goto-item)))))
 
 (defun rails/initialize-for-current-buffer ()
   (interactive)
-  (let ((file (buffer-file-name)))
-    (rails/with-root file
+  (rails/with-root (buffer-file-name)
+    (when-bind (file (rails/cut-root (buffer-file-name)))
       (rails/load-bundles)
       (set (make-local-variable 'rails/current-buffer)
            (rails/determine-type-of-file (rails/root) file))
       (rails-minor-mode t)
       (rails/initialize-bundles (rails/root) file rails/current-buffer))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -335,11 +334,11 @@ Structure of this list:
       ([rails] (cons "RoR" (make-sparse-keymap "RubyOnRails")))
       ([rails version]    '(menu-item (concat "Version: " rails/version) 'foo :enable nil))
       ([rails separator] (cons "--" "--"))
-      ([rails goto-fast]  (cons "Go To From Current File" (make-sparse-keymap)))
-      ([rails goto-fast separator] (cons "--" "--"))
-      ([rails goto-fast goto-fast]  (cons "Go to..." 'rails/goto-from-current-file))
-      ([rails goto-fast goto]       (cons "Toggle" 'rails/fast-goto-from-current-file))
-      ([rails goto-list]    (cons "Go To" (make-sparse-keymap))))
+      ([rails toggle]  (cons "Go To From Current File" (make-sparse-keymap)))
+      ([rails toggle separator] (cons "--" "--"))
+      ([rails toggle goto]  (cons "Go to..." 'rails/goto-from-current-file))
+      ([rails toggle toggle]       (cons "Toggle" 'rails/toggle-current-file))
+      ([rails goto]    (cons "Go To" (make-sparse-keymap))))
   map))
 
 (defun rails-minor-mode-default-keymap ()
@@ -347,7 +346,7 @@ Structure of this list:
     (define-keys map
       ([menu-bar] (rails-minor-mode-menu-bar-map))
       ((rails/define-short-key "<down>") 'rails/goto-from-current-file)
-      ((rails/define-short-key "<up>")   'rails/fast-goto-from-current-file))
+      ((rails/define-short-key "<up>")   'rails/toggle-current-file))
     map))
 
 (defvar rails-minor-mode-map (rails-minor-mode-default-keymap))

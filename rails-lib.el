@@ -135,6 +135,10 @@ else return nil"
           (setq rails/projects (list-ext/uniq (add-to-list 'rails/projects root)))
           root)))))
 
+(defmacro rails/with-current-buffer (&rest body)
+  `(when (rails/buffer-p rails/current-buffer)
+     (rails/with-root (buffer-file-name)
+       ,@body)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -321,18 +325,18 @@ else return nil"
 (defmacro rails/define-goto-key (goto-key goto-func)
  `(define-key rails-minor-mode-map (rails/define-key ,(concat "g " goto-key)) ,goto-func))
 
-(defun rails/define-goto-menu (vec func title)
+(defun rails/define-goto-menu (title func)
   (define-key rails-minor-mode-map
-    (merge 'vector [menu-bar rails goto-list] vec 'eq)
+    (merge 'vector [menu-bar rails goto] (list (string-ext/safe-symbol title)) 'eq)
     (cons (concat "Go to " title) func)))
 
-(defmacro rails/define-fast-goto-key (key func)
+(defmacro rails/define-toggle-key (key func)
   `(define-key rails-minor-mode-map (rails/define-short-key ,key) ,func))
 
-(defun rails/define-fast-goto-menu (vec func title &optional enable)
+(defun rails/define-toggle-menu (title func)
   (define-key-after
     rails-minor-mode-map
-    (merge 'vector [menu-bar rails goto-fast] vec 'eq)
+    (merge 'vector '[menu-bar rails toggle] (list (string-ext/safe-symbol title)) 'eq)
     (list 'menu-item (concat "Go to current " title) func :enable t) 'separator))
 
 (defun rails/add-to-bundles-menu (title menumap)
@@ -345,7 +349,7 @@ else return nil"
       [menu-bar rails bundles-separator]
       (cons "--" "--") 'bundles-title))
   (define-key-after rails-minor-mode-map
-    (merge 'vector '(menu-bar rails) (list (intern (downcase title))) 'eq)
+    (merge 'vector [menu-bar rails] (list (string-ext/safe-symbol title)) 'eq)
     (cons (concat title " Bundle") menumap)
     'bundles-title))
 
