@@ -30,8 +30,8 @@
 
 (defun rails/functional-test/functional-test-p (file)
   (rails/with-root file
-    (when-bind (buf (rails/determine-type-of-file (rails/root) (rails/cut-root file)))
-      (eq rails/functional-test/buffer-type (rails/buffer-type buf)))))
+    (string-ext/start-p (rails/cut-root file) rails/functional-test/dir)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -39,11 +39,11 @@
 ;;
 
 (defun rails/functional-test/determine-type-of-file (rails-root file)
-  (when (string-ext/start-p file rails/functional-test/dir)
+  (when (rails/functional-test/functional-test-p (concat (rails/root) file))
     (let ((name (rails/functional-test/canonical-name file)))
       (make-rails/buffer :type   rails/functional-test/buffer-type
                          :name   name
-                         :resource-name (pluralize-string name)))))
+                         :resource-name (singularize-string name)))))
 
 (defun rails/functional-test/goto-item-from-file (root file rails-current-buffer)
   (when (rails/resource-type-of-buffer rails-current-buffer

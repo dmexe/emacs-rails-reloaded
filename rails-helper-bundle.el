@@ -29,9 +29,7 @@
 
 (defun rails/helper/helper-p (file)
   (rails/with-root file
-    (when-bind (buf (rails/determine-type-of-file (rails/root) (rails/cut-root file)))
-      (eq rails/helper/buffer-type (rails/buffer-type buf)))))
-
+    (string-ext/start-p (rails/cut-root file) rails/helper/dir)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -39,7 +37,7 @@
 ;;
 
 (defun rails/helper/determine-type-of-file (rails-root file)
-  (when (string-ext/start-p file rails/helper/dir)
+  (when (rails/helper/helper-p (concat rails-root file))
     (let ((name (rails/helper/canonical-name file)))
       (make-rails/buffer :type   rails/helper/buffer-type
                          :name   name

@@ -30,8 +30,7 @@
 
 (defun rails/migration/migration-p (file)
   (rails/with-root file
-    (when-bind (buf (rails/determine-type-of-file (rails/root) (rails/cut-root file)))
-      (eq rails/migration/buffer-type (rails/buffer-type buf)))))
+    (string-ext/start-p (rails/cut-root file) rails/migration/dir)))
 
 (defun rails/migration/format-file-name (file)
   (let ((file (file-name-nondirectory (file-name-sans-extension file)))
@@ -44,7 +43,7 @@
 ;;
 
 (defun rails/migration/determine-type-of-file (rails-root file)
-  (when (string-ext/start-p file rails/migration/dir)
+  (when (rails/migration/migration-p (concat rails-root file))
     (let ((res (rails/migration/resource-of-file file)))
       (make-rails/buffer :type   rails/migration/buffer-type
                          :name   (rails/migration/format-file-name file)

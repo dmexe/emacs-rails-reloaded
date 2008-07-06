@@ -59,6 +59,7 @@
 (defvar rails/current-buffer nil)
 
 (defvar rails/bundles-list '(controller
+                             mailer
                              helper
                              model
                              migration
@@ -192,12 +193,13 @@ Structure of this list:
   (let ((goto-item-list '()))
     (dolist (func (rails/bundles-func "goto-item-from-file"))
       (let ((line (apply func (list root (rails/cut-root file) rails-buffer))))
-        (when (rails/goto-item-p line)
-          (add-to-list 'goto-item-list line t))
-        (when (listp line)
-          (dolist (it line)
-            (when (rails/goto-item-p it)
-              (add-to-list 'goto-item-list it t))))))
+        (unless (listp line)
+          (setq line (list line)))
+        (dolist (it line)
+          (when (and (rails/goto-item-p it)
+                     (not (string= (rails/goto-item-file it)
+                                   (rails/buffer-file rails-buffer))))
+            (add-to-list 'goto-item-list it t)))))
     (list-ext/group-by
      goto-item-list #'(lambda (it) (rails/goto-item-group it)))))
 
@@ -263,6 +265,20 @@ Structure of this list:
      (format "%s %s"
              (string-ext/cut (format "%s" (rails/buffer-type rails-buffer)) ":" :begin)
              (rails/buffer-name rails-buffer)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Special types
+;;
+
+(defun rails/mailer-p (root file)
+  (when (fboundp 'rails/mailer/mailer-p)
+    (rails/mailer/mailer-p (concat root file))))
+
+(defun rails/resource-mailer-p (root resource)
+  (when (fboundp 'rails/mailer/exist-p)
+    (rails/mailer/exist-p root resource)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

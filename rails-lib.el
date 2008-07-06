@@ -60,9 +60,9 @@
 If RAILS_ROOT not found, return nil."
   (let ((file (or file
                   (buffer-file-name))))
-    (unless  (and rails/search-files-in-dirs
-                  (files-ext/file-in-directories-p
-                   rails/search-files-in-dirs file))
+    (unless (and rails/search-files-in-dirs
+                 (files-ext/file-in-directories-p rails/search-files-in-dirs
+                                                  file))
       (or
        (rails/find-existing-root-for file)
        (rails/find-root-for file)))))

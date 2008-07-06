@@ -21,13 +21,15 @@
     (let ((file (concat rails/model/dir
                         (singularize-string resource-name)
                         rails/ruby/file-suffix)))
-      (when (rails/file-exist-p root file)
+      (when (and (rails/file-exist-p root file)
+                 (rails/model/model-p file))
         file))))
 
 (defun rails/model/model-p (file)
   (rails/with-root file
-    (when-bind (buf (rails/determine-type-of-file (rails/root) (rails/cut-root file)))
-      (eq rails/model/buffer-type (rails/buffer-type buf)))))
+    (let ((file (rails/cut-root file)))
+      (and (string-ext/start-p file rails/model/dir)
+           (not (rails/mailer-p (rails/root) file))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -35,7 +37,7 @@
 ;;
 
 (defun rails/model/determine-type-of-file (rails-root file)
-  (when (string-ext/start-p file rails/model/dir)
+  (when (rails/model/model-p file)
     (let ((name (rails/model/canonical-name file)))
       (make-rails/buffer :type   rails/model/buffer-type
                          :name   name

@@ -27,8 +27,7 @@
 
 (defun rails/fixture/fixture-p (file)
   (rails/with-root file
-    (when-bind (buf (rails/determine-type-of-file (rails/root) (rails/cut-root file)))
-      (eq rails/fixture/buffer-type (rails/buffer-type buf)))))
+    (string-ext/start-p (rails/cut-root file) rails/fixture/dir)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -36,7 +35,7 @@
 ;;
 
 (defun rails/fixture/determine-type-of-file (rails-root file)
-  (when (string-ext/start-p file rails/fixture/dir)
+  (when (rails/fixture/fixture-p (concat rails-root file))
     (let ((name (rails/fixture/canonical-name file)))
       (make-rails/buffer :type   rails/fixture/buffer-type
                          :name   name

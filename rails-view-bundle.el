@@ -30,9 +30,15 @@
 
 (defun rails/view/exist-p (root views-name)
   (let ((file (concat rails/view/dir
-                      (pluralize-string views-name))))
+                      views-name)))
     (when (rails/file-exist-p root file)
       file)))
+
+(defun rails/view/view-p (file)
+  (rails/with-root file
+    (let ((file (rails/cut-root file)))
+      (and (string-ext/start-p file rails/view/dir)
+           (not (rails/view/excluded-dir-p file))))))
 
 (defun rails/view/files-for-action (root views-name action-name)
   (when-bind (files (rails/view/files root views-name))
@@ -53,7 +59,7 @@
     res))
 
 (defun rails/view/files (root views-name)
-  (let* ((path (concat rails/view/dir (pluralize-string views-name) "/"))
+  (let* ((path (concat rails/view/dir views-name "/"))
          (rpath (concat root path))
          (files (directory-files rpath))
          res)
@@ -83,22 +89,19 @@
 ;;
 
 (defun rails/view/determine-type-of-file (rails-root file)
-  (when (and (string-ext/start-p file rails/view/dir)
-             (not (rails/view/excluded-dir-p file)))
+  (when (rails/view/view-p (concat rails-root file))
     (let ((name (rails/view/resource-name file)))
       (make-rails/buffer :type   rails/view/buffer-type
                          :name   (format "%s#%s" name (file-name-nondirectory file))
                          :resource-name name))))
 
 (defun rails/view/goto-item-from-file (root file rails-current-buffer)
-  (when (rails/resource-type-of-buffer rails-current-buffer
-                                       :exclude rails/view/buffer-type)
-     (when-bind (file-name (rails/view/exist-p
-                            root (rails/buffer-views-name rails-current-buffer)))
-       (let ((files
-              (rails/view/files
-               root (rails/buffer-views-name rails-current-buffer))))
-         files))))
+  (when-bind (file-name (rails/view/exist-p
+                         root (rails/buffer-views-name rails-current-buffer)))
+    (let ((files
+           (rails/view/files
+            root (rails/buffer-views-name rails-current-buffer))))
+      files)))
 
 (defun rails/view/goto-item-from-rails-buffer (root file rails-current-buffer)
   (when (rails/resource-type-of-buffer rails-current-buffer
@@ -130,6 +133,7 @@
 (defun rails/view/load ()
   (rails/add-to-resource-types-list rails/view/buffer-type)
   (rails/add-to-layouts-list :controller rails/view/buffer-type)
+  (rails/add-to-layouts-list :mailer rails/view/buffer-type)
 
   (rails/define-toggle-key "v" 'rails/view/goto-current)
   (rails/define-toggle-menu  "View" 'rails/view/goto-current)

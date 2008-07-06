@@ -29,9 +29,7 @@
 
 (defun rails/controller/controller-p (file)
   (rails/with-root file
-    (when-bind (buf (rails/determine-type-of-file (rails/root) (rails/cut-root file)))
-      (eq rails/controller/buffer-type (rails/buffer-type buf)))))
-
+    (string-ext/start-p (rails/cut-root file) rails/controller/dir)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -39,7 +37,7 @@
 ;;
 
 (defun rails/controller/determine-type-of-file (rails-root file)
-  (when (string-ext/start-p file rails/controller/dir)
+  (when (rails/controller/controller-p (concat rails-root file))
     (let ((name (rails/controller/canonical-name file)))
       (make-rails/buffer :type   rails/controller/buffer-type
                          :name   name
@@ -56,11 +54,11 @@
 (defalias 'rails/controller/goto-item-from-rails-buffer
           'rails/controller/goto-item-from-file)
 
-(defun rails/controller/current-buffer-action-name ()
-  (rails/ruby/current-method))
+(defalias 'rails/controller/current-buffer-action-name
+          'rails/ruby/current-method)
 
-(defun rails/controller/goto-action-in-current-buffer (action-name)
-  (rails/ruby/goto-method-in-current-buffer action-name))
+(defalias 'rails/controller/goto-action-in-current-buffer
+          'rails/ruby/goto-method-in-current-buffer)
 
 (defun rails/controller/load ()
   (rails/add-to-resource-types-list rails/controller/buffer-type)

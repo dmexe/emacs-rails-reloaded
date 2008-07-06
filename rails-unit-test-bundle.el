@@ -30,8 +30,12 @@
 
 (defun rails/unit-test/unit-test-p (file)
   (rails/with-root file
-    (when-bind (buf (rails/determine-type-of-file (rails/root) (rails/cut-root file)))
-      (eq rails/unit-test/buffer-type (rails/buffer-type buf)))))
+    (string-ext/start-p (rails/cut-root file) rails/unit-test/dir)))
+
+(defun rails/unit-test/resource-true-name (root resource)
+  (if (rails/resource-mailer-p root resource)
+      (singularize-string resource)
+    (pluralize-string resource)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -39,11 +43,11 @@
 ;;
 
 (defun rails/unit-test/determine-type-of-file (rails-root file)
-  (when (string-ext/start-p file rails/unit-test/dir)
+  (when (rails/unit-test/unit-test-p (concat rails-root file))
     (let ((name (rails/unit-test/canonical-name file)))
       (make-rails/buffer :type   rails/unit-test/buffer-type
                          :name   name
-                         :resource-name (pluralize-string name)))))
+                         :resource-name (rails/unit-test/resource-true-name rails-root name)))))
 
 (defun rails/unit-test/goto-item-from-file (root file rails-current-buffer)
   (when (rails/resource-type-of-buffer rails-current-buffer
@@ -59,6 +63,7 @@
 
 (defun rails/unit-test/load ()
   (rails/add-type-link :tests :model rails/unit-test/buffer-type)
+  (rails/add-type-link :tests :mailer rails/unit-test/buffer-type)
   (rails/add-to-bundles-group "Test::Unit" rails/unit-test/buffer-type)
   (rails/add-to-resource-types-list rails/unit-test/buffer-type)
   (rails/define-goto-key "u" 'rails/unit-test/goto-from-list)
