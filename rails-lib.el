@@ -322,6 +322,18 @@ else return nil"
             when allow do (return layout))
       type))                                                ; TYPE is the layout, but not defined
 
+(defun rails/layouts-for-type (type)
+  (let ((layout
+         (or (car (find type rails/layouts-list :key 'car))        ; TYPE is the layout
+             (loop for layout in (mapcar 'car rails/layouts-list)  ; TYPE inside the layout
+                   for allow = (rails/layout-p layout type)
+                   when allow
+                   collect layout)
+             type)))                                               ; TYPE is the layout, but not defined
+    (if (listp layout)
+        layout
+      (list layout))))
+
 (defun rails/add-type-link (group type link)
   (if (find group rails/linked-types-alist :key 'car)
       (push (cons type link) (cdr (find group rails/linked-types-alist :key 'car)))
@@ -362,14 +374,6 @@ else return nil"
     (list 'menu-item (concat "Go to current " title) func :enable t) 'separator))
 
 (defun rails/add-to-bundles-menu (title menumap)
-;;   (unless (lookup-key rails-minor-mode-map
-;;                       [menu-bar rails bundles-title])
-;;     (define-key-after rails-minor-mode-map
-;;       [menu-bar rails bundles-title]
-;;       '(menu-item "Bundles:" "--" :enable nil) 'separator)
-;;     (define-key-after rails-minor-mode-map
-;;       [menu-bar rails bundles-separator]
-;;       (cons "--" "--") 'bundles-title))
   (define-key-after rails-minor-mode-map
     (merge 'vector [menu-bar rails] (list (string-ext/safe-symbol title)) 'eq)
     (cons (concat title " Bundle") menumap)
