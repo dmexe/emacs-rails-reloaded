@@ -61,22 +61,22 @@
 (defun rails/rake/run ()
   "Run a Rake task."
   (interactive)
-  (rails/with-current-buffer
-   (let ((task (ido-completing-read "What task run: "
-                                    (rails/rake/list-of-tasks (rails/root))
-                                    nil t
-                                    (car rails/rake/history)
-                                    'rails/rake/history)))
-     (rails/rake/task-run (rails/root) task))))
+  (when-bind (root (rails/root))
+    (let ((task (ido-completing-read "What task run: "
+                                     (rails/rake/list-of-tasks (rails/root))
+                                     nil t
+                                     (car rails/rake/history)
+                                     'rails/rake/history)))
+     (rails/rake/task-run root task))))
 
 (defun rails/rake/reset-cache ()
   (interactive)
-  (rails/with-current-buffer
-   (rails/rake/create-tasks-cache (concat (rails/root) rails/rake/tasks-cache-file))))
+  (when-bind (root (rails/root))
+    (rails/rake/create-tasks-cache (concat root rails/rake/tasks-cache-file))))
 
 (defun rails/rake/list-tasks ()
   (interactive)
-  (rails/with-current-buffer
-   (rails/rake/task-run (rails/root) "-T")))
+  (when-bind (root (rails/root))
+    (rails/rake/task-run root "-T")))
 
 (provide 'rails-model-bundle)

@@ -59,7 +59,10 @@
   "Return RAILS_ROOT for FILE, if FILE not set using `buffer-file-name' instead it.
 If RAILS_ROOT not found, return nil."
   (let ((file (or file
-                  (buffer-file-name))))
+                  (buffer-file-name)
+                  (and (eq (current-buffer)
+                           (get-buffer rails/runner/buffer-name))
+                       rails/runner/buffer-rails-root))))
     (unless (and rails/search-files-in-dirs
                  (files-ext/file-in-directories-p rails/search-files-in-dirs
                                                   file))
