@@ -62,6 +62,7 @@
                              mailer
                              helper
                              model
+                             observer
                              migration
                              unit-test
                              functional-test
@@ -126,6 +127,7 @@ Structure of this list:
 (defstruct rails/buffer type
                         name
                         resource-name
+                        layout
                         file
                         (weight 1)
                         (views-name resource-name)
@@ -183,7 +185,10 @@ Structure of this list:
                 (setq found-rails-buffer (copy-rails/buffer buf))
                 (setq weight (rails/buffer-weight buf))
                 (unless (rails/buffer-file found-rails-buffer)
-                  (setf (rails/buffer-file found-rails-buffer) strip-file)))))
+                  (setf (rails/buffer-file found-rails-buffer) strip-file))
+                (unless (rails/buffer-layout found-rails-buffer)
+                  (setf (rails/buffer-layout found-rails-buffer)
+                        (rails/layout-for-type (rails/buffer-type found-rails-buffer)))))))
           (when (rails/buffer-p found-rails-buffer)
             (if rails-buffer
                 (setq rails-buffer (copy-rails/buffer found-rails-buffer))
@@ -279,6 +284,13 @@ Structure of this list:
   (when (fboundp 'rails/mailer/exist-p)
     (rails/mailer/exist-p root resource)))
 
+(defun rails/observer-p (root file)
+  (when (fboundp 'rails/observer/observer-p)
+    (rails/observer/observer-p (concat root file))))
+
+(defun rails/resource-observer-p (root resource)
+  (when (fboundp 'rails/observer/exist-p)
+    (rails/observer/exist-p root resource)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -315,7 +327,7 @@ Structure of this list:
          goto-item)
      (dolist (func (rails/bundles-func
                     "goto-item-from-rails-buffer"
-                    (rails/layout-for-type (rails/buffer-type rails/current-buffer))))
+                    (rails/buffer-layout rails/current-buffer)))
        (let ((item (funcall func (rails/root) file rails/current-buffer)))
          (when (and (rails/goto-item-p item)
                     (>= (rails/goto-item-weight item) weight))
@@ -328,8 +340,10 @@ Structure of this list:
   (interactive)
   (rails/with-current-buffer
    (let* ((type (rails/buffer-type rails/current-buffer))
-          (link-to (or (rails/type-link-for :tests type)                               ; the directly link
-                       (rails/type-link-for :tests (rails/layout-for-type type)))))    ; link to the layout
+          (link-to (or (rails/type-link-for :tests type)                  ; the directly link
+                       (rails/type-link-for
+                        :tests
+                        (rails/buffer-layout rails/current-buffer)))))    ; link to the layout
      (when link-to
        (when-bind (func (rails/bundle-func link-to "goto-item-from-rails-buffer"))
          (let ((goto-item (funcall func (rails/root)

@@ -93,7 +93,10 @@
     (let ((name (rails/view/resource-name file)))
       (make-rails/buffer :type   rails/view/buffer-type
                          :name   (format "%s#%s" name (file-name-nondirectory file))
-                         :resource-name name))))
+                         :resource-name name
+                         :layout (if (rails/resource-mailer-p rails-root name)
+                                     :mailer
+                                   :controller)))))
 
 (defun rails/view/goto-item-from-file (root file rails-current-buffer)
   (when-bind (file-name (rails/view/exist-p

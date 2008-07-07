@@ -29,7 +29,8 @@
   (rails/with-root file
     (let ((file (rails/cut-root file)))
       (and (string-ext/start-p file rails/model/dir)
-           (not (rails/mailer-p (rails/root) file))))))
+           (not (rails/mailer-p (rails/root) file))
+           (not (rails/observer-p (rails/root) file))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
