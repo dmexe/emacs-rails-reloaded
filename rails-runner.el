@@ -50,19 +50,22 @@
     (vertical-motion (- next-screen-context-lines))
     (set-window-start (get-buffer-window rails/runner/buffer-name) (point-min))))
 
+(defun rails/runner/popup-buffer (&rest args)
+  ;; args not used, added to compatibility of rails/runner/after-stop-func-list
+  (unless (get-buffer-window rails/runner/buffer-name)
+    (pop-to-buffer rails/runner/buffer-name t t)
+    (shrink-window-if-larger-than-buffer
+     (get-buffer-window rails/runner/buffer-name))
+    (run-hooks 'rails/runner/show-buffer-hook)
+    (other-window 1)))
+
 (defun rails/runner/toggle-output-window ()
   (interactive)
-  (let ((current (current-buffer))
-        (buf (get-buffer rails/runner/buffer-name)))
+  (let ((buf (get-buffer rails/runner/buffer-name)))
     (if buf
         (if (get-buffer-window rails/runner/buffer-name)
             (delete-windows-on buf)
-          (progn
-            (pop-to-buffer rails/runner/buffer-name t t)
-            (pop-to-buffer current t t)
-            (shrink-window-if-larger-than-buffer
-             (get-buffer-window rails/runner/buffer-name))
-            (run-hooks 'rails/runner/show-buffer-hook)))
+          (rails/runner/popup-buffer))
       (message "No output window found. Try running a script or a rake task before."))))
 
 (defun rails/runner/setup-font-lock (&optional keywords)
@@ -91,7 +94,8 @@
     (message (replace-regexp-in-string "\n" "" msg))
     (when rails/runner/after-stop-func-list
       (with-current-buffer buf
-        (mapc '(lambda (func) (funcall func ret-val)) 'rails/runner/after-stop-func-list)))))
+        (mapcar '(lambda (func) (funcall func ret-val)) rails/runner/after-stop-func-list)))
+    ret-val))
 
 (defun rails/runner/run (root command parameters &optional buffer-major-mode)
   "Run a Rails script COMMAND with PARAMETERS in ROOT with
@@ -100,6 +104,7 @@ BUFFER-MAJOR-MODE."
   (if (rails/runner/running-p)
       (message "Only one instance rails-script allowed")
 
+    (setq rails/runner/after-stop-func-list nil)
     (when (get-buffer rails/runner/buffer-name)
       (with-current-buffer (get-buffer rails/runner/buffer-name)
         (let ((buffer-read-only nil))

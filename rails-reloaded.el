@@ -68,7 +68,9 @@
                              unit-test
                              functional-test
                              fixture
-                             view)
+                             view
+
+                             rake)
   "List of availabled bundles, don't edit the list manualy.
 To disable bundle loading setup the `rails/disabled-bundles' variable.")
 
@@ -382,10 +384,10 @@ Structure of this list:
   (let ((map (make-keymap)))
     (define-keys map
       ([menu-bar] (rails-minor-mode-menu-bar-map))
-      ((rails/define-short-key "<down>") 'rails/goto-from-current-file)
-      ((rails/define-short-key "<up>")   'rails/toggle-current-file)
-      ((rails/define-short-key "t")   'rails/toggle-current-file-by-link)
-      ((rails/define-short-key "/")   'rails/runner/toggle-output-window))
+      ((rails/short-key "<down>") 'rails/goto-from-current-file)
+      ((rails/short-key "<up>")   'rails/toggle-current-file)
+      ((rails/short-key "t")   'rails/toggle-current-file-by-link)
+      ((rails/short-key "/")   'rails/runner/toggle-output-window))
     map))
 
 (defvar rails-minor-mode-map (rails-minor-mode-default-keymap))

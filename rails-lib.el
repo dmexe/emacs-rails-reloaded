@@ -338,14 +338,17 @@ else return nil"
 ;; Keys and menus functions
 ;;
 
-(defmacro rails/define-key (key)
+(defmacro rails/key (key)
   `(kbd ,(concat rails-minor-mode-prefix-key " " rails-minor-mode-prefix2-key  " " key)))
 
-(defmacro rails/define-short-key (key)
+(defmacro rails/define-key (key func)
+  `(define-key rails-minor-mode-map (rails/key ,key) ,func))
+
+(defmacro rails/short-key (key)
   `(kbd ,(concat rails-minor-mode-prefix-key " " key)))
 
 (defmacro rails/define-goto-key (goto-key goto-func)
- `(define-key rails-minor-mode-map (rails/define-key ,(concat "g " goto-key)) ,goto-func))
+ `(define-key rails-minor-mode-map (rails/key ,(concat "g " goto-key)) ,goto-func))
 
 (defun rails/define-goto-menu (title func)
   (define-key rails-minor-mode-map
@@ -353,7 +356,7 @@ else return nil"
     (cons (concat "Go to " (pluralize-string title)) func)))
 
 (defmacro rails/define-toggle-key (key func)
-  `(define-key rails-minor-mode-map (rails/define-short-key ,key) ,func))
+  `(define-key rails-minor-mode-map (rails/short-key ,key) ,func))
 
 (defun rails/define-toggle-menu (title func)
   (define-key-after

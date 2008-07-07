@@ -34,4 +34,14 @@
      dir-list)
     res))
 
+(defun files-ext/write-string-to-file (file string)
+  "Write a string to a file (erasing the previous content)."
+  (write-region string nil file))
+
+(defun files-ext/read-from-file (file-name)
+  "Read sexpr from a file named FILE-NAME."
+  (with-temp-buffer
+    (insert-file-contents file-name)
+    (read (current-buffer))))
+
 (provide 'files-ext)
