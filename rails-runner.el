@@ -28,6 +28,7 @@
 ;;; Code:
 
 (defvar rails/runner/buffer-name "*ROutput*")
+(defvar rails/buffer/buffer-rails-root nil)
 (defvar rails/runner/output-mode-hook nil)
 (defvar rails/runner/show-buffer-hook nil)
 (defvar rails/runner/after-stop-func-list nil)
@@ -105,6 +106,7 @@ BUFFER-MAJOR-MODE."
       (message "Only one instance rails-script allowed")
 
     (setq rails/runner/after-stop-func-list nil)
+    (setq rails/runner/buffer-rails-root root)
     (when (get-buffer rails/runner/buffer-name)
       (with-current-buffer (get-buffer rails/runner/buffer-name)
         (let ((buffer-read-only nil))

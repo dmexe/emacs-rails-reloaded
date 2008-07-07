@@ -48,6 +48,7 @@
   (let ((map (make-sparse-keymap)))
     (define-keys map
       ([reset] (cons "Reset Tasks Cache" 'rails/rake/reset-cache))
+      ([list] (cons "List Tasks" 'rails/rake/list-tasks))
       ([task] (cons "Run Rake Task" 'rails/rake/run)))
     (rails/add-to-bundles-menu "Rake" map)))
 
@@ -73,5 +74,9 @@
   (rails/with-current-buffer
    (rails/rake/create-tasks-cache (concat (rails/root) rails/rake/tasks-cache-file))))
 
+(defun rails/rake/list-tasks ()
+  (interactive)
+  (rails/with-current-buffer
+   (rails/rake/task-run (rails/root) "-T")))
 
 (provide 'rails-model-bundle)
