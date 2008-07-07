@@ -31,14 +31,13 @@
   "Byte compile rails-reloaded library."
   (interactive)
   (require 'rails-reloaded)
-  (mapcar
-   #'(lambda (file)
-       (unless (string= (file-name-nondirectory file)
+  (let ((func '(lambda (file)
+                 (unless (string= (file-name-nondirectory file)
                         "rails-bytecompile.el")
-         (byte-compile-file file)))
-   (directory-files
-    (file-name-directory (locate-library "rails-reloaded"))
-    t "\\.el\\'")))
+                   (byte-compile-file file))))
+        (path (file-name-directory (locate-library "rails-reloaded"))))
+    (mapcar func (directory-files path t "\\.el\\'"))
+    (mapcar func (directory-files (concat path "bundles/") t "\\.el\\'"))))
 
 (defun rails/selftest ()
   "Run unit tests for rails-reloaded library."

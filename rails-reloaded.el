@@ -151,9 +151,9 @@ Structure of this list:
   (unless rails/bundles-loaded-p
     (dolist (bundle rails/bundles-list)
       (let* ((name (string-ext/from-symbol bundle))
-             (name (concat "rails-" name "-bundle"))
-             (name (intern name)))
-        (require name)
+             (name (concat "rails-" name "-bundle")))
+;             (name (intern name)))
+        (load (concat (file-name-directory (locate-library "rails-reloaded")) "bundles/" name))
         (when-bind (load-func (rails/bundle-func bundle "load"))
           (apply load-func (list))))))
     (setq rails/bundles-loaded-p t))
