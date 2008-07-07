@@ -4,6 +4,7 @@
 ;;
 
 (defconst rails/rake/command "rake")
+(defconst rails/rake/tasks-cache-file "tmp/.tasks-cache")
 (defvar rails/rake/history nil)
 (defvar rails/rake/tasks-regexp "^rake \\([^ ]*\\).*# \\(.*\\)"
   "Regexp to match tasks list in `rake --tasks` output.")
@@ -24,7 +25,7 @@
 
 (defun rails/rake/list-of-tasks (root)
   "Return all available tasks and create tasks cache file."
-  (let* ((cache-file (concat root "tmp/.tasks-cache")))
+  (let* ((cache-file (concat root rails/rake/tasks-cache-file)))
     (if (file-exists-p cache-file)
         (files-ext/read-from-file cache-file)
       (rails/rake/create-tasks-cache cache-file))))
@@ -46,6 +47,7 @@
   (rails/define-key "r" 'rails/rake/run)
   (let ((map (make-sparse-keymap)))
     (define-keys map
+      ([reset] (cons "Reset Tasks Cache" 'rails/rake/reset-cache))
       ([task] (cons "Run Rake Task" 'rails/rake/run)))
     (rails/add-to-bundles-menu "Rake" map)))
 
@@ -65,5 +67,11 @@
                                     (car rails/rake/history)
                                     'rails/rake/history)))
      (rails/rake/task-run (rails/root) task))))
+
+(defun rails/rake/reset-cache ()
+  (interactive)
+  (rails/with-current-buffer
+   (rails/rake/create-tasks-cache (concat (rails/root) rails/rake/tasks-cache-file))))
+
 
 (provide 'rails-model-bundle)
