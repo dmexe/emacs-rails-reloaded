@@ -350,7 +350,7 @@ else return nil"
 (defun rails/define-goto-menu (title func)
   (define-key rails-minor-mode-map
     (merge 'vector [menu-bar rails goto] (list (string-ext/safe-symbol title)) 'eq)
-    (cons (concat "Go to " title) func)))
+    (cons (concat "Go to " (pluralize-string title)) func)))
 
 (defmacro rails/define-toggle-key (key func)
   `(define-key rails-minor-mode-map (rails/define-short-key ,key) ,func))
@@ -376,5 +376,27 @@ else return nil"
     (define-key rails-minor-mode-map
       (merge 'vector [menu-bar rails bundles-groups] (list (string-ext/safe-symbol title)) 'eq)
       (list  'menu-item title 'identity :button (cons :toggle '(lambda () t)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Special types
+;;
+
+(defun rails/mailer-p (root file)
+  (when (fboundp 'rails/mailer/mailer-p)
+    (rails/mailer/mailer-p (concat root file))))
+
+(defun rails/resource-mailer-p (root resource)
+  (when (fboundp 'rails/mailer/exist-p)
+    (rails/mailer/exist-p root resource)))
+
+(defun rails/observer-p (root file)
+  (when (fboundp 'rails/observer/observer-p)
+    (rails/observer/observer-p (concat root file))))
+
+(defun rails/resource-observer-p (root resource)
+  (when (fboundp 'rails/observer/exist-p)
+    (rails/observer/exist-p root resource)))
+
 
 (provide 'rails-lib)

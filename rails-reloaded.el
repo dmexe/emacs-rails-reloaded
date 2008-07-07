@@ -47,6 +47,7 @@
 
 (require 'rails-ruby)
 (require 'rails-lib)
+(require 'rails-runner)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -273,27 +274,6 @@ Structure of this list:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Special types
-;;
-
-(defun rails/mailer-p (root file)
-  (when (fboundp 'rails/mailer/mailer-p)
-    (rails/mailer/mailer-p (concat root file))))
-
-(defun rails/resource-mailer-p (root resource)
-  (when (fboundp 'rails/mailer/exist-p)
-    (rails/mailer/exist-p root resource)))
-
-(defun rails/observer-p (root file)
-  (when (fboundp 'rails/observer/observer-p)
-    (rails/observer/observer-p (concat root file))))
-
-(defun rails/resource-observer-p (root resource)
-  (when (fboundp 'rails/observer/exist-p)
-    (rails/observer/exist-p root resource)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
 ;; Interactives
 ;;
 
@@ -404,7 +384,8 @@ Structure of this list:
       ([menu-bar] (rails-minor-mode-menu-bar-map))
       ((rails/define-short-key "<down>") 'rails/goto-from-current-file)
       ((rails/define-short-key "<up>")   'rails/toggle-current-file)
-      ((rails/define-short-key "t")   'rails/toggle-current-file-by-link))
+      ((rails/define-short-key "t")   'rails/toggle-current-file-by-link)
+      ((rails/define-short-key "/")   'rails/runner/toggle-output-window))
     map))
 
 (defvar rails-minor-mode-map (rails-minor-mode-default-keymap))
