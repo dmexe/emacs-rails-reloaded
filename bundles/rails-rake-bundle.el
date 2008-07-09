@@ -9,6 +9,10 @@
 (defvar rails/rake/tasks-regexp "^rake \\([^ ]*\\).*# \\(.*\\)"
   "Regexp to match tasks list in `rake --tasks` output.")
 
+(setq rails/rake/task-keywords-alist
+  '(("-T" . (("#.*$" . font-lock-comment-face)
+             ("\\(rake\\) \\([^ ]+\\)" (1 font-lock-function-name-face) (2 font-lock-constant-face))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Functions
@@ -34,9 +38,10 @@
 (defun rails/rake/task-run (root task)
   "Run a Rake task in RAILS_ROOT with MAJOR-MODE."
   (when (and task root)
-    (rails/runner/run root rails/rake/command task)
-    (setq rails/runner/after-stop-func-list
-          (cons 'rails/runner/popup-buffer rails/runner/after-stop-func-list))))
+    (let ((keywords (cdr (find "-T" rails/rake/task-keywords-alist :key 'car :test 'string=))))
+      (rails/runner/run root rails/rake/command task :keywords keywords)
+      (setq rails/runner/after-stop-func-list
+            (cons 'rails/runner/popup-buffer rails/runner/after-stop-func-list)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

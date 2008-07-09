@@ -34,7 +34,6 @@
 (defvar rails/runner/after-stop-func-list nil)
 (defvar rails/runner/script-name nil)
 
-
 (defun rails/runner/running-p ()
   (get-buffer-process rails/runner/buffer-name))
 
@@ -70,15 +69,13 @@
       (message "No output window found. Try running a script or a rake task before."))))
 
 (defun rails/runner/setup-font-lock (&optional keywords)
-  (set (make-local-variable 'font-lock-keywords-only) t)
-  (make-local-variable 'font-lock-defaults)
-  (when keywords
-    (setq font-lock-defaults (list keywords nil t))))
+  (font-lock-add-keywords nil keywords))
 
 (define-derived-mode rails/runner/output-mode fundamental-mode "ROutput"
   "Major mode to Rails Script Output."
   (rails/runner/setup-output-buffer)
-  (rails/runner/setup-font-lock)
+  (set (make-local-variable 'font-lock-keywords-only) t)
+  (set (make-local-variable 'font-lock-keywords) nil)
   (buffer-disable-undo)
   (setq buffer-read-only t))
 
@@ -98,7 +95,7 @@
         (mapcar '(lambda (func) (funcall func ret-val)) rails/runner/after-stop-func-list)))
     ret-val))
 
-(defun rails/runner/run (root command parameters &optional buffer-major-mode)
+(defun rails/runner/run (root command parameters &rest options)
   "Run a Rails script COMMAND with PARAMETERS in ROOT with
 BUFFER-MAJOR-MODE."
   (save-some-buffers)
@@ -110,7 +107,7 @@ BUFFER-MAJOR-MODE."
     (when (get-buffer rails/runner/buffer-name)
       (with-current-buffer (get-buffer rails/runner/buffer-name)
         (let ((buffer-read-only nil))
-          (kill-region (point-min) (point-max)))))
+          (delete-region (point-min) (point-max)))))
 
     (let* ((default-directory root)
            (proc (start-process-shell-command rails/runner/buffer-name
@@ -118,9 +115,13 @@ BUFFER-MAJOR-MODE."
                                               command
                                               parameters)))
       (with-current-buffer (get-buffer rails/runner/buffer-name)
-        (if buffer-major-mode
-            (apply buffer-major-mode (list))
+        (if (opt-val :mode options)
+            (funcall (opt-val :mode options))
           (rails/runner/output-mode))
+        (when (opt-val :keywords options)
+          (rails/runner/setup-font-lock (opt-val :keywords options)))
+        (when (opt-val :buttons options)
+          (rails/runner/setup-buttons (opt-val :buttons options)))
         (set-process-coding-system proc 'utf-8 'utf-8)
         (set-process-sentinel proc 'rails/runner/sentinel-proc)
         (setq rails/runner/script-name (format "%s %s" command parameters))
