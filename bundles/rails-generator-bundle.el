@@ -44,7 +44,7 @@
           tasks)
       (while (string-match rails/generator/tasks-regexp string pos)
         (setq pos (match-end 2))
-        (setq tasks (merge 'list tasks (split-string (match-string 2 str) ", ") 'string-lessp)))
+        (setq tasks (merge 'list tasks (split-string (match-string 2 string) ", ") 'string-lessp)))
       (files-ext/write-string-to-file (concat root rails/generator/tasks-cache-file) (prin1-to-string tasks))
     tasks)))
 
@@ -119,6 +119,6 @@
 (defun rails/generator/reset-cache ()
   (interactive)
   (when-bind (root (rails/root))
-    (rails/generator/create-tasks-cache root)))
+    (rails/generator/create-cache root)))
 
 (provide 'rails-generator-bundle)

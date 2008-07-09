@@ -122,8 +122,6 @@ BUFFER-MAJOR-MODE."
           (rails/runner/output-mode))
         (when (opt-val :keywords options)
           (rails/runner/setup-font-lock (opt-val :keywords options)))
-        (when (opt-val :buttons options)
-          (rails/runner/setup-buttons (opt-val :buttons options)))
         (set-process-coding-system proc 'utf-8 'utf-8)
         (set-process-sentinel proc 'rails/runner/sentinel-proc)
         (setq rails/runner/script-name (format "%s %s" command parameters))
