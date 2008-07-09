@@ -10,8 +10,17 @@
   "Regexp to match tasks list in `rake --tasks` output.")
 
 (setq rails/rake/task-keywords-alist
-  '(("-T" . (("#.*$" . font-lock-comment-face)
-             ("\\(rake\\) \\([^ ]+\\)" (1 font-lock-function-name-face) (2 font-lock-constant-face))))))
+  '(("-T$"         . (("#.*$"
+                       (0 font-lock-comment-face))
+                      ("\\(rake\\) \\([^ ]+\\)"
+                       (1 font-lock-function-name-face)
+                       (2 font-lock-constant-face))))
+    ("^notes.*$"   . (("^\\([^ ]+\\):"
+                       (0 font-lock-string-face))
+                      ("^ +\\(\\*\\) \\(\\[[ 0-9]+\\]\\( \\[\\w+\\]\\)?\\) \\(.*\\)$"
+                       (1 font-lock-function-name-face)
+                       (2 font-lock-constant-face)
+                       (4 font-lock-comment-face))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -38,7 +47,7 @@
 (defun rails/rake/task-run (root task)
   "Run a Rake task in RAILS_ROOT with MAJOR-MODE."
   (when (and task root)
-    (let ((keywords (cdr (find "-T" rails/rake/task-keywords-alist :key 'car :test 'string=))))
+    (let ((keywords (cdr (find task rails/rake/task-keywords-alist :key 'car :test '(lambda(i j) (string-match j i))))))
       (rails/runner/run root rails/rake/command task :keywords keywords)
       (setq rails/runner/after-stop-func-list
             (cons 'rails/runner/popup-buffer rails/runner/after-stop-func-list)))))
@@ -67,11 +76,11 @@
   "Run a Rake task."
   (interactive)
   (when-bind (root (rails/root))
-    (let ((task (ido-completing-read "What task run: "
-                                     (rails/rake/list-of-tasks (rails/root))
-                                     nil t
-                                     (car rails/rake/history)
-                                     'rails/rake/history)))
+    (let ((task (rails/completing-read "What task run"
+                                       (rails/rake/list-of-tasks (rails/root))
+                                       nil
+                                       (car rails/rake/history)
+                                       'rails/rake/history)))
      (rails/rake/task-run root task))))
 
 (defun rails/rake/reset-cache ()
