@@ -103,8 +103,13 @@
                          root (rails/buffer-resource-name rails-current-buffer)))
     (let ((files
            (rails/view/files
-            root (rails/buffer-resource-name rails-current-buffer))))
-      files)))
+            root (rails/buffer-resource-name rails-current-buffer)))
+          (new-item (make-rails/goto-item :group :new-view
+                                        :name "Create a new view"
+                                        :func 'rails/view/create-view-for-current-buffer)))
+      (if files
+          (add-to-list 'files new-item t)
+        (list new-item)))))
 
 (defun rails/view/goto-item-from-rails-buffer (root file rails-current-buffer)
   (when (rails/resource-type-of-buffer rails-current-buffer

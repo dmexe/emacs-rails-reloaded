@@ -28,7 +28,7 @@
 ;;; Code:
 
 (defvar rails/runner/buffer-name "*ROutput*")
-(defvar rails/buffer/buffer-rails-root nil)
+(defvar rails/runner/buffer-rails-root nil)
 (defvar rails/runner/output-mode-hook nil)
 (defvar rails/runner/show-buffer-hook nil)
 (defvar rails/runner/after-stop-func-list nil)
