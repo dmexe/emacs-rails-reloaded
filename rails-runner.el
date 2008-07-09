@@ -93,9 +93,12 @@
     (message (replace-regexp-in-string "\n" "" msg))
     (when rails/runner/after-stop-func-list
       (dolist (func rails/runner/after-stop-func-list)
-        (with-current-buffer buf
-          (funcall func ret-val))))
-    ret-val))
+        (with-selected-window (or (get-buffer-window buf)
+                                  (get-buffer-window (current-buffer)))
+          (with-current-buffer buf
+            (goto-char (point-min))
+            (funcall func ret-val))))
+      ret-val)))
 
 (defun rails/runner/run (root command parameters &rest options)
   "Run a Rails script COMMAND with PARAMETERS in ROOT with

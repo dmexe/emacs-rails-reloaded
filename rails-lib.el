@@ -303,9 +303,16 @@ else return nil"
 
 (defun rails/button-action (ov)
   (when (overlayp ov)
-    (let ((file-name (overlay-get ov :file-name)))
-      (when (file-exists-p file-name)
-        (find-file file-name)))))
+    (let ((file-name (overlay-get ov :file-name))
+          (func (overlay-get ov :func))
+          (line (overlay-get ov :line)))
+      (cond
+       (func
+        (funcall func ov))
+       ((and file-name (file-exists-p file-name))
+        (find-file-other-window file-name)
+        (when line
+          (goto-line line)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
