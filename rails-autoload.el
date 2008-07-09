@@ -49,6 +49,13 @@
     "tests/all.el"))
   (message (format "rails/selftest: done")))
 
+(defun rails/tags-create ()
+  (interactive)
+  (let ((path (file-name-directory (locate-library "rails-reloaded"))))
+    (let ((default-directory path))
+      (shell-command (concat "etags " path "*.el"))
+      (shell-command (concat "etags -a " path "bundles/*.el"))
+      (visit-tags-table (format "%s/TAGS" path)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
