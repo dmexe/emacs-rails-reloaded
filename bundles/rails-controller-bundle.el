@@ -21,7 +21,7 @@
 
 (defun rails/controller/exist-p (root resource-name)
   (let ((file (concat rails/controller/dir
-                      (pluralize-string resource-name)
+                      resource-name
                       rails/controller/file-suffix
                       rails/ruby/file-suffix)))
     (when (rails/file-exist-p root file)
@@ -41,7 +41,7 @@
     (let ((name (rails/controller/canonical-name file)))
       (make-rails/buffer :type   rails/controller/buffer-type
                          :name   name
-                         :resource-name (pluralize-string name)))))
+                         :resource-name name))))
 
 (defun rails/controller/goto-item-from-file (root file rails-current-buffer)
   (when (rails/resource-type-of-buffer rails-current-buffer

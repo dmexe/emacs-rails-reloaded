@@ -9,7 +9,7 @@
 (defvar rails/rake/tasks-regexp "^rake \\([^ ]*\\).*# \\(.*\\)"
   "Regexp to match tasks list in `rake --tasks` output.")
 
-(setq rails/rake/task-keywords-alist
+(defvar rails/rake/task-keywords-alist
   '(("-T$"         . (("#.*$"
                        (0 font-lock-comment-face))
                       ("\\(rake\\) \\([^ ]+\\)"
@@ -27,21 +27,22 @@
 ;; Functions
 ;;
 
-(defun rails/rake/create-tasks-cache (file-name)
+(defun rails/rake/create-tasks-cache (root)  
   "Create a cache file from rake --tasks output."
-  (let ((tasks (loop for str in (split-string (shell-command-to-string "rake --tasks") "\n")
-                     for task = (unless (string-ext/empty-p str)
-                                  (string-ext/string=~ rails/rake/tasks-regexp str $1))
-                     when task collect task)))
-    (files-ext/write-string-to-file file-name (prin1-to-string tasks))
-    tasks))
+  (in-directory root
+    (let ((tasks (loop for str in (split-string (shell-command-to-string "rake --tasks") "\n")
+                       for task = (unless (string-ext/empty-p str)
+                                    (string-ext/string=~ rails/rake/tasks-regexp str $1))
+                       when task collect task)))
+      (files-ext/write-string-to-file (concat root rails/rake/tasks-cache-file) (prin1-to-string tasks))
+      tasks)))
 
 (defun rails/rake/list-of-tasks (root)
   "Return all available tasks and create tasks cache file."
   (let* ((cache-file (concat root rails/rake/tasks-cache-file)))
     (if (file-exists-p cache-file)
         (files-ext/read-from-file cache-file)
-      (rails/rake/create-tasks-cache cache-file))))
+      (rails/rake/create-tasks-cache root))))
 
 
 (defun rails/rake/task-run (root task)
@@ -49,8 +50,7 @@
   (when (and task root)
     (let ((keywords (cdr (find task rails/rake/task-keywords-alist :key 'car :test '(lambda(i j) (string-match j i))))))
       (rails/runner/run root rails/rake/command task :keywords keywords)
-      (setq rails/runner/after-stop-func-list
-            (cons 'rails/runner/popup-buffer rails/runner/after-stop-func-list)))))
+      (setq rails/runner/after-stop-func-list '(rails/runner/popup-buffer)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -93,4 +93,4 @@
   (when-bind (root (rails/root))
     (rails/rake/task-run root "-T")))
 
-(provide 'rails-model-bundle)
+(provide 'rails-rake-bundle)

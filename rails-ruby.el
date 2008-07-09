@@ -1,4 +1,5 @@
 (defvar rails/ruby/file-suffix ".rb")
+(defvar rails/ruby/command "ruby")
 
 (defun rails/ruby/current-method ()
   (let (action

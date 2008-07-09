@@ -208,6 +208,9 @@ else return nil"
 (defun rails/file-exist-p (root file)
   (file-exists-p (concat root file)))
 
+(defun rails/file-directory-p (root dir)
+  (file-directory-p (concat root dir)))
+
 (defun rails/find-file (root file)
   (find-file (concat root file)))
 
@@ -297,6 +300,12 @@ else return nil"
                    (format "%s [%s]: " title default)
                  (format "%s: " title))))
     (completing-read title list nil require nil history default)))
+
+(defun rails/button-action (ov)
+  (when (overlayp ov)
+    (let ((file-name (overlay-get ov :file-name)))
+      (when (file-exists-p file-name)
+        (find-file file-name)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

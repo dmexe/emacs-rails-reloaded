@@ -28,9 +28,9 @@
          (name (string-ext/cut name "/" :end)))
     name))
 
-(defun rails/view/exist-p (root views-name)
+(defun rails/view/exist-p (root resource-name)
   (let ((file (concat rails/view/dir
-                      views-name)))
+                      resource-name)))
     (when (rails/file-exist-p root file)
       file)))
 
@@ -40,8 +40,8 @@
       (and (string-ext/start-p file rails/view/dir)
            (not (rails/view/excluded-dir-p file))))))
 
-(defun rails/view/files-for-action (root views-name action-name)
-  (when-bind (files (rails/view/files root views-name))
+(defun rails/view/files-for-action (root resource-name action-name)
+  (when-bind (files (rails/view/files root resource-name))
     (let ((mask (concat action-name "."))
           res)
       (dolist (file files)
@@ -58,8 +58,8 @@
         (setq res t)))
     res))
 
-(defun rails/view/files (root views-name)
-  (let* ((path (concat rails/view/dir views-name "/"))
+(defun rails/view/files (root resource-name)
+  (let* ((path (concat rails/view/dir resource-name "/"))
          (rpath (concat root path))
          (files (directory-files rpath))
          res)
@@ -100,19 +100,19 @@
 
 (defun rails/view/goto-item-from-file (root file rails-current-buffer)
   (when-bind (file-name (rails/view/exist-p
-                         root (rails/buffer-views-name rails-current-buffer)))
+                         root (rails/buffer-resource-name rails-current-buffer)))
     (let ((files
            (rails/view/files
-            root (rails/buffer-views-name rails-current-buffer))))
+            root (rails/buffer-resource-name rails-current-buffer))))
       files)))
 
 (defun rails/view/goto-item-from-rails-buffer (root file rails-current-buffer)
   (when (rails/resource-type-of-buffer rails-current-buffer
                                        :exclude rails/view/buffer-type)
     (when-bind (action-name (rails/current-buffer-action-name))
-      (when-bind (views-name (rails/buffer-views-name rails/current-buffer))
-        (when (rails/view/exist-p (rails/root) views-name)
-          (let ((items (rails/view/files-for-action (rails/root) views-name action-name)))
+      (when-bind (resource-name (rails/buffer-resource-name rails/current-buffer))
+        (when (rails/view/exist-p (rails/root) resource-name)
+          (let ((items (rails/view/files-for-action (rails/root) resource-name action-name)))
               (case (length items)
                 (1
                  (car items))
@@ -164,21 +164,21 @@
   (interactive "p")
   (rails/with-current-buffer
    (when (and (rails/resource-type-of-buffer rails/current-buffer)
-              (rails/buffer-views-name rails/current-buffer))
+              (rails/buffer-resource-name rails/current-buffer))
     (let* ((action-name (rails/current-buffer-action-name))
-           (views-name (rails/buffer-views-name rails/current-buffer))
-           (path (concat (rails/root) rails/view/dir views-name "/")))
-      (when (rails/view/exist-p (rails/root) views-name)
+           (resource-name (rails/buffer-resource-name rails/current-buffer))
+           (path (concat (rails/root) rails/view/dir resource-name "/")))
+      (when (rails/view/exist-p (rails/root) resource-name)
         (if (or (not action-name)
                 (integerp goto-item)) ; called interactive
             (let ((name (completing-read
-                         (format "Create %s view: " (string-ext/decamelize views-name))
+                         (format "Create %s view: " (string-ext/decamelize resource-name))
                          nil)))
               (unless (string-ext/empty-p name)
                 (find-file (format "%s/%s" path name))))
           (let ((name (completing-read
                        (format "Create view %s#%s."
-                               (string-ext/decamelize views-name) action-name)
+                               (string-ext/decamelize resource-name) action-name)
                        rails/view/templates-list nil nil
                        (or (car rails/view/templates-history-list)
                            (car rails/view/templates-list))

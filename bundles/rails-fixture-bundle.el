@@ -12,6 +12,9 @@
 ;; Functions
 ;;
 
+(defun rails/fixture/resource-true-name (resource-name)
+  (replace-regexp-in-string "\/" "_" resource-name))
+
 (defun rails/fixture/canonical-name (file)
   (let* ((name (file-name-sans-extension file))
          (name (string-ext/cut name rails/fixture/dir :begin)))
@@ -20,7 +23,7 @@
 (defun rails/fixture/exist-p (root resource-name)
   (when resource-name
     (let ((file (concat rails/fixture/dir
-                        resource-name
+                        (rails/fixture/resource-true-name resource-name)
                         rails/fixture/file-suffix)))
       (when (rails/file-exist-p root file)
         file))))

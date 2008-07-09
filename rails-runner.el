@@ -69,7 +69,8 @@
       (message "No output window found. Try running a script or a rake task before."))))
 
 (defun rails/runner/setup-font-lock (&optional keywords)
-  (font-lock-add-keywords nil keywords))
+  (font-lock-add-keywords nil keywords nil)
+  (font-lock-mode t))
 
 (define-derived-mode rails/runner/output-mode fundamental-mode "ROutput"
   "Major mode to Rails Script Output."
@@ -91,8 +92,9 @@
             msg (format "%s was stopped (%s)." name ret-message)))
     (message (replace-regexp-in-string "\n" "" msg))
     (when rails/runner/after-stop-func-list
-      (with-current-buffer buf
-        (mapcar '(lambda (func) (funcall func ret-val)) rails/runner/after-stop-func-list)))
+      (dolist (func rails/runner/after-stop-func-list)
+        (with-current-buffer buf
+          (funcall func ret-val))))
     ret-val))
 
 (defun rails/runner/run (root command parameters &rest options)

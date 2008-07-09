@@ -19,10 +19,10 @@
          (name (string-ext/cut name rails/functional-test/file-suffix :end)))
     name))
 
-(defun rails/functional-test/exist-p (root tests-name)
-  (when tests-name
+(defun rails/functional-test/exist-p (root resource-name)
+  (when resource-name
     (let ((file (concat rails/functional-test/dir
-                        (pluralize-string tests-name)
+                        resource-name
                         rails/functional-test/file-suffix
                         rails/ruby/file-suffix)))
       (when (rails/file-exist-p root file)
@@ -43,13 +43,13 @@
     (let ((name (rails/functional-test/canonical-name file)))
       (make-rails/buffer :type   rails/functional-test/buffer-type
                          :name   name
-                         :resource-name (singularize-string name)))))
+                         :resource-name name))))
 
 (defun rails/functional-test/goto-item-from-file (root file rails-current-buffer)
   (when (rails/resource-type-of-buffer rails-current-buffer
                                        :exclude rails/functional-test/buffer-type)
     (when-bind (file-name
-                (rails/functional-test/exist-p root (rails/buffer-tests-name rails-current-buffer)))
+                (rails/functional-test/exist-p root (rails/buffer-resource-name rails-current-buffer)))
        (make-rails/goto-item :group :test
                              :name "Functional Test"
                              :file file-name))))

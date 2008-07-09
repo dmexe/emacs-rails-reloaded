@@ -70,7 +70,8 @@
                              fixture
                              view
 
-                             rake)
+                             rake
+                             generator)
   "List of availabled bundles, don't edit the list manualy.
 To disable bundle loading setup the `rails/disabled-bundles' variable.")
 
@@ -132,9 +133,7 @@ Structure of this list:
                         resource-name
                         layout
                         file
-                        (weight 1)
-                        (views-name resource-name)
-                        (tests-name resource-name))
+                        (weight 1))
 
 (defstruct rails/goto-item group
                            name
@@ -142,6 +141,9 @@ Structure of this list:
                            (weight 1)
                            func)
 
+(define-button-type 'rails/button
+  'follow-link t
+  'action #'rails/button-action)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

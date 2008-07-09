@@ -19,10 +19,10 @@
          (name (string-ext/cut name rails/unit-test/file-suffix :end)))
     name))
 
-(defun rails/unit-test/exist-p (root tests-name)
-  (when tests-name
+(defun rails/unit-test/exist-p (root resource-name)
+  (when resource-name
     (let ((file (concat rails/unit-test/dir
-                        (singularize-string tests-name)
+                        (singularize-string resource-name)
                         rails/unit-test/file-suffix
                         rails/ruby/file-suffix)))
       (when (rails/file-exist-p root file)
@@ -53,7 +53,7 @@
   (when (rails/resource-type-of-buffer rails-current-buffer
                                        :exclude rails/unit-test/buffer-type)
     (when-bind (file-name
-                (rails/unit-test/exist-p root (rails/buffer-tests-name rails-current-buffer)))
+                (rails/unit-test/exist-p root (rails/buffer-resource-name rails-current-buffer)))
       (make-rails/goto-item :group :test
                             :name "Unit Test"
                             :file file-name))))

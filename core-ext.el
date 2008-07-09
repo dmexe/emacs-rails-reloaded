@@ -26,4 +26,8 @@ not exist."
        (setq it (funcall l it)))
      it))
 
+(defmacro in-directory (dir &rest body)
+  `(let ((default-directory ,dir))
+     ,@body))
+
 (provide 'core-ext)
