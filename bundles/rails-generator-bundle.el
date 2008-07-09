@@ -61,7 +61,7 @@
     (rails/runner/run root
                       rails/ruby/command (format "script/%s %s %s" what task options)
                       :keywords rails/generator/font-lock-keywords)
-    
+
     (setq rails/runner/after-stop-func-list
           '(rails/runner/popup-buffer rails/generator/make-buttons))))
 
@@ -72,7 +72,7 @@
 
 (defun rails/generator/load ()
   (rails/define-key "e" 'rails/generator/generate)
-  (rails/define-key "x" 'rails/generator/destroy)
+  (rails/define-key "E" 'rails/generator/destroy)
   (let ((map (make-sparse-keymap)))
     (define-keys map
       ([reset] (cons "Reset Cache" 'rails/generator/reset-cache))
