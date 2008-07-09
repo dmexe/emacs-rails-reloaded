@@ -1,4 +1,4 @@
-;;; rails-runner.el ---
+;;; rails-runner.el --- run external process.
 
 ;; Copyright (C) 2006 Dmitry Galinsky <dima dot exe at gmail dot com>
 

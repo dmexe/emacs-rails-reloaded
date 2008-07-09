@@ -1,4 +1,4 @@
-;;; inflections.el ---
+;;; inflections.el --- inflection support.
 
 ;; Copyright (C) 2006 Dmitry Galinsky <dima dot exe at gmail dot com>
 

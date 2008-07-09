@@ -1,4 +1,4 @@
-;;; rails-lib.el --- library functions for rails.
+;;; rails-lib.el --- library functions used in rails.
 
 ;; Copyright (C) 2006 Dmitry Galinsky <dima dot exe at gmail dot com>
 
@@ -26,6 +26,9 @@
 ;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 ;;; Code:
+
+(eval-when-compile
+  (require 'cl))
 
 (require 'files-ext)
 (require 'string-ext)
@@ -84,14 +87,6 @@ rails-root exist.
       (when ,root
         (flet ((rails/root (&optional file) ,root))
           ,@body)))))
-
-;; (defmacro rails/in-root (file &rest body)
-;;   "Set the default directory to the Rails root directory of FILE while
-;; BODY is executed."
-;;   (let ((root (gensym)))
-;;     `(rails/with-root ,file
-;;       (let ((default-dir (rails/root file)))
-;;         ,@body))))
 
 (defmacro rails/when-root (file &rest body)
   `(when (rails/root ,file)

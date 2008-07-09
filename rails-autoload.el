@@ -1,4 +1,4 @@
-;;; rails-autoload.el --- minor mode for editing RubyOnRails code
+;;; rails-autoload.el --- minor mode for editing RubyOnRails code.
 
 ;; Copyright (C) 2006 Dmitry Galinsky <dima dot exe at gmail dot com>
 

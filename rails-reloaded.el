@@ -1,4 +1,4 @@
-;;; rails-reloaded.el --- minor mode for editing RubyOnRails code
+;;; rails-reloaded.el --- minor mode for editing RubyOnRails code.
 
 ;; Copyright (C) 2006 Dmitry Galinsky <dima dot exe at gmail dot com>
 
@@ -38,6 +38,9 @@
 ;;      [M-x] rails/selftest
 
 ;;; Code:
+
+(eval-when-compile
+  (require 'cl))
 
 (require 'core-ext)
 (require 'string-ext)
