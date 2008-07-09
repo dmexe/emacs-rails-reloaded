@@ -79,8 +79,8 @@
 
 (defun rails/unit-test/goto-from-list ()
   (interactive)
-  (rails/with-current-buffer
-   (rails/directory-to-goto-menu (rails/root)
+  (when-bind (root (rails/root))
+   (rails/directory-to-goto-menu root
                                  rails/unit-test/dir
                                  "Select a Unit Test"
                                  :filter-by 'rails/unit-test/unit-test-p

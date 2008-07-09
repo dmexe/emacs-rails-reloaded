@@ -54,6 +54,7 @@
           'rails/fixture/goto-item-from-file)
 
 (defun rails/fixture/load ()
+  (rails/add-to-bundles-group "Test::Unit" rails/fixture/buffer-type)
   (rails/add-to-resource-types-list rails/fixture/buffer-type)
   (rails/add-to-layouts-list :unit-test rails/fixture/buffer-type)
   (rails/define-goto-key "x" 'rails/fixture/goto-from-list)
@@ -68,8 +69,8 @@
 
 (defun rails/fixture/goto-from-list ()
   (interactive)
-  (rails/with-current-buffer
-   (rails/directory-to-goto-menu (rails/root)
+  (when-bind (root (rails/root))
+   (rails/directory-to-goto-menu root
                                  rails/fixture/dir
                                  "Select a Fixture"
                                  :name-by 'file-name-sans-extension)))

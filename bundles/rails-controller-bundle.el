@@ -83,8 +83,8 @@
 
 (defun rails/controller/goto-from-list ()
   (interactive)
-  (rails/with-current-buffer
-   (rails/directory-to-goto-menu (rails/root)
+  (when-bind (root (rails/root))
+   (rails/directory-to-goto-menu root
                                  rails/controller/dir
                                  "Select a Controller"
                                  :filter-by 'rails/controller/controller-p

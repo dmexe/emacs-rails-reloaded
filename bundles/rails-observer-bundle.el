@@ -71,8 +71,8 @@
 
 (defun rails/observer/goto-from-list ()
   (interactive)
-  (rails/with-current-buffer
-   (rails/directory-to-goto-menu (rails/root)
+  (when-bind (root (rails/root))
+   (rails/directory-to-goto-menu root
                                  rails/observer/dir
                                  "Select a Observer"
                                  :filter-by 'rails/observer/observer-p

@@ -67,11 +67,11 @@
 
 (defun rails/helper/goto-from-list ()
   (interactive)
-  (rails/with-current-buffer
+  (when-bind (root (rails/root))
    (let ((test-helper (make-rails/goto-item :group :test
                                             :name "TestHelper"
                                             :file "test/test_helper.rb")))
-     (rails/directory-to-goto-menu (rails/root)
+     (rails/directory-to-goto-menu root
                                    rails/helper/dir
                                    "Select a Helper"
                                    :filter-by 'rails/helper/helper-p

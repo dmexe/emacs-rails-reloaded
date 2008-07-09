@@ -75,8 +75,8 @@
 
 (defun rails/mailer/goto-from-list ()
   (interactive)
-  (rails/with-current-buffer
-   (rails/directory-to-goto-menu (rails/root)
+  (when-bind (root (rails/root))
+   (rails/directory-to-goto-menu root
                                  rails/mailer/dir
                                  "Select a Mailer"
                                  :filter-by 'rails/mailer/mailer-p

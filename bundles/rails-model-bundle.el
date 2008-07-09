@@ -69,12 +69,12 @@
 
 (defun rails/model/goto-from-list ()
   (interactive)
-  (rails/with-current-buffer
-   (rails/directory-to-goto-menu (rails/root)
-                                 rails/model/dir
-                                 "Select a Model"
-                                 :filter-by 'rails/model/model-p
-                                 :name-by (funcs-chain file-name-sans-extension string-ext/decamelize))))
+  (when-bind (root (rails/root))
+    (rails/directory-to-goto-menu root
+                                  rails/model/dir
+                                  "Select a Model"
+                                  :filter-by 'rails/model/model-p
+                                  :name-by (funcs-chain file-name-sans-extension string-ext/decamelize))))
 
 (defun rails/model/goto-current ()
   (interactive)
