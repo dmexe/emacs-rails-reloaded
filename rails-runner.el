@@ -59,6 +59,10 @@
     (run-hooks 'rails/runner/show-buffer-hook)
     (other-window 1)))
 
+(defun rails/runner/popup-buffer-if-failed (retval)
+  (unless (zerop retval)
+    (rails/runner/popup-buffer)))
+
 (defun rails/runner/toggle-output-window ()
   (interactive)
   (let ((buf (get-buffer rails/runner/buffer-name)))

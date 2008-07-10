@@ -8,11 +8,11 @@
 (defconst rails/rake/command "rake")
 (defconst rails/rake/tasks-cache-file "tmp/.tasks-cache")
 (defvar rails/rake/history nil)
-(defvar rails/rake/tasks-regexp "^rake \\([^ ]*\\).*# \\(.*\\)"
+(defvar rails/rake/tasks-regexp "^rake \\([^ ]+\\)$"
   "Regexp to match tasks list in `rake --tasks` output.")
 
 (defvar rails/rake/task-keywords-alist
-  '(("-T$"         . (("#.*$"
+  '(("^-D$"        . (("^\s+.*"
                        (0 font-lock-comment-face))
                       ("\\(rake\\) \\([^ ]+\\)"
                        (1 font-lock-function-name-face)
@@ -25,7 +25,7 @@
                        (4 font-lock-comment-face))))))
 
 (defvar rails/rake/task-after-stop-alist
-  '(("-T$"         . rails/rake/after-stop-task-list)
+  '(("^-D$"        . rails/rake/after-stop-task-list)
     ("^notes.*$"   . rails/rake/after-stop-notes)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -74,7 +74,7 @@
 
 (defun rails/rake/after-stop-task-list (&rest args)
   (save-excursion
-    (while (re-search-forward "^rake\s+\\([^ ]+\\)" nil t)
+    (while (re-search-forward rails/rake/tasks-regexp nil t)
       (let ((root rails/runner/buffer-rails-root)
             (task (match-string 1)))
         (make-button (match-beginning 1) (match-end 1)
@@ -168,6 +168,6 @@
   "List of availabled Rake tasks."
   (interactive)
   (when-bind (root (rails/root))
-    (rails/rake/task-run root "-T")))
+    (rails/rake/task-run root "-D")))
 
 (provide 'rails-rake-bundle)

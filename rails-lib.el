@@ -289,11 +289,17 @@ else return nil"
                                      t))
       (cdr (find value choices :test 'string= :key 'car)))))
 
-(defun rails/completing-read (title list &optional require default history)
+(defun rails/completing-read (title &optional list require default history)
   (let ((title (if default
                    (format "%s [%s]: " title default)
                  (format "%s: " title))))
     (completing-read title list nil require nil history default)))
+
+(defun rails/ido-completing-read (title list &optional require default history)
+  (let ((title (if default
+                   (format "%s [%s]: " title default)
+                 (format "%s: " title))))
+    (ido-completing-read title list nil require nil history default)))
 
 (defun rails/button-action (ov)
   (when (overlayp ov)
