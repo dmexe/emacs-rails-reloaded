@@ -295,12 +295,6 @@ else return nil"
                  (format "%s: " title))))
     (completing-read title list nil require nil history default)))
 
-(defun rails/ido-completing-read (title list &optional require default history)
-  (let ((title (if default
-                   (format "%s [%s]: " title default)
-                 (format "%s: " title))))
-    (ido-completing-read title list nil require nil history default)))
-
 (defun rails/button-action (ov)
   (when (overlayp ov)
     (let ((file-name (overlay-get ov :file-name))

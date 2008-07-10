@@ -86,9 +86,10 @@
   (interactive)
   (when-bind (root (rails/root))
     (let ((version
-           (rails/ido-completing-read "Version"
-                                      (rails/database/versions root)
-                                      t)))
+           (ido-completing-read "Version: "
+                                (rails/database/versions root)
+                                nil
+                                t)))
       (when (not (string-ext/empty-p version))
         (rails/database/run-task
          root
