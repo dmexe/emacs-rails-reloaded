@@ -24,4 +24,16 @@
 
 (defalias 'opt-val 'list-ext/options-value)
 
+(defun list-ext/swap-tail (key list)
+  (let* ((list-len (length list))
+         (tail (member key list))
+         (beg (- list-len (length tail)))
+         (i 0))
+    (when tail
+      (while (not (zerop (+ beg 1)))
+        (add-to-list 'tail (nth i list) t)
+        (decf beg)
+        (incf i))
+      tail)))
+
 (provide 'list-ext)

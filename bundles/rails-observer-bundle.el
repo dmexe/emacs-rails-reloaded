@@ -58,6 +58,7 @@
 
 (defun rails/observer/load ()
   (rails/add-to-resource-types-list rails/observer/buffer-type)
+  (rails/add-to-layouts-list :model rails/observer/buffer-type)
   (rails/define-goto-key "o" 'rails/observer/goto-from-list)
   (rails/define-goto-menu  "Observer" 'rails/observer/goto-from-list)
   (rails/define-toggle-key "o" 'rails/observer/goto-current)

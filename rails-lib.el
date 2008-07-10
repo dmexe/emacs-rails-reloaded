@@ -332,7 +332,7 @@ else return nil"
     rails/layouts-list))
 
 (defun rails/layout-p (layout child)
-  (car (memq child (find layout rails/layouts-list :key 'car))))
+  (car (memq child (rails/layout-childs layout))))
 
 (defun rails/layout-for-type (type)
   (or (car (find type rails/layouts-list :key 'car))        ; TYPE is the layout
@@ -340,6 +340,9 @@ else return nil"
             for allow = (rails/layout-p layout type)
             when allow do (return layout))
       type))                                                ; TYPE is the layout, but not defined
+
+(defun rails/layout-childs (layout)
+  (find layout rails/layouts-list :key 'car))
 
 (defun rails/add-type-link (group type link)
   (if (find group rails/linked-types-alist :key 'car)

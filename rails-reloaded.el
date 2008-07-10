@@ -309,19 +309,18 @@ Structure of this list:
 (defun rails/toggle-current-file ()
   (interactive)
   (rails/with-current-buffer
-   (let ((file (rails/cut-root (buffer-file-name)))
-         (weight 0)
-         goto-item)
-     (dolist (func (rails/bundles-func
-                    "goto-item-from-rails-buffer"
-                    (rails/buffer-layout rails/current-buffer)))
-       (let ((item (funcall func (rails/root) file rails/current-buffer)))
-         (when (and (rails/goto-item-p item)
-                    (>= (rails/goto-item-weight item) weight))
-           (setq weight (rails/goto-item-weight item))
-           (setq goto-item item))))
-     (when goto-item
-       (rails/toggle-file-by-goto-item (rails/root) goto-item)))))
+   (let* ((file (rails/cut-root (buffer-file-name)))
+          (curlay (rails/buffer-layout rails/current-buffer))
+          (layouts (list-ext/swap-tail (rails/buffer-type rails/current-buffer)
+                                       (rails/layout-childs curlay))))
+     (when (and curlay layouts)
+       (when-bind (goto-item
+                   (loop for layout in (cdr layouts)
+                         for func = (rails/bundle-func layout "goto-item-from-rails-buffer")
+                         for item = (when func (funcall func (rails/root) file rails/current-buffer))
+                         when (rails/goto-item-p item)
+                         do (return item)))
+         (rails/toggle-file-by-goto-item (rails/root) goto-item))))))
 
 (defun rails/toggle-current-file-by-link ()
   (interactive)
