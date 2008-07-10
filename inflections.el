@@ -27,6 +27,8 @@
 
 ;;; Code:
 
+(require 'cl)
+
 (require 'string-ext)
 
 (defvar inflection-singulars    nil)

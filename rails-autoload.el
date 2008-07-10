@@ -27,6 +27,8 @@
 
 ;;; Code:
 
+(require 'cl)
+
 (defun rails/bytecompile ()
   "Byte compile rails-reloaded library."
   (interactive)
@@ -36,8 +38,8 @@
                         "rails-bytecompile.el")
                    (byte-compile-file file))))
         (path (file-name-directory (locate-library "rails-reloaded"))))
-    (mapcar func (directory-files path t "\\.el\\'"))
-    (mapcar func (directory-files (concat path "bundles/") t "\\.el\\'"))))
+    (mapc func (directory-files path t "\\.el\\'"))
+    (mapc func (directory-files (concat path "bundles/") t "\\.el\\'"))))
 
 (defun rails/selftest ()
   "Run unit tests for rails-reloaded library."

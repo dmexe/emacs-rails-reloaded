@@ -1,3 +1,5 @@
+(require 'cl)
+
 (defun string-ext/cut (string cut from)
   "Cut from STRING fragment CUT from FROM,
 FROM must equal :begin or :end. Return result string,

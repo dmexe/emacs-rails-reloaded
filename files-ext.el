@@ -27,7 +27,7 @@
 
 (defun files-ext/file-in-directories-p (dir-list file)
   (let (res)
-    (mapcar
+    (mapc
      '(lambda (it)
         (when (files-ext/file-in-directory-p it file)
           (setq res t)))

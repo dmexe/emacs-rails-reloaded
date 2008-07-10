@@ -27,8 +27,7 @@
 
 ;;; Code:
 
-(eval-when-compile
-  (require 'cl))
+(require 'cl)
 
 (require 'files-ext)
 (require 'string-ext)
@@ -305,7 +304,8 @@ else return nil"
        (func
         (funcall func ov))
        ((and file-name (file-exists-p file-name))
-        (find-file-other-window file-name)
+        (other-window 1)
+        (find-file file-name)
         (when line
           (goto-line line)))))))
 
