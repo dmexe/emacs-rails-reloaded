@@ -1,3 +1,6 @@
+(defvar rails/proxy/ssh "plink")
+(defvar rails/proxy/ssh-args "-batch")
+
 (defvar rails/proxy/dir-list
   '(("z:/apps/" "dima-exe.d2.undev.ru" "/home/dima-exe/apps/")))
 
@@ -10,16 +13,18 @@
     (if loc
         (let ((host (cdr (find loc rails/proxy/dir-list :key 'car :test 'string=)))
               (dir (string-ext/cut root loc :begin)))
-          (list "plink"
-                (format
-                 (concat "-batch %s \"(cd '%s%s' && %s " args ")\"")
-                 (first host) (cadr host) dir command)
+          (list rails/proxy/ssh
+                (format (concat "%s %s \"(cd '%s%s' && %s " args ")\"")
+                        rails/proxy/ssh-args
+                        (first host)
+                        (cadr host)
+                        dir
+                        command)
                 host))
       (list command args))))
 
 (defun rails/proxy/remote-p (cmd)
-  (string= "plink" (car cmd)))
-
+  (string= rails/proxy/ssh (car cmd)))
 
 (defun rails/proxy/shell-command (root name buffer command &optional args)
   (let* ((cmd (rails/proxy/make-command root command args))

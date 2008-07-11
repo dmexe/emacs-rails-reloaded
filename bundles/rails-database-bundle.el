@@ -66,7 +66,7 @@
     (define-keys map
       ([clone]     (cons "Clone Development DB to Test DB" 'rails/database/clone))
       ([redo]      (cons "Redo Last Migration" 'rails/database/migrate-redo))
-      ([rollback]  (cons "Migrate to Previous Version" 'rails/database/rollback))
+      ([rollback]  (cons "Migrate to Previous Version" 'rails/database/migrate-rollback))
       ([version]   (cons "Migrate to Version" 'rails/database/migrate-to-version))
       ([migrate]   (cons "Migrate to Current" 'rails/database/migrate)))
     (rails/add-to-bundles-menu "Database" map)))

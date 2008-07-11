@@ -404,7 +404,7 @@ else return nil"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Special types
+;; Special functions
 ;;
 
 (defun rails/mailer-p (root file)
@@ -423,5 +423,18 @@ else return nil"
   (when (fboundp 'rails/observer/exist-p)
     (rails/observer/exist-p root resource)))
 
+(defun rails/environments (root)
+  (mapcar
+   'file-name-sans-extension
+   (directory-files
+    (concat root "config/environments/")
+    nil
+    rails/ruby/file-suffix)))
+
+(defun rails/default-environment-p (env)
+  (string= env rails/default-environment))
+
+(defmacro rails/toggle-environment-menu-func (env)
+  `'(lambda() (interactive) (rails/set-default-environment ,(symbol-value env))))
 
 (provide 'rails-lib)

@@ -127,6 +127,11 @@ Structure of this list:
   :type 'hook
   :group 'rails)
 
+(defcustom rails/default-environment "development"
+  "Default Railt environment."
+  :type 'string
+  :group 'rails)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Structures
@@ -280,6 +285,7 @@ Structure of this list:
              (string-ext/cut (format "%s" (rails/buffer-type rails-buffer)) ":" :begin)
              (rails/buffer-name rails-buffer)))))
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Interactives
@@ -349,6 +355,17 @@ Structure of this list:
       (rails-minor-mode t)
       (rails/initialize-bundles (rails/root) file rails/current-buffer))))
 
+(defun rails/set-default-environment (&optional env)
+  (interactive)
+  (when-bind (root (rails/root))
+    (unless env
+      (setq env (rails/completing-read "Default environment"
+                                       (rails/environments root)
+                                       t
+                                       rails/default-environment)))
+    (when (not (string-ext/empty-p env))
+      (setq rails/default-environment env))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Rails minor mode
@@ -377,6 +394,9 @@ Structure of this list:
       ([rails bundles-separator]   (cons "--" "--"))
       ([rails bundles-title]      '(menu-item "Bundles:" "--" :enable nil))
       ([rails separator]           (cons "--" "--"))
+      ([rails env]                '(menu-item "Environments" (make-sparse-keymap)
+                                              :filter rails-minor-mode-environments-menu))
+      ([rails env-separator]       (cons "--" "--"))
       ([rails toggle]              (cons "Go To From Current File" (make-sparse-keymap)))
       ([rails toggle separator]      (cons "--" "--"))
       ([rails toggle toggle-test]    (cons "Toggle Test/Implementation" 'rails/toggle-current-file-by-link))
@@ -385,14 +405,29 @@ Structure of this list:
       ([rails goto]                (cons "Go To" (make-sparse-keymap))))
   map))
 
+(defun rails-minor-mode-environments-menu (&optional args)
+  (let ((map (make-sparse-keymap))
+        (envs (rails/environments (rails/root))))
+    (dolist (e envs)
+      (define-key map
+        (vector (string-ext/safe-symbol e))
+        (list 'menu-item
+              (capitalize e)
+              `(lambda()(interactive)(rails/set-default-environment ,e))
+              :button (cons :radio (rails/default-environment-p e)))))
+    (define-key map [separator] (cons "--" "--"))
+    (define-key map [toggle]    (cons "Set Default Environment" 'rails/set-default-environment))
+    map))
+
 (defun rails-minor-mode-default-keymap ()
   (let ((map (make-keymap)))
     (define-keys map
       ([menu-bar] (rails-minor-mode-menu-bar-map))
       ((rails/short-key "<down>") 'rails/goto-from-current-file)
       ((rails/short-key "<up>")   'rails/toggle-current-file)
-      ((rails/short-key "t")   'rails/toggle-current-file-by-link)
-      ((rails/short-key "/")   'rails/runner/toggle-output-window))
+      ((rails/short-key "t")      'rails/toggle-current-file-by-link)
+      ((rails/short-key "/")      'rails/runner/toggle-output-window)
+      ((kbd "\e\e e")            'rails/set-default-environment))
     map))
 
 (defvar rails-minor-mode-map (rails-minor-mode-default-keymap))
