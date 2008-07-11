@@ -41,7 +41,10 @@
 (defun rails/generator/create-cache (root)
   "Create a cache file from script/generate output."
   (in-directory root
-    (let ((string (shell-command-to-string (format "%s script/generate --help" rails/ruby/command)))
+    (let ((string (rails/proxy/shell-command-to-string root
+                                                       (format
+                                                        "%s script/generate --help"
+                                                        rails/ruby/command)))
           (pos 0)
           tasks)
       (while (string-match rails/generator/tasks-regexp string pos)

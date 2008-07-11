@@ -30,7 +30,7 @@
     (mapc
      '(lambda (it)
         (when (files-ext/file-in-directory-p it file)
-          (setq res t)))
+          (setq res it)))
      dir-list)
     res))
 

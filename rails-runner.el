@@ -27,6 +27,8 @@
 
 ;;; Code:
 
+(require 'rails-proxy)
+
 (defvar rails/runner/buffer-name "*ROutput*")
 (defvar rails/runner/buffer-rails-root nil)
 (defvar rails/runner/output-mode-hook nil)
@@ -119,10 +121,11 @@ BUFFER-MAJOR-MODE."
           (delete-region (point-min) (point-max)))))
 
     (let* ((default-directory root)
-           (proc (start-process-shell-command rails/runner/buffer-name
-                                              rails/runner/buffer-name
-                                              command
-                                              parameters)))
+           (proc (rails/proxy/shell-command root
+                                            rails/runner/buffer-name
+                                            rails/runner/buffer-name
+                                            command
+                                            parameters)))
       (with-current-buffer (get-buffer rails/runner/buffer-name)
         (if (opt-val :mode options)
             (funcall (opt-val :mode options))

@@ -36,7 +36,7 @@
 (defun rails/rake/create-tasks-cache (root)
   "Create a cache file from rake --tasks output."
   (in-directory root
-    (let ((tasks (loop for str in (split-string (shell-command-to-string "rake --tasks") "\n")
+    (let ((tasks (loop for str in (split-string (rails/proxy/shell-command-to-string root "rake --tasks") "\n")
                        for task = (unless (string-ext/empty-p str)
                                     (string-ext/string=~ rails/rake/tasks-regexp str $1))
                        when task collect task)))
@@ -162,7 +162,7 @@
   "Reset tasks cache."
   (interactive)
   (when-bind (root (rails/root))
-    (rails/rake/create-tasks-cache (concat root rails/rake/tasks-cache-file))))
+    (rails/rake/create-tasks-cache root)))
 
 (defun rails/rake/list-tasks ()
   "List of availabled Rake tasks."
