@@ -64,7 +64,8 @@
          (files (directory-files rpath))
          res)
     (dolist (file files)
-      (when (not (files-ext/file-special-p file))
+      (when (and (not (files-ext/file-special-p file))
+                 (not (file-directory-p file)))
         (add-to-list 'res (make-rails/goto-item :group :view
                                                 :name (rails/view/decorate-file-name file)
                                                 :file (concat path file))

@@ -8,7 +8,7 @@
 (defconst rails/rake/command "rake")
 (defconst rails/rake/tasks-cache-file "tmp/.tasks-cache")
 (defvar rails/rake/history nil)
-(defvar rails/rake/tasks-regexp "^rake \\([^ ]+\\)$"
+(defvar rails/rake/tasks-regexp "^rake\s+\\([^ ]+\\)\s+"
   "Regexp to match tasks list in `rake --tasks` output.")
 
 (defvar rails/rake/task-keywords-alist

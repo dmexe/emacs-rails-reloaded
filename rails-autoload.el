@@ -82,6 +82,10 @@
             do
             (setq auto-mode-alist (cons (cons regexp (car mode)) auto-mode-alist))))))
 
+(when (eq system-type 'windows-nt)
+  (dolist (re '("\\.[e]?rb\\'" "\\.rake\\'" "Rakefile\\'" "\\.rjs\\'" "\\.rxml\\'" "\\.builder\\'"))
+    (setq auto-coding-alist (cons (cons re 'utf-8) auto-coding-alist))))
+
 
 (autoload 'rails/initialize-for-current-buffer "rails-reloaded" nil t)
 (autoload 'rails/root "rails-lib" nil t)
