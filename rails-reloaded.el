@@ -75,7 +75,8 @@
 
                              rake
                              generator
-                             database)
+                             database
+                             webserver)
   "List of availabled bundles, don't edit the list manualy.
 To disable bundle loading setup the `rails/disabled-bundles' variable.")
 
