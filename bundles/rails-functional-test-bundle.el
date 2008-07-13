@@ -46,8 +46,7 @@
                          :resource-name name))))
 
 (defun rails/functional-test/goto-item-from-file (root file rails-current-buffer)
-  (when (rails/resource-type-of-buffer rails-current-buffer
-                                       :exclude rails/functional-test/buffer-type)
+  (when (rails/resource-type-of-buffer rails-current-buffer)
     (when-bind (file-name
                 (rails/functional-test/exist-p root (rails/buffer-resource-name rails-current-buffer)))
        (make-rails/goto-item :group :test

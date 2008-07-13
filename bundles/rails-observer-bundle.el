@@ -47,8 +47,7 @@
                          :resource-name (pluralize-string name)))))
 
 (defun rails/observer/goto-item-from-file (root file rails-current-buffer)
-  (when (rails/resource-type-of-buffer rails-current-buffer
-                                       :exclude rails/observer/buffer-type)
+  (when (rails/resource-type-of-buffer rails-current-buffer)
     (when-bind (file-name
                 (rails/observer/exist-p root (rails/buffer-resource-name rails-current-buffer)))
       (make-rails/goto-item :name "Observer" :file file-name))))

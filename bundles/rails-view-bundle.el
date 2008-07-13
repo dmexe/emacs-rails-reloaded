@@ -106,15 +106,14 @@
            (rails/view/files
             root (rails/buffer-resource-name rails-current-buffer)))
           (new-item (make-rails/goto-item :group :new-view
-                                        :name "Create a new view"
-                                        :func 'rails/view/create-view-for-current-buffer)))
+                                          :name "Create a new view"
+                                          :func 'rails/view/create-view-for-current-buffer)))
       (if files
           (add-to-list 'files new-item t)
         (list new-item)))))
 
 (defun rails/view/goto-item-from-rails-buffer (root file rails-current-buffer)
-  (when (rails/resource-type-of-buffer rails-current-buffer
-                                       :exclude rails/view/buffer-type)
+  (when (rails/resource-type-of-buffer rails-current-buffer)
     (when-bind (action-name (rails/current-buffer-action-name))
       (when-bind (resource-name (rails/buffer-resource-name rails/current-buffer))
         (when (rails/view/exist-p (rails/root) resource-name)

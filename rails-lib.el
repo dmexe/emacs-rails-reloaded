@@ -58,13 +58,11 @@
 ;;
 
 (defun rails/root (&optional file)
-  "Return RAILS_ROOT for FILE, if FILE not set using `buffer-file-name' instead it.
+  "Return RAILS_ROOT for FILE, if FILE not set using `buffer-file-name' or `default-directory' instead it.
 If RAILS_ROOT not found, return nil."
   (let ((file (or file
                   (buffer-file-name)
-                  (and (eq (current-buffer)
-                           (get-buffer rails/runner/buffer-name))
-                       rails/runner/buffer-rails-root))))
+                  default-directory)))
     (unless (and rails/search-files-in-dirs
                  (files-ext/file-in-directories-p rails/search-files-in-dirs
                                                   file))
@@ -193,6 +191,9 @@ else return nil"
   (loop for group in rails/bundles-group-list
         for found = (find bundle (cdr group))
         when found do (return (car group))))
+
+(defun rails/bundle-group-members (group)
+  (cdr (find group rails/bundles-group-list :key 'car :test 'string=)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -344,16 +345,49 @@ else return nil"
 (defun rails/layout-childs (layout)
   (find layout rails/layouts-list :key 'car))
 
-(defun rails/add-type-link (group type link)
-  (if (find group rails/linked-types-alist :key 'car)
-      (push (cons type link) (cdr (find group rails/linked-types-alist :key 'car)))
-    (add-to-list 'rails/linked-types-alist (list group (cons type link)))))
+(defun rails/add-type-link (type-group type link)
+  (if (find type-group rails/linked-types-alist :key 'car)
+      (push (cons type link) (cdr (find type-group rails/linked-types-alist :key 'car)))
+    (add-to-list 'rails/linked-types-alist (list type-group (cons type link)))))
 
-(defun rails/type-link-for (group type)
-  (when-bind (group (find group rails/linked-types-alist :key 'car))
-    (let ((links (cdr group)))
+(defun rails/type-link-for (type-group type)
+  (when-bind (type-group (find type-group rails/linked-types-alist :key 'car))
+    (let ((links (cdr type-group)))
       (or (cdr (find type links :key 'car))
           (car (find type links :key 'cdr))))))
+
+(defun rails/type-link-by-bundle-group-and-layout (bundle-group layout type-group type)
+  (let ((bundles (cdr (find bundle-group rails/bundles-group-list :key 'car :test 'string=)))
+        (group (cdr (find type-group rails/linked-types-alist :key 'car))))
+    (or
+     ;; this type
+     (when (and (member type bundles)
+                (find type group
+                      :test '(lambda(i j) (or (eq i (car j))
+                                         (eq i (cdr j))))))
+       type)
+     ;; this layout
+     (when (and (member layout bundles)
+                (find layout group
+                      :test '(lambda(i j) (or (eq i (car j))
+                                         (eq i (cdr j))))))
+       layout)
+     ;; this linked type
+     (loop for i in group
+           for first = (when (eq type (car i))
+                         (cdr i))
+           for last  = (when (eq type (cdr i))
+                         (car i))
+           when (or first last)
+           do (return (or first last)))
+     ;; this linked layout
+     (loop for i in group
+           for first = (when (eq layout (car i))
+                         (cdr i))
+           for last  = (when (eq layout (cdr i))
+                         (car i))
+           when (or first last)
+           do (return (or first last))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

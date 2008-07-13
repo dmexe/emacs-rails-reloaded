@@ -44,8 +44,7 @@
                          :resource-name name))))
 
 (defun rails/helper/goto-item-from-file (root file rails-current-buffer)
-  (when (rails/resource-type-of-buffer rails-current-buffer
-                                       :exclude rails/helper/buffer-type)
+  (when (rails/resource-type-of-buffer rails-current-buffer)
     (when-bind (file-name
                 (rails/helper/exist-p root (rails/buffer-resource-name rails-current-buffer)))
       (make-rails/goto-item :name "Helper"

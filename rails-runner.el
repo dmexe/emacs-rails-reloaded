@@ -50,7 +50,8 @@
   (with-current-buffer (get-buffer rails/runner/buffer-name)
     (goto-char (point-min))
     (vertical-motion (- next-screen-context-lines))
-    (set-window-start (get-buffer-window rails/runner/buffer-name) (point-min))))
+    (when-bind (win (get-buffer-window rails/runner/buffer-name))
+      (set-window-start win (point-min)))))
 
 (defun rails/runner/popup-buffer (&rest args)
   ;; args not used, added to compatibility of rails/runner/after-stop-func-list
@@ -120,21 +121,21 @@ BUFFER-MAJOR-MODE."
         (let ((buffer-read-only nil))
           (delete-region (point-min) (point-max)))))
 
-    (let* ((default-directory root)
-           (proc (rails/proxy/shell-command root
-                                            rails/runner/buffer-name
-                                            rails/runner/buffer-name
-                                            command
-                                            parameters)))
-      (with-current-buffer (get-buffer rails/runner/buffer-name)
-        (if (opt-val :mode options)
-            (funcall (opt-val :mode options))
-          (rails/runner/output-mode))
-        (when (opt-val :keywords options)
-          (rails/runner/setup-font-lock (opt-val :keywords options)))
-        (set-process-coding-system proc 'utf-8 'utf-8)
-        (set-process-sentinel proc 'rails/runner/sentinel-proc)
-        (setq rails/runner/script-name (format "%s %s" command parameters))
-        (message "Starting %s." rails/runner/script-name)))))
+    (in-directory root
+      (let ((proc (rails/proxy/shell-command root
+                                             rails/runner/buffer-name
+                                             rails/runner/buffer-name
+                                             command
+                                             parameters)))
+        (with-current-buffer (get-buffer rails/runner/buffer-name)
+          (if (opt-val :mode options)
+              (funcall (opt-val :mode options))
+            (rails/runner/output-mode))
+          (when (opt-val :keywords options)
+            (rails/runner/setup-font-lock (opt-val :keywords options)))
+          (set-process-coding-system proc 'utf-8 'utf-8)
+          (set-process-sentinel proc 'rails/runner/sentinel-proc)
+          (setq rails/runner/script-name (format "%s %s" command parameters))
+          (message "Starting %s." rails/runner/script-name))))))
 
 (provide 'rails-runner)

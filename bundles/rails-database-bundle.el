@@ -1,5 +1,8 @@
 (require 'cl)
 
+(eval-when-compile
+  (load "bundles/rails-migration-bundle"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Constants

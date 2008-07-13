@@ -45,8 +45,7 @@
                          :resource-name (pluralize-string name)))))
 
 (defun rails/model/goto-item-from-file (root file rails-current-buffer)
-  (when (rails/resource-type-of-buffer rails-current-buffer
-                                       :exclude rails/model/buffer-type)
+  (when (rails/resource-type-of-buffer rails-current-buffer)
     (when-bind (file-name
                 (rails/model/exist-p root (rails/buffer-resource-name rails-current-buffer)))
       (make-rails/goto-item :name "Model" :file file-name))))

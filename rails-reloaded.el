@@ -39,8 +39,7 @@
 
 ;;; Code:
 
-(eval-when-compile
-  (require 'cl))
+(require 'cl)
 
 (require 'core-ext)
 (require 'string-ext)
@@ -51,6 +50,7 @@
 (require 'rails-ruby)
 (require 'rails-lib)
 (require 'rails-runner)
+(require 'rails-compile)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -76,7 +76,8 @@
                              rake
                              generator
                              database
-                             webserver)
+                             webserver
+                             test-unit)
   "List of availabled bundles, don't edit the list manualy.
 To disable bundle loading setup the `rails/disabled-bundles' variable.")
 
@@ -326,7 +327,9 @@ Structure of this list:
                    (loop for layout in (cdr layouts)
                          for func = (rails/bundle-func layout "goto-item-from-rails-buffer")
                          for item = (when func (funcall func (rails/root) file rails/current-buffer))
-                         when (rails/goto-item-p item)
+                         when (and (rails/goto-item-p item)
+                                   (not (string= (rails/buffer-file rails/current-buffer)
+                                                 (rails/goto-item-file item))))
                          do (return item)))
          (rails/toggle-file-by-goto-item (rails/root) goto-item))))))
 
@@ -343,7 +346,9 @@ Structure of this list:
          (let ((goto-item (funcall func (rails/root)
                                    (rails/cut-root (buffer-file-name))
                                    rails/current-buffer)))
-           (when (rails/goto-item-p goto-item)
+           (when (and (rails/goto-item-p goto-item)
+                      (not (string= (rails/buffer-file rails/current-buffer)
+                                    (rails/goto-item-file goto-item))))
              (rails/toggle-file-by-goto-item (rails/root) goto-item))))))))
 
 (defun rails/initialize-for-current-buffer ()
@@ -428,7 +433,9 @@ Structure of this list:
       ((rails/short-key "<up>")   'rails/toggle-current-file)
       ((rails/short-key "t")      'rails/toggle-current-file-by-link)
       ((rails/short-key "/")      'rails/runner/toggle-output-window)
-      ((kbd "\e\e e")            'rails/set-default-environment))
+      ((kbd "\e\e e")             'rails/set-default-environment)
+      ((rails/key ".")            'rails/compile/single-file)
+      ((rails/key ",")            'rails/compile/current-method))
     map))
 
 (defvar rails-minor-mode-map (rails-minor-mode-default-keymap))
