@@ -46,8 +46,8 @@
     (rails/runner/run root
                       "rake"
                       (if args
-                          (format "db:%s %s" task args)
-                        (format "db:%s" task))
+                          (format "RAILS_ENV=%s db:%s %s" rails/default-environment task args)
+                        (format "RAILS_ENV=%s db:%s" rails/default-environment task))
                       :keywords rails/database/keywords)
       (setq rails/runner/after-stop-func-list funcs)))
 

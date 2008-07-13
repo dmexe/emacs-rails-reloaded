@@ -59,8 +59,8 @@
       (rails/runner/run root
                         rails/rake/command
                         (if args
-                            (format "%s %s" task args)
-                          task)
+                            (format "RAILS_ENV=%s %s %s" rails/default-environment task args )
+                          (format "RAILS_ENV=%s %s" rails/default-environment task))
                         :keywords keywords)
       (setq rails/runner/after-stop-func-list '(rails/runner/popup-buffer))
       (when func
