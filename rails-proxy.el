@@ -2,7 +2,7 @@
 (defvar rails/proxy/ssh-args "-t -t")
 
 (defvar rails/proxy/dir-list
-  '(("z:/apps/" "dima-exe.d2.undev.ru" "/home/dima-exe/apps/")))
+  '(("z:/apps/" "dima-exe@d2.undev.ru" "/home/dima-exe/apps/")))
 
 (defvar rails/proxy/local-root nil)
 (defvar rails/proxy/remote-root nil)
@@ -14,7 +14,7 @@
         (let ((host (cdr (find loc rails/proxy/dir-list :key 'car :test 'string=)))
               (dir (string-ext/cut root loc :begin)))
           (list rails/proxy/ssh
-                (format (concat "%s %s \"(cd '%s%s' && %s " args ")\"")
+                (format (concat "%s %s \"(cd %s%s && %s " args ")\"")
                         rails/proxy/ssh-args
                         (first host)
                         (cadr host)

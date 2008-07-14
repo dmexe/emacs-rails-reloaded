@@ -39,7 +39,7 @@
     ("^\s+\\([0-9]+)\s+\\(Error\\|Failure\\):\\)"
      1 compilation-error-face)
     ("^[.EF]+$" . compilation-info-face)
-    ("^\\([a-z0-9_]+\\)(\\(.*\\))\\(:$\\|\n\s+\\[\\)"
+    ("^\\([a-z0-9_]+\\)(\\(.*\\))\\(:$\\|\n\s+\\[\\|\s+\\[\\)"
      (1 font-lock-function-name-face)
      (2 font-lock-type-face))
     ("^<\\(.*\\)> \\(expected but was\\)\n<\\(.*\\)>.$"
@@ -51,7 +51,7 @@
 
 (defun rails/compile/match-error (limit)
   (catch 'found
-    (while (re-search-forward "^\s+\\[?\\([^ :]+\\):\\([0-9]+\\):in\\b" limit t)
+    (while (re-search-forward "\\[?\\([^ :]+\\):\\([0-9]+\\)\\(:in\\b\\|\\]\\)" limit t)
       (let ((file (match-string 1))
             (root (rails/root default-directory)))
         (when root
