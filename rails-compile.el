@@ -51,7 +51,7 @@
 
 (defun rails/compile/match-error (limit)
   (catch 'found
-    (while (re-search-forward "\\[?\\([^ :]+\\):\\([0-9]+\\)\\(:in\\b\\|\\]\\)" limit t)
+    (while (re-search-forward "\\(\\[\\|(\\)\\([^ :\n\]+\\):\\([0-9]+\\)+\\b" limit t)
       (let ((file (match-string 1))
             (root (rails/root default-directory)))
         (when root
@@ -70,8 +70,8 @@
   "Major mode for RoR tests."
   (set (make-local-variable 'font-lock-keywords-only) t)
   (set (make-local-variable 'font-lock-keywords) nil)
-  (set (make-local-variable 'compilation-mode-font-lock-keywords)
-       rails/compile/font-lock-keywords)
+  (set (make-local-variable 'compilation-mode-font-lock-keywords) nil)
+;       rails/compile/font-lock-keywords)
   (set (make-local-variable 'compilation-error-regexp-alist-alist)
        (rails/compile/error-regexp-alist))
   (set (make-local-variable 'compilation-error-regexp-alist)
