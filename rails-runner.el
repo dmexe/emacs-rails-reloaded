@@ -120,7 +120,6 @@ BUFFER-MAJOR-MODE."
       (with-current-buffer (get-buffer rails/runner/buffer-name)
         (let ((buffer-read-only nil))
           (delete-region (point-min) (point-max)))))
-
     (in-directory root
       (let ((proc (rails/proxy/shell-command root
                                              rails/runner/buffer-name
