@@ -1,5 +1,5 @@
-(defvar rails/proxy/ssh "plink")
-(defvar rails/proxy/ssh-args "-batch")
+(defvar rails/proxy/ssh "ssh")
+(defvar rails/proxy/ssh-args "-t -t")
 
 (defvar rails/proxy/dir-list
   '(("z:/apps/" "dima-exe.d2.undev.ru" "/home/dima-exe/apps/")))

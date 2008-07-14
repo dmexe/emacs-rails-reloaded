@@ -6,6 +6,7 @@
 (defconst rails/unit-test/dir "test/unit/")
 (defconst rails/unit-test/file-suffix "_test")
 (defconst rails/unit-test/buffer-type :unit-test)
+(defconst rails/unit-test/buffer-type-mailer :unit-test-mailer)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -37,6 +38,11 @@
       (singularize-string resource)
     (pluralize-string resource)))
 
+(defun rails/unit-test/type-true-name (root resource)
+  (if (rails/resource-mailer-p root resource)
+      rails/unit-test/buffer-type-mailer
+    rails/unit-test/buffer-type))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Callbacks
@@ -45,7 +51,7 @@
 (defun rails/unit-test/determine-type-of-file (rails-root file)
   (when (rails/unit-test/unit-test-p (concat rails-root file))
     (let ((name (rails/unit-test/canonical-name file)))
-      (make-rails/buffer :type   rails/unit-test/buffer-type
+      (make-rails/buffer :type   (rails/unit-test/type-true-name rails-root name)
                          :name   name
                          :resource-name (rails/unit-test/resource-true-name rails-root name)))))
 
@@ -62,7 +68,7 @@
 
 (defun rails/unit-test/load ()
   (rails/add-type-link :tests :model rails/unit-test/buffer-type)
-  (rails/add-type-link :tests :mailer rails/unit-test/buffer-type)
+  (rails/add-type-link :tests :mailer rails/unit-test/buffer-type-mailer)
   (rails/add-to-bundles-group "Test::Unit" rails/unit-test/buffer-type)
   (rails/add-to-resource-types-list rails/unit-test/buffer-type)
   (rails/define-goto-key "u" 'rails/unit-test/goto-from-list)
