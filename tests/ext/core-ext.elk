@@ -1,0 +1,58 @@
+(unless (featurep 'rails-test-helper)
+  (load-file "../test-helper.el"))
+
+(require 'core-ext)
+(rails/tests/load "ext/test-helper")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; `when-bind'
+;;
+
+(deftest "`when-bind' with function passed"
+  (mocklet (((foo 'var) => 'passed)
+            ((bar) => 'var))
+    (assert-equal 'passed
+      (when-bind (var (bar))
+                 (foo var)))))
+
+(deftest "`when-bind' with variable passed"
+  (mocklet (((foo 'bar) => 'passed))
+    (assert-equal 'passed
+      (when-bind (var 'bar)
+                 (foo var)))))
+
+(deftest "`when-bind' with block skiped."
+  (assert-error "Mock error: not-called"
+    (mocklet (((foo) => 'passed))
+      (when-bind (var nil)
+        (foo)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; `define-keys'
+;;
+
+(deftest "`define-keys' with return valid keymap"
+  (assert-type-of 'cons (define-keys-test-map)))
+
+(deftest "`define-keys' with setup valid keys"
+  (let ((map (define-keys-test-map)))
+    (assert-eq 'foo (lookup-key map "\C-c a"))
+    (assert-eq 'bar (lookup-key map "\C-c b"))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; `funcs-chain'
+;;
+(deftest "`funcs-chain'"
+  (assert-equal
+   "A"
+   (funcall (funcs-chain
+             capitalize
+             string-to-list
+             car
+             char-to-string) "abcd")))
+
+;; end group

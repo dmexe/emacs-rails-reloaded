@@ -1,0 +1,39 @@
+(unless (featurep 'rails-test-helper)
+  (load-file "../test-helper.el"))
+
+
+(require 'list-ext)
+(rails/tests/load "ext/test-helper")
+
+(deftest "`list-ext/uniq'"
+  (assert-equal '(1 2) (list-ext/uniq '(1 1 2 2)))
+  (assert-equal '(1 2 3) (list-ext/uniq '(1 1 2 2 3)))
+  (assert-equal '(1 2) (list-ext/uniq '(1 2))))
+
+(deftest "`list-ext/group-by'"
+  (let ((list '((:a 1)
+                (:b 2)
+                (:a 3)
+                (:b 4)
+                (:c 5))))
+  (assert-equal '((:a ((:a 1) (:a 3)))
+                  (:b ((:b 2) (:b 4)))
+                  (:c ((:c 5))))
+                (list-ext/group-by
+                 list
+                 'car))))
+
+(deftest "`list-ext/options-value'"
+  (let ((options '(:one 1 :two 2 :three 3)))
+    (assert-equal 1 (list-ext/options-value :one options))
+    (assert-equal 2 (list-ext/options-value :two options))
+    (assert-equal 3 (list-ext/options-value :three options))
+    (assert-nil (list-ext/options-value :foo options))))
+
+(deftest "`list-ext/swap-tail'"
+  (let ((list '(1 2 3 4 5)))
+    (assert-equal '(3 4 5 1 2) (list-ext/swap-tail 3 list))
+    (assert-equal '(2 3 4 5 1) (list-ext/swap-tail 2 list))
+    (assert-equal '(4 5 1 2 3) (list-ext/swap-tail 4 list))
+    (assert-nil (list-ext/swap-tail 0 list))
+    (assert-nil (list-ext/swap-tail 6 list))))
