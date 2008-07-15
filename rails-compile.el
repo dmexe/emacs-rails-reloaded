@@ -30,6 +30,25 @@
 (defvar rails/compile/single-file-list '())
 (defvar rails/compile/current-method-list '())
 
+(defvar rails/compile/font-lock-keywords
+  '(("\\([[:digit:]]+ tests\\), \\([[:digit:]]+ assertions\\), \\([[:digit:]]+ failures\\), \\([[:digit:]]+ errors\\)"
+     (1 compilation-info-face)
+     (2 compilation-info-face)
+     (3 compilation-error-face)
+     (4 compilation-error-face))
+    ("^\s+\\([0-9]+)\s+\\(Error\\|Failure\\):\\)"
+     1 compilation-error-face)
+    ("^[.EF]+$" . compilation-info-face)
+    ("^\\([a-z0-9_]+\\)(\\(.*\\))\\(:$\\|\n\s+\\[\\|\s+\\[\\)"
+     (1 font-lock-function-name-face)
+     (2 font-lock-type-face))
+    ("^<\\(.*\\)> \\(expected but was\\)\n<\\(.*\\)>.$"
+     (1 font-lock-constant-face)
+     (2 font-lock-string-face)
+     (3 font-lock-constant-face))
+    ("`\\(.+\\)'"
+     (1 font-lock-function-name-face))))
+
 (defun rails/compile/match-error (limit)
   (catch 'found
     (while (re-search-forward "\\(?:\\[\\|^\\|\s+\\|(\\)?\\([^ :\n\]+\\):\\([0-9]+\\)+\\b" limit t)
@@ -52,8 +71,8 @@
   "Major mode for RoR tests."
   (set (make-local-variable 'font-lock-keywords-only) t)
   (set (make-local-variable 'font-lock-keywords) nil)
-  (set (make-local-variable 'compilation-mode-font-lock-keywords) nil)
-;       rails/compile/font-lock-keywords)
+  (set (make-local-variable 'compilation-mode-font-lock-keywords)
+       rails/compile/font-lock-keywords)
   (set (make-local-variable 'compilation-error-regexp-alist-alist)
        (rails/compile/error-regexp-alist))
   (set (make-local-variable 'compilation-error-regexp-alist)

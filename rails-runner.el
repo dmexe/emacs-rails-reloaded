@@ -27,6 +27,7 @@
 
 ;;; Code:
 
+(require 'ansi-color)
 (require 'rails-proxy)
 
 (defvar rails/runner/buffer-name "*ROutput*")
@@ -126,6 +127,7 @@ BUFFER-MAJOR-MODE."
                                              rails/runner/buffer-name
                                              command
                                              parameters)))
+        (set-process-filter proc 'ansi-color-insertion-filter)
         (with-current-buffer (get-buffer rails/runner/buffer-name)
           (if (opt-val :mode options)
               (funcall (opt-val :mode options))
@@ -136,5 +138,17 @@ BUFFER-MAJOR-MODE."
           (set-process-sentinel proc 'rails/runner/sentinel-proc)
           (setq rails/runner/script-name (format "%s %s" command parameters))
           (message "Starting %s." rails/runner/script-name))))))
+
+(defun ansi-color-insertion-filter (proc string)
+  (with-current-buffer (process-buffer proc)
+    (let ((moving (= (point) (process-mark proc)))
+          (buffer-read-only nil))
+      (save-excursion
+        ;; Insert the text, advancing the process marker.
+        (goto-char (process-mark proc))
+        ;; decode ansi color sequences
+        (insert (ansi-color-apply string))
+        (set-marker (process-mark proc) (point)))
+      (if moving (goto-char (process-mark proc))))))
 
 (provide 'rails-runner)
