@@ -44,7 +44,7 @@
 
 (defun rails/proxy/shell-command-to-string (root command)
   (let ((cmd (rails/proxy/make-command root command)))
-    (shell-command-to-string command)))
+    (shell-command-to-string cmd)))
 
 
 (provide 'rails-proxy)
