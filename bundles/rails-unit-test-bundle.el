@@ -67,14 +67,14 @@
           'rails/unit-test/goto-item-from-file)
 
 (defun rails/unit-test/load ()
-  (rails/add-type-link :tests :model rails/unit-test/buffer-type)
-  (rails/add-type-link :tests :mailer rails/unit-test/buffer-type-mailer)
-  (rails/add-to-bundles-group "Test::Unit" rails/unit-test/buffer-type)
-  (rails/add-to-resource-types-list rails/unit-test/buffer-type)
-  (rails/define-goto-key "u" 'rails/unit-test/goto-from-list)
-  (rails/define-goto-menu  "Unit Test" 'rails/unit-test/goto-from-list)
-  (rails/define-toggle-key "u" 'rails/unit-test/goto-current)
-  (rails/define-toggle-menu  "Unit Test" 'rails/unit-test/goto-current))
+  (rails/define-bundle
+   rails/unit-test/buffer-type rails/unit-test/buffer-type "Test::Unit"
+   (rails/add-type-link :tests :model rails/unit-test/buffer-type)
+   (rails/add-type-link :tests :mailer rails/unit-test/buffer-type-mailer)
+   (rails/define-goto-key "u" 'rails/unit-test/goto-from-list)
+   (rails/define-goto-menu  "Unit Test" 'rails/unit-test/goto-from-list)
+   (rails/define-toggle-key "u" 'rails/unit-test/goto-current)
+   (rails/define-toggle-menu  "Unit Test" 'rails/unit-test/goto-current)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

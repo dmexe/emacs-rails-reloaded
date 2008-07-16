@@ -35,7 +35,8 @@
 ;;
 
 (defun rails/test-unit/load ()
-  (rails/add-to-bundles-group "Test::Unit" :test-unit)
+  (rails/define-bundle
+   :test-unit nil "Test::Unit"
   (setq rails/compile/single-file-list
         (cons 'rails/test-unit/single-file
               rails/compile/single-file-list))
@@ -46,7 +47,7 @@
     (define-keys map
       ([method]    (cons "Run Current Mehtod" 'rails/compile/current-method))
       ([file]      (cons "Run Single File"   'rails/compile/single-file)))
-    (rails/add-to-bundles-menu "Test::Unit" map)))
+    (rails/add-to-bundles-menu "Test::Unit" map))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

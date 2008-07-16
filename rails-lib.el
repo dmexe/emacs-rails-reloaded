@@ -140,12 +140,18 @@ else return nil"
 ;; Bundles functions
 ;;
 
+(defun rails/bundle-enable-p (bundle)
+  (and (not (member bundle rails/disabled-bundles))
+       (rails/bundle-group-enable-p
+        (rails/bundle-group bundle))))
+
 (defun rails/bundle-func (bundle-symbol func-name)
-  (let* ((name (string-ext/from-symbol bundle-symbol))
-         (name (concat "rails/" name "/" func-name))
-         (name (intern name)))
-    (if (fboundp name)
-        name nil)))
+  (when (rails/bundle-enable-p bundle-symbol)
+    (let* ((name (string-ext/from-symbol bundle-symbol))
+           (name (concat "rails/" name "/" func-name))
+           (name (intern name)))
+      (if (fboundp name)
+          name nil))))
 
 (defun rails/bundles-func-by-buffer (rails-buffer func-name)
   (when (rails/buffer-p rails-buffer)
@@ -167,6 +173,13 @@ else return nil"
         (rails/bundles-func-filter-by-layout layout alist)))))
 
 (defun rails/bundles-func-filter-by-layout (layout func-list)
+  (setq func-list
+        (remove* t func-list
+                 :key 'cdr
+                 :test-not
+                 '(lambda (n it)
+                    (rails/bundle-enable-p
+                     (intern (concat ":" (symbol-name it)))))))
   (when func-list
     (if layout
         (let* ((names (find layout rails/layouts-list :key 'car))
@@ -194,6 +207,25 @@ else return nil"
 
 (defun rails/bundle-group-members (group)
   (cdr (find group rails/bundles-group-list :key 'car :test 'string=)))
+
+(defun rails/bundle-group-enable-p (bundle-name)
+  (not (find bundle-name rails/disabled-bundles-group-list :test 'string=)))
+
+(defun rails/bundle-group-toggle-enabled (bundle-name)
+  (if (not (rails/bundle-group-enable-p bundle-name))
+      (setq rails/disabled-bundles-group-list
+            (remove* bundle-name rails/disabled-bundles-group-list :test 'string=))
+    (add-to-list 'rails/disabled-bundles-group-list bundle-name))
+  rails/disabled-bundles-group-list)
+
+(defmacro rails/define-bundle (name-sym resource-type bundle-group &rest body)
+  `(progn
+     (when ,bundle-group
+       (rails/add-to-bundles-group ,bundle-group ,name-sym))
+     (when (rails/bundle-group-enable-p ,bundle-group)
+       (when ,resource-type
+         (rails/add-to-resource-types-list ,resource-type))
+       ,@body)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -434,7 +466,11 @@ else return nil"
       (cons "Bundles Groups" (make-sparse-keymap)) 'bundles-separator))
     (define-key rails-minor-mode-map
       (merge 'vector [menu-bar rails bundles-groups] (list (string-ext/safe-symbol title)) 'eq)
-      (list  'menu-item title 'identity :button (cons :toggle '(lambda () t)))))
+      (list 'menu-item title `(lambda()
+                                (interactive)
+                                (rails/bundle-group-toggle-enabled ,title)
+                                (rails/reload-bundles))
+            :button (cons :toggle (rails/bundle-group-enable-p title)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

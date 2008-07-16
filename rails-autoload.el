@@ -33,11 +33,12 @@
   "Byte compile rails-reloaded library."
   (interactive)
   (require 'rails-reloaded)
-  (let ((func '(lambda (file)
-                 (unless (string= (file-name-nondirectory file)
-                        "rails-bytecompile.el")
-                   (byte-compile-file file))))
-        (path (file-name-directory (locate-library "rails-reloaded"))))
+  (let* ((rails/disabled-bundles-group-list nil)
+         (func '(lambda (file)
+                  (unless (string= (file-name-nondirectory file)
+                                   "rails-bytecompile.el")
+                    (byte-compile-file file))))
+         (path (file-name-directory (locate-library "rails-reloaded"))))
     (mapc func (directory-files path t "\\.el\\'"))
     (mapc func (directory-files (concat path "bundles/") t "\\.el\\'"))))
 

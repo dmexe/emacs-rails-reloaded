@@ -57,13 +57,13 @@
           'rails/functional-test/goto-item-from-file)
 
 (defun rails/functional-test/load ()
+  (rails/define-bundle
+   rails/functional-test/buffer-type rails/functional-test/buffer-type "Test::Unit"
   (rails/add-type-link :tests :controller rails/functional-test/buffer-type)
-  (rails/add-to-bundles-group "Test::Unit" rails/functional-test/buffer-type)
-  (rails/add-to-resource-types-list rails/functional-test/buffer-type)
   (rails/define-goto-key "f" 'rails/functional-test/goto-from-list)
   (rails/define-goto-menu  "Functional Test" 'rails/functional-test/goto-from-list)
   (rails/define-toggle-key "f" 'rails/functional-test/goto-current)
-  (rails/define-toggle-menu  "Functional Test" 'rails/functional-test/goto-current))
+  (rails/define-toggle-menu  "Functional Test" 'rails/functional-test/goto-current)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

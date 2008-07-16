@@ -101,6 +101,7 @@ Structure of this list:
 (defvar rails/layouts-list '())
 (defvar rails/linked-types-alist '())
 (defvar rails/bundles-group-list '())
+(defvar rails/disabled-bundles-group-list '())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

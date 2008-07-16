@@ -53,16 +53,17 @@
                             :file file-name))))
 
 (defalias 'rails/fixture/goto-item-from-rails-buffer
-          'rails/fixture/goto-item-from-file)
+  'rails/fixture/goto-item-from-file)
+
 
 (defun rails/fixture/load ()
-  (rails/add-to-bundles-group "Test::Unit" rails/fixture/buffer-type)
-  (rails/add-to-resource-types-list rails/fixture/buffer-type)
-  (rails/add-to-layouts-list :unit-test rails/fixture/buffer-type)
-  (rails/define-goto-key "x" 'rails/fixture/goto-from-list)
-  (rails/define-goto-menu "Fixture" 'rails/fixture/goto-from-list)
-  (rails/define-toggle-key "x" 'rails/fixture/goto-current)
-  (rails/define-toggle-menu "Fixture" 'rails/fixture/goto-current))
+  (rails/define-bundle
+   rails/fixture/buffer-type rails/fixture/buffer-type "Test::Unit"
+   (rails/add-to-layouts-list :unit-test rails/fixture/buffer-type)
+   (rails/define-goto-key "x" 'rails/fixture/goto-from-list)
+   (rails/define-goto-menu "Fixture" 'rails/fixture/goto-from-list)
+   (rails/define-toggle-key "x" 'rails/fixture/goto-current)
+   (rails/define-toggle-menu "Fixture" 'rails/fixture/goto-current)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -72,10 +73,10 @@
 (defun rails/fixture/goto-from-list ()
   (interactive)
   (when-bind (root (rails/root))
-   (rails/directory-to-goto-menu root
-                                 rails/fixture/dir
-                                 "Select a Fixture"
-                                 :name-by 'file-name-sans-extension)))
+    (rails/directory-to-goto-menu root
+                                  rails/fixture/dir
+                                  "Select a Fixture"
+                                  :name-by 'file-name-sans-extension)))
 
 (defun rails/fixture/goto-current ()
   (interactive)
