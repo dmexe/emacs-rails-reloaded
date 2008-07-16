@@ -19,7 +19,7 @@
    rails-buffer
    "RSpec"
    rails/rspec/command
-   (concat (format "%s " rails/rspec/spec-options) "%s")))
+   (concat "%s" (format " %s" rails/rspec/spec-options))))
 
 (defun rails/rspec/current-method (root rails-buffer)
   (when (and (member (rails/buffer-type rails-buffer) (rails/bundle-group-members "RSpec"))
@@ -30,8 +30,7 @@
        rails-buffer
        "RSpec"
        rails/rspec/command
-       (concat (format "%s -l %s " rails/rspec/spec-options line)
-               "%s")))))
+       (concat "%s" (format " %s -l %s" rails/rspec/spec-options line))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
