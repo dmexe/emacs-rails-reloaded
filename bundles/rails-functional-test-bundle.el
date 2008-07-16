@@ -73,8 +73,8 @@
 
 (defun rails/functional-test/goto-from-list ()
   (interactive)
-  (rails/with-current-buffer
-   (rails/directory-to-goto-menu (rails/root)
+  (when-bind (root (rails/root))
+   (rails/directory-to-goto-menu root
                                  rails/functional-test/dir
                                  "Select a Functional Test"
                                  :name-by (funcs-chain file-name-sans-extension string-ext/decamelize))))

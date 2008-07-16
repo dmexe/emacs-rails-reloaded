@@ -73,8 +73,8 @@
 
 (defun rails/rspec-controller/goto-from-list ()
   (interactive)
-  (rails/with-current-buffer
-   (rails/directory-to-goto-menu (rails/root)
+  (when-bind (root (rails/root))
+   (rails/directory-to-goto-menu root
                                  rails/rspec-controller/dir
                                  "Select a RSpec Controller"
                                  :name-by (funcs-chain file-name-sans-extension string-ext/decamelize))))
