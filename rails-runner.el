@@ -27,6 +27,7 @@
 
 ;;; Code:
 
+(require 'font-lock)
 (require 'ansi-color)
 (require 'rails-proxy)
 
@@ -136,6 +137,8 @@ BUFFER-MAJOR-MODE."
             (rails/runner/setup-font-lock (opt-val :keywords options)))
           (set-process-coding-system proc 'utf-8 'utf-8)
           (set-process-sentinel proc 'rails/runner/sentinel-proc)
+          (set (make-local-variable 'font-lock-unfontify-region-function)
+               'ansi-color-unfontify-region) ; fixed conflict ansi-color and compilation-mode
           (setq rails/runner/script-name (format "%s %s" command parameters))
           (message "Starting %s." rails/runner/script-name))))))
 
