@@ -195,10 +195,9 @@ else return nil"
 
 (defun rails/add-to-bundles-group (group bundle)
   (if (find group rails/bundles-group-list :key 'car :test 'string=)
-      (progn
-        (push bundle (cdr (find group rails/bundles-group-list :key 'car :test 'string=)))
-        (rails/add-to-bundles-group-menu group))
-    (add-to-list 'rails/bundles-group-list (list group bundle))))
+      (push bundle (cdr (find group rails/bundles-group-list :key 'car :test 'string=)))
+    (add-to-list 'rails/bundles-group-list (list group bundle))
+    (rails/add-to-bundles-group-menu group)))
 
 (defun rails/bundle-group (bundle)
   (loop for group in rails/bundles-group-list

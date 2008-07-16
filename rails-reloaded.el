@@ -68,16 +68,22 @@
                              model
                              observer
                              migration
+
                              unit-test
                              functional-test
                              fixture
-                             view
 
+                             rspec-controller
+                             rspec-model
+                             rspec-fixture
+
+                             view
                              rake
                              generator
                              database
                              webserver
-                             test-unit)
+                             test-unit
+                             rspec)
   "List of availabled bundles, don't edit the list manualy.
 To disable bundle loading setup the `rails/disabled-bundles' variable.")
 
