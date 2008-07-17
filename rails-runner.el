@@ -129,7 +129,7 @@ BUFFER-MAJOR-MODE."
                                              command
                                              parameters)))
         (set-process-filter proc 'ansi-color-insertion-filter)
-        (with-current-buffer (get-buffer rails/runner/buffer-name)
+        (with-current-buffer (process-buffer proc)
           (if (opt-val :mode options)
               (funcall (opt-val :mode options))
             (rails/runner/output-mode))
