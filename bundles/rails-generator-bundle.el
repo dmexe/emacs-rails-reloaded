@@ -7,8 +7,9 @@
 
 (defconst rails/generator/tasks-cache-file "tmp/.generate-cache")
 
+(defvar rails/generator/options "-s")
 (defvar rails/generator/history nil)
-(defvar rails/generator/tasks-regexp "^\s+\\(Plugins\s+([^)]+)\\|Builtin\\):\s+\\(.*\\)$"
+(defvar rails/generator/tasks-regexp "^\s+\\(Plugins\\|Builtin\\|Rubygems\\):\s+\\(.*\\)$"
   "Regexp to match tasks list in `rake --tasks` output.")
 
 (defvar rails/generator/button-regexp "^\s+create\s+\\(.*\\)$")
@@ -60,11 +61,13 @@
         (files-ext/read-from-file cache-file)
       (rails/generator/create-cache root))))
 
-(defun rails/generator/run (root what task options)
+(defun rails/generator/run (root what task options &optional script-options)
   "Run a Rake task in RAILS_ROOT with MAJOR-MODE."
   (when (and task root)
+    (unless script-options
+      (setq script-options ""))
     (rails/runner/run root
-                      rails/ruby/command (format "script/%s %s %s" what task options)
+                      rails/ruby/command (format "script/%s %s %s %s" what task options script-options)
                       :keywords rails/generator/font-lock-keywords)
 
     (setq rails/runner/after-stop-func-list
@@ -104,7 +107,7 @@
       (unless (string-ext/empty-p task)
         (setq options (read-string (format "Name and/or options for [%s]: " task)))
         (unless (string-ext/empty-p options)
-          (rails/generator/run root "generate" task options))))))
+          (rails/generator/run root "generate" task options rails/generator/options))))))
 
 (defun rails/generator/destroy ()
   "Run a Destroy task."

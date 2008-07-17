@@ -46,8 +46,10 @@
   (setq rails/compile/current-method-list
         (cons 'rails/rspec/current-method
               rails/compile/current-method-list))
+  (rails/define-key "<return>" 'rails/rspec/run-current-file-as-spec)
   (let ((map (make-sparse-keymap)))
     (define-keys map
+      ([spec]      (cons "Run Current File as Spec" 'rails/rspec/run-current-file-as-spec))
       ([method]    (cons "Run Current Mehtod" 'rails/compile/current-method))
       ([file]      (cons "Run Single File"   'rails/compile/single-file)))
     (rails/add-to-bundles-menu "RSpec" map))))
@@ -56,5 +58,14 @@
 ;;
 ;; Interactives
 ;;
+
+(defun rails/rspec/run-current-file-as-spec ()
+  (interactive)
+  (when-bind(root (rails/root))
+    (let ((file (rails/cut-root (buffer-file-name))))
+      (when file
+        (rails/compile/run root
+                           rails/rspec/command
+                           (format "%s %s" file rails/rspec/spec-options))))))
 
 (provide 'rails-rspec-bundle)
