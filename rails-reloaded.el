@@ -460,5 +460,4 @@ Structure of this list:
   " RoR"
   rails-minor-mode-map)
 
-
 (provide 'rails-reloaded)

@@ -70,6 +70,15 @@
   (when (rails/root (buffer-file-name))
     (rails/initialize-for-current-buffer)))
 
+(autoload 'rails/initialize-for-current-buffer "rails-reloaded" nil t)
+(autoload 'rails/root "rails-lib" nil t)
+(add-hook 'find-file-hooks 'rails/find-file-hook)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Setup modes and encoding
+;;
+
 (defun rails/setup-auto-modes-alist ()
   "Added default ruby/rails filetypes to `auto-mode-alist' if not defined."
   (let ((modes
@@ -83,15 +92,20 @@
             do
             (setq auto-mode-alist (cons (cons regexp (car mode)) auto-mode-alist))))))
 
-(when (eq system-type 'windows-nt)
-  (dolist (re '("\\.[e]?rb\\'" "\\.rake\\'" "Rakefile\\'" "\\.rjs\\'" "\\.rxml\\'" "\\.builder\\'" "\\.rhtml\\'" "\\.yml\\'"))
-    (setq auto-coding-alist (cons (cons re 'utf-8) auto-coding-alist))))
+(defun rails/setup-auto-coding-alist ()
+  (when (eq system-type 'windows-nt)
+    (dolist (re '("\\.[e]?rb\\'" "\\.rake\\'" "Rakefile\\'" "\\.rjs\\'" "\\.rxml\\'" "\\.builder\\'" "\\.rhtml\\'" "\\.yml\\'"))
+      (setq auto-coding-alist (cons (cons re 'utf-8) auto-coding-alist)))))
 
-
-(autoload 'rails/initialize-for-current-buffer "rails-reloaded" nil t)
-(autoload 'rails/root "rails-lib" nil t)
-
-(add-hook 'find-file-hooks 'rails/find-file-hook)
 (rails/setup-auto-modes-alist)
+(rails/setup-auto-coding-alist)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Mumamo fixes
+;;
+(eval-after-load 'mumamo
+  (progn
+    (add-to-list 'mumamo-survive 'rails-minor-mode)))
 
 (provide 'rails-autoload)
