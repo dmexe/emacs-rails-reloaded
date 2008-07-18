@@ -51,6 +51,7 @@
 (require 'rails-lib)
 (require 'rails-runner)
 (require 'rails-compile)
+(require 'rails-project)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -362,6 +363,9 @@ Structure of this list:
   (interactive)
   (rails/with-root (buffer-file-name)
     (when-bind (file (rails/cut-root (buffer-file-name)))
+      (rails/project/apply (rails/root)
+                           (current-buffer)
+                           (rails/project/read-config (rails/root)))
       (rails/load-bundles)
       (set (make-local-variable 'rails/current-buffer)
            (rails/determine-type-of-file (rails/root) file))
@@ -409,6 +413,9 @@ Structure of this list:
       ([rails separator]           (cons "--" "--"))
       ([rails env]                '(menu-item "Environments" (make-sparse-keymap)
                                               :filter rails-minor-mode-environments-menu))
+      ([rails project]             (cons "Project" (make-sparse-keymap)))
+      ([rails project update]        (cons "Apply Project Settings"  'rails/project/update))
+      ([rails project edit]          (cons "Edit Project Settings" 'rails/project/edit))
       ([rails env-separator]       (cons "--" "--"))
       ([rails toggle]              (cons "Go To From Current File" (make-sparse-keymap)))
       ([rails toggle separator]      (cons "--" "--"))
@@ -450,6 +457,8 @@ Structure of this list:
 (define-minor-mode rails-minor-mode
   "RubyOnRails"
   nil
-  " RoR")
+  " RoR"
+  rails-minor-mode-map)
+
 
 (provide 'rails-reloaded)
