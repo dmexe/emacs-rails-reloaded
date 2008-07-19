@@ -105,7 +105,8 @@
 ;; Mumamo fixes
 ;;
 (eval-after-load 'mumamo
-  (progn
-    (add-to-list 'mumamo-survive 'rails-minor-mode)))
+  '(progn
+     (add-to-list 'mumamo-survive 'rails-minor-mode)
+     (put 'rails/current-buffer 'permanent-local t)))
 
 (provide 'rails-autoload)

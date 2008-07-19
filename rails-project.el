@@ -39,8 +39,13 @@
     (when-bind (root (rails/root))
       (mapc
        '(lambda(i)
-          (set (make-local-variable (car i)) (cdr i)))
+          (set (make-local-variable (car i)) (cdr i))
+          (rails/project/apply-mumamo (car i) buffer))
        config))))
+
+(defun rails/project/apply-mumamo (var buffer)
+  (unless (get var 'permanent-local)
+    (put var 'permanent-local t)))
 
 (defun rails/project/edit (&optional root)
   (interactive)
