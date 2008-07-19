@@ -73,9 +73,10 @@
     (rails/notify
      (replace-regexp-in-string
       "\n" ""
-      (format "%s (%s %s) - %s"
+      (format "%s (%s) %s:%s %s"
               (capitalize type)
               env
+              addr
               port
               msg))
      :notice)))
@@ -96,7 +97,8 @@
             (setq rails/webserver/process-env env)
             (setq rails/webserver/process-type type)
             (setq rails/webserver/process-port port)
-            (rails/notify (format "%s (%s) starting with %s:%s"
+            (setq rails/webserver/process-addr addr)
+            (rails/notify (format "%s (%s) starting at %s:%s"
                                   (capitalize type)
                                   env
                                   addr

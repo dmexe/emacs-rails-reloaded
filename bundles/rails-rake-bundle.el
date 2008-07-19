@@ -28,6 +28,8 @@
   '(("^-D$"        . rails/rake/after-stop-task-list)
     ("^notes.*$"   . rails/rake/after-stop-notes)))
 
+(defvar rails/rake/task-name nil)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Functions
@@ -62,7 +64,10 @@
                             (format "RAILS_ENV=%s %s %s" rails/default-environment task args )
                           (format "RAILS_ENV=%s %s" rails/default-environment task))
                         :keywords keywords)
-      (setq rails/runner/after-stop-func-list '(rails/runner/popup-buffer))
+      (with-current-buffer rails/runner/buffer-name
+        (set (make-local-variable 'rails/rake/task-name) task))
+      (rails/notify (format "Run task %s in %s" task rails/default-environment) :notice)
+      (setq rails/runner/after-stop-func-list '(rails/runner/popup-buffer rails/rake/after-stop-notify))
       (when func
         (add-to-list 'rails/runner/after-stop-func-list func t)))))
 
@@ -71,6 +76,11 @@
 ;;
 ;; After stop functions
 ;;
+
+(defun rails/rake/after-stop-notify (ret-val)
+  (if (zerop ret-val)
+      (rails/notify (format "Task %s was successfuly stopped" rails/rake/task-name) :notice)
+    (rails/notify (format "Failed to run task %s" rails/rake/task-name) :notice)))
 
 (defun rails/rake/after-stop-task-list (&rest args)
   (save-excursion
