@@ -77,7 +77,8 @@
               (capitalize type)
               env
               port
-              msg)))))
+              msg))
+     :notice)))
 
 (defun rails/webserver/start (root type env port addr)
   (let ((proc (get-buffer-process rails/webserver/buffer-name)))
@@ -99,7 +100,8 @@
                                   (capitalize type)
                                   env
                                   addr
-                                  port))))))))
+                                  port)
+                          :notice)))))))
 
 (defun rails/webserver/stop (root)
   "Stop the WebServer process."

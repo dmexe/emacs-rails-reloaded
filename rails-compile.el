@@ -111,7 +111,9 @@
       (rails/compile/run root
                          command
                          (format args-pattern
-                                 (rails/cut-root (buffer-file-name))))))))
+                                 (rails/cut-root (buffer-file-name)))))
+    (t
+     (rails/notify "Can't run current file." :error)))))
 
 (defun rails/compile/single-file ()
   (interactive)

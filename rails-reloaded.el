@@ -109,6 +109,7 @@ Structure of this list:
 (defvar rails/linked-types-alist '())
 (defvar rails/bundles-group-list '())
 (defvar rails/disabled-bundles-group-list '())
+(defvar rails/notify-func-list '(rails/notify-growl))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -281,8 +282,11 @@ Structure of this list:
                       rails/current-buffer "goto-action-in-current-buffer"))
       (funcall func action))))
 
-(defun rails/notify (string)
-  (message string))
+(defun rails/notify (string &optional level)
+  (message string)
+  (when level
+    (dolist (i rails/notify-func-list)
+      (funcall i string level))))
 
 (defun rails/notify-by-rails-buffer (rails-buffer &optional action-name)
   (rails/notify
@@ -295,6 +299,9 @@ Structure of this list:
              (string-ext/cut (format "%s" (rails/buffer-type rails-buffer)) ":" :begin)
              (rails/buffer-name rails-buffer)))))
 
+(defun rails/notify-growl (string level)
+  (when (fboundp 'growl)
+    (growl "Emacs rails" string)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
