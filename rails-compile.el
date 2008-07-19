@@ -86,36 +86,46 @@
   (setq rails/runner/after-stop-func-list
         '(rails/runner/popup-buffer-if-failed)))
 
-(defun rails/compile/run-file (root rails-buffer bundle-group-name command args-pattern)
-  (let* ((type (rails/buffer-type rails-buffer))
-         (link (rails/type-link-by-bundle-group-and-layout bundle-group-name
-                                                           (rails/buffer-layout rails-buffer)
-                                                           :tests type)))
-    (when (and link type)
+(defun rails/compile/run-file (root rails-buffer bundle-group-name command args-pattern &optional file-pattern)
+  (let* ((type (when (rails/buffer-p rails-buffer)
+                 (rails/buffer-type rails-buffer)))
+         (link (when type
+                 (rails/type-link-by-bundle-group-and-layout
+                  bundle-group-name
+                  (rails/buffer-layout rails-buffer)
+                  :tests type))))
+    (cond
+     ((and link type)
       (when-bind (func (rails/bundle-func link "goto-item-from-rails-buffer"))
-        (let ((goto-item (funcall func (rails/root)
+        (let ((goto-item (funcall func root
                                   (rails/cut-root (rails/buffer-file rails-buffer))
                                   rails-buffer)))
           (when (rails/goto-item-p goto-item)
-            (rails/compile/run (rails/root)
+            (rails/compile/run root
                                command
                                (format args-pattern
                                        (rails/goto-item-file goto-item)))
-            t))))))
+            t))))
+    ((and file-pattern
+          (string-ext/string=~ file-pattern (buffer-file-name) t))
+      (rails/compile/run root
+                         command
+                         (format args-pattern
+                                 (rails/cut-root (buffer-file-name))))))))
 
 (defun rails/compile/single-file ()
   (interactive)
-  (rails/with-current-buffer
+  (when-bind (root (rails/root))
    (loop for func in rails/compile/single-file-list
-         for res = (funcall func (rails/root) rails/current-buffer)
+         for res = (funcall func root rails/current-buffer)
          when res
          do (return res))))
 
 (defun rails/compile/current-method ()
   (interactive)
-  (rails/with-current-buffer
+  (when-bind (root (rails/root))
    (loop for func in rails/compile/current-method-list
-         for res = (funcall func (rails/root) rails/current-buffer)
+         for res = (funcall func root rails/current-buffer)
          when res
          do (return res))))
 

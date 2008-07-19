@@ -309,6 +309,8 @@ Structure of this list:
   (setq rails/layouts-list        nil)
   (setq rails/resource-types-list nil)
   (setq rails/linked-types-alist  nil)
+  (setq rails/compile/single-file-list nil)
+  (setq rails/compile/current-method-list nil)
   (rails-minor-mode-reset-keymap)
   (rails/load-bundles))
 

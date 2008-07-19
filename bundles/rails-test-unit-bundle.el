@@ -16,18 +16,18 @@
    rails-buffer
    "Test::Unit"
    rails/ruby/command
-   "%s"))
+   "%s"
+   "_test\\.rb$"))
 
 (defun rails/test-unit/current-method (root rails-buffer)
-  (when (and (member (rails/buffer-type rails-buffer) (rails/bundle-group-members "Test::Unit"))
-             (eq major-mode 'ruby-mode))
-    (when-bind (method (rails/ruby/current-method))
-      (rails/compile/run-file
-       root
-       rails-buffer
-       "Test::Unit"
-       rails/ruby/command
-       (concat "%s --name=" method)))))
+  (when-bind (method (rails/ruby/current-method))
+    (rails/compile/run-file
+     root
+     rails-buffer
+     "Test::Unit"
+     rails/ruby/command
+     (concat "%s --name=" method)
+     "_test\\.rb$")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
