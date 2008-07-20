@@ -45,14 +45,9 @@
   "Run a Database task in RAILS_ROOT with MAJOR-MODE."
   (when (and task root)
     (unless funcs
-      (setq funcs '(rails/runner/popup-buffer)))
-    (rails/runner/run root
-                      "rake"
-                      (if args
-                          (format "RAILS_ENV=%s db:%s %s" rails/default-environment task args)
-                        (format "RAILS_ENV=%s db:%s" rails/default-environment task))
-                      :keywords rails/database/keywords)
-      (setq rails/runner/after-stop-func-list funcs)))
+      (setq funcs '(rails/runner/popup-buffer-if-failed)))
+    (rails/rake/task-run
+     root (concat "db:" task) args rails/database/keywords funcs)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -121,12 +116,6 @@
 (defun rails/database/clone ()
   (interactive)
   (when-bind (root (rails/root))
-    (rails/database/run-task root
-                             "test:clone"
-                             (list
-                              (rails/database/retmsg
-                               "Database successfully cloned."
-                               "Failed to clone database.")
-                              'rails/runner/popup-buffer-if-failed))))
+    (rails/database/run-task root "test:clone")))
 
 (provide 'rails-database-bundle)

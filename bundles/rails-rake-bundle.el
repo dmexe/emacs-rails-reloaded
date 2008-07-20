@@ -53,24 +53,35 @@
       (rails/rake/create-tasks-cache root))))
 
 
-(defun rails/rake/task-run (root task &optional args)
+(defun rails/rake/task-run (root task &optional args keywords after-stop-funcs)
   "Run a Rake task in RAILS_ROOT with MAJOR-MODE."
   (when (and task root)
-    (let ((keywords (cdr (find task rails/rake/task-keywords-alist :key 'car :test '(lambda(i j) (string-match j i)))))
-          (func     (cdr (find task rails/rake/task-after-stop-alist :key 'car :test '(lambda(i j) (string-match j i))))))
-      (rails/runner/run root
-                        rails/rake/command
-                        (if args
-                            (format "RAILS_ENV=%s %s %s" rails/default-environment task args )
-                          (format "RAILS_ENV=%s %s" rails/default-environment task))
-                        :keywords keywords)
-      (with-current-buffer rails/runner/buffer-name
-        (set (make-local-variable 'rails/rake/task-name) task))
-      (rails/notify (format "Run task %s in %s" task rails/default-environment) :notice)
-      (setq rails/runner/after-stop-func-list '(rails/runner/popup-buffer rails/rake/after-stop-notify))
-      (when func
-        (add-to-list 'rails/runner/after-stop-func-list func t)))))
-
+    (unless keywords
+      (setq keywords
+            (cdr (find task rails/rake/task-keywords-alist
+                       :key 'car
+                       :test '(lambda(i j) (string-match j i))))))
+    (rails/runner/run root
+                      rails/rake/command
+                      (if args
+                          (format "RAILS_ENV=%s %s %s" rails/default-environment task args )
+                        (format "RAILS_ENV=%s %s" rails/default-environment task))
+                      :keywords keywords)
+    (with-current-buffer rails/runner/buffer-name
+      (set (make-local-variable 'rails/rake/task-name) task))
+    (rails/notify (format "Run task %s in %s" task rails/default-environment) :notice)
+    (if after-stop-funcs
+        (progn
+          (setq rails/runner/after-stop-func-list after-stop-funcs))
+      (progn
+        (setq rails/runner/after-stop-func-list '(rails/runner/popup-buffer))
+        (setq after-stop-funcs
+              (cdr (find task rails/rake/task-after-stop-alist
+                         :key 'car
+                         :test '(lambda(i j) (string-match j i)))))
+        (when after-stop-funcs
+          (add-to-list 'rails/runner/after-stop-func-list after-stop-funcs t))))
+    (add-to-list 'rails/runner/after-stop-func-list 'rails/rake/after-stop-notify t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
