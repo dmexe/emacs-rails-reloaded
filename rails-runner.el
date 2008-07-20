@@ -72,10 +72,10 @@
   (interactive)
   (let ((buf (get-buffer rails/runner/buffer-name)))
     (if buf
-        (if (get-buffer-window rails/runner/buffer-name)
+        (if (get-buffer-window rails/runner/buffer-name 'visible)
             (delete-windows-on buf)
           (rails/runner/popup-buffer))
-      (message "No output window found. Try running a script or a rake task before."))))
+      (rails/notify "No output window found. Try running a script or a rake task before."))))
 
 (defun rails/runner/setup-font-lock (&optional keywords)
   (font-lock-add-keywords nil keywords nil)
