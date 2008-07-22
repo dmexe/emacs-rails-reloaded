@@ -93,6 +93,7 @@
                                                 (car cmd-alist)
                                                 (cdr cmd-alist))))
           (when (processp proc)
+            (rails/runner/prepare-buffer proc)
             (set-process-sentinel proc 'rails/webserver/sentinel-proc)
             (setq rails/webserver/process-env env)
             (setq rails/webserver/process-type type)

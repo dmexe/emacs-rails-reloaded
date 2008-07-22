@@ -109,6 +109,10 @@
             (funcall func ret-val))))
       ret-val)))
 
+(defun rails/runner/prepare-buffer (proc)
+  (set-process-filter proc 'ansi-color-insertion-filter)
+  (set-process-coding-system proc 'utf-8 'utf-8))
+
 (defun rails/runner/run (root command parameters &rest options)
   "Run a Rails script COMMAND with PARAMETERS in ROOT with
 BUFFER-MAJOR-MODE."
@@ -128,14 +132,13 @@ BUFFER-MAJOR-MODE."
                                              rails/runner/buffer-name
                                              command
                                              parameters)))
-        (set-process-filter proc 'ansi-color-insertion-filter)
+        (rails/runner/prepare-buffer proc)
         (with-current-buffer (process-buffer proc)
           (if (opt-val :mode options)
               (funcall (opt-val :mode options))
             (rails/runner/output-mode))
           (when (opt-val :keywords options)
             (rails/runner/setup-font-lock (opt-val :keywords options)))
-          (set-process-coding-system proc 'utf-8 'utf-8)
           (set-process-sentinel proc 'rails/runner/sentinel-proc)
           (set (make-local-variable 'font-lock-unfontify-region-function)
                'ansi-color-unfontify-region) ; fixed conflict ansi-color and compilation-mode

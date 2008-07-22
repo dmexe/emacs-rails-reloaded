@@ -79,6 +79,7 @@
                              rspec-fixture
 
                              view
+                             javascript
                              rake
                              generator
                              database
