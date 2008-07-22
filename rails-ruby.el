@@ -25,6 +25,8 @@
 ;; along with this program; if not, write to the Free Software
 ;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+(require 'inf-ruby)
+
 (defvar rails/ruby/file-suffix ".rb")
 (defvar rails/ruby/command "ruby")
 
@@ -53,5 +55,25 @@
     (when pos
       (goto-char pos)
       (beginning-of-line))))
+
+(defun rails/ruby/run-in-buffer (buf script &optional params)
+  "Run CMD as a ruby process in BUF if BUF does not exist."
+  (let ((abuf (concat "*" buf "*")))
+    (when (not (comint-check-proc abuf))
+      (set-buffer (make-comint buf rails/ruby/command nil script params)))
+    (inferior-ruby-mode)
+    (make-local-variable 'inferior-ruby-first-prompt-pattern)
+    (make-local-variable 'inferior-ruby-prompt-pattern)
+    (setq inferior-ruby-first-prompt-pattern "^>> "
+          inferior-ruby-prompt-pattern "^>> ")
+    (setq ruby-buffer abuf)
+    (rails-minor-mode t)
+    (pop-to-buffer abuf)))
+
+(defun rails/console ()
+  (interactive)
+  (when-bind (root (rails/root))
+    (in-directory root
+      (rails/ruby/run-in-buffer "ruby" "script/console" rails/default-environment))))
 
 (provide 'rails-ruby)
