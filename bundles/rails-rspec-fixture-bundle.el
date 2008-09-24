@@ -59,7 +59,7 @@
 (defun rails/rspec-fixture/load ()
   (rails/define-bundle
    rails/rspec-fixture/buffer-type rails/rspec-fixture/buffer-type "RSpec"
-   (rails/add-to-layouts-list :unit-test rails/rspec-fixture/buffer-type)
+   (rails/add-to-layouts-list :rspec-model rails/rspec-fixture/buffer-type)
    (rails/define-goto-key "x" 'rails/rspec-fixture/goto-from-list)
    (rails/define-goto-menu "RSpec Fixture" 'rails/rspec-fixture/goto-from-list)
    (rails/define-toggle-key "x" 'rails/rspec-fixture/goto-current)
