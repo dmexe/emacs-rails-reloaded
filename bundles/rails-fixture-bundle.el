@@ -75,8 +75,7 @@
   (when-bind (root (rails/root))
     (rails/directory-to-goto-menu root
                                   rails/fixture/dir
-                                  "Select a Fixture"
-                                  :name-by 'file-name-sans-extension)))
+                                  "Select a Fixture")))
 
 (defun rails/fixture/goto-current ()
   (interactive)

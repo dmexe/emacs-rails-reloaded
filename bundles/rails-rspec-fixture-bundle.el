@@ -75,8 +75,7 @@
   (when-bind (root (rails/root))
     (rails/directory-to-goto-menu root
                                   rails/rspec-fixture/dir
-                                  "Select a Rspec Fixture"
-                                  :name-by 'file-name-sans-extension)))
+                                  "Select a Rspec Fixture")))
 
 (defun rails/rspec-fixture/goto-current ()
   (interactive)
