@@ -22,7 +22,7 @@
 
 (defun rails/migration/exist-p (root resource-name)
   (when resource-name
-    (let ((file (directory-files (concat "~/Sites/pro2/" rails/migration/dir)
+    (let ((file (directory-files (concat root rails/migration/dir)
                                       nil
                                       (format rails/migration/resource-file-mask resource-name))))
       (when file

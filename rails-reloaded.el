@@ -75,6 +75,7 @@
                              fixture
 
                              rspec-controller
+                             rspec-helper
                              rspec-model
                              rspec-fixture
 

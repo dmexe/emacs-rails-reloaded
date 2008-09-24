@@ -50,6 +50,9 @@
       (make-rails/goto-item :name "Helper"
                             :file file-name))))
 
+(defalias 'rails/helper/goto-item-from-rails-buffer
+          'rails/helper/goto-item-from-file)
+
 (defun rails/helper/load ()
   (rails/add-to-resource-types-list rails/helper/buffer-type)
   (rails/add-to-layouts-list :controller rails/helper/buffer-type)
