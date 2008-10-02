@@ -32,7 +32,10 @@
     (string-ext/start-p (rails/cut-root file) rails/rspec-helper/dir)))
 
 (defun rails/rspec-helper/resource-true-name (root resource)
-  (pluralize-string resource))
+  (let ((plural (pluralize-string resource)))
+    (if (rails/rspec-helper/exist-p root plural)
+        plural
+      (singularize-string resource))))
 
 (defun rails/rspec-helper/type-true-name (root resource)
   rails/rspec-helper/buffer-type)
