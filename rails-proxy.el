@@ -44,7 +44,9 @@
 
 (defun rails/proxy/shell-command-to-string (root command)
   (let ((cmd (rails/proxy/make-command root command)))
-    (shell-command-to-string (format "%s %s" (car cmd) (cadr cmd)))))
-
+    (shell-command-to-string
+     (if (cadr cmd)
+         (format "%s %s" (car cmd) (cadr cmd))
+       (car cmd)))))
 
 (provide 'rails-proxy)
