@@ -60,6 +60,12 @@
       (shell-command (concat "etags -a " path "bundles/*.el"))
       (visit-tags-table (format "%s/TAGS" path)))))
 
+(defun rails/load-verdor-lib (lib file)
+  (unless (featurep (intern file))
+    (let ((path (file-name-directory (locate-library "rails-reloaded"))))
+      (load-library (concat path "vendor/" lib "/" file))))
+  t)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Setup autoload

@@ -88,4 +88,4 @@
                                                           rails/current-buffer))
        (rails/toggle-file-by-goto-item (rails/root) goto-item))))
 
-(provide 'rails-rspec=controller-bundle)
+(provide 'rails-rspec-controller-bundle)

@@ -240,6 +240,9 @@ else return nil"
 (defun rails/find-file (root file)
   (find-file (concat root file)))
 
+(defun rails/directory-files (root directory &optional full match nosort)
+  (directory-files (concat root "/" directory) full match nosort))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
