@@ -241,8 +241,10 @@ else return nil"
   (find-file (concat root file)))
 
 (defun rails/directory-files (root directory &optional full match nosort)
-  (directory-files (concat root "/" directory) full match nosort))
-
+  (loop for file in (directory-files (concat root "/" directory) full match nosort)
+        for allow = (not (files-ext/file-special-p file))
+        when allow
+        collect file))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -315,7 +317,8 @@ else return nil"
     (dolist (item menu) ; filter
       (let ((name (car item))
             (goto (cdr item)))
-        (when (rails/goto-item-p goto)
+        (unless (and (stringp goto)
+                     (string= "--" goto))
           (add-to-list 'choices (cons name goto) t))))
     (when-bind (value
                 (ido-completing-read (format "%s: " title)

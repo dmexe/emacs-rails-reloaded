@@ -2,7 +2,8 @@
 (require 'inflections)
 (require 'rails-lib)
 
-(defstruct rails/resource type name bundle-group
+(defstruct rails/resource type display-name
+                          menu-group
                           dir file-ext file-suffix skip-file-suffix
                           pluralize resource-name-func resource-file-func
                           link-to test-to
@@ -10,16 +11,21 @@
                           set-action-func
                           (weight 1))
 
-(defstruct rails/buffer type
-                        name
-                        resource
-                        get-action-func
-                        set-action-func
-                        weight)
+(defstruct rails/resource-buffer type
+                                 resource-name
+                                 get-action-func
+                                 set-action-func
+                                 weight)
+
+(defstruct rails/resource-item file
+                               display-name
+                               resource-type
+                               resource-menu-group
+                               resource-display-name)
 
 (defvar rails/resources/list-defined nil)
 
-(defun* rails/defresource (type name &key bundle-group
+(defun* rails/defresource (type display-name &key menu-group
                                           dir file-suffix file-ext
                                           skip-file-suffix
                                           pluralize resource-name-func resource-file-func
@@ -27,11 +33,11 @@
                                           get-action-func set-action-func
                                           weight)
   (when (rails/resources/find type)
-    (error (format "rails/resource %s already defined" type)))
+    (error (format "Resource %s already defined" type)))
   (let (res)
     (setq res (make-rails/resource :type type
-                                   :bundle-group bundle-group
-                                   :name name
+                                   :menu-group (if menu-group (symbol-name menu-group) "acore")
+                                   :display-name display-name
                                    :dir (if (string-ext/end-p dir "/") dir (concat dir "/"))
                                    :file-suffix file-suffix
                                    :skip-file-suffix skip-file-suffix
@@ -50,6 +56,8 @@
     (add-to-list 'rails/resources/list-defined res t)))
 
 (defun rails/resources/find (resource-type)
+  (when (stringp resource-type)
+    (setq resource-type (intern resource-type)))
   (find resource-type rails/resources/list-defined :key 'rails/resource-type))
 
 (defun rails/resources/delete (resource-type)
@@ -60,7 +68,7 @@
 (defun rails/resources/clear ()
   (setq rails/resources/list-defined nil))
 
-(defun rails/resources/resource-file-p (resource file-name)
+(defun rails/resources/get-buffer-by-resource-for-file (resource file-name)
   (let ((file file-name))
     (catch 'result
       ;; dir
@@ -87,35 +95,53 @@
       (when (rails/resource-pluralize resource)
         (setq file (pluralize-string file)))
       ;; make resource
-      (make-rails/buffer :type (rails/resource-type resource)
-                         :name file
-                         :weight (rails/resource-weight resource)
-                         :get-action-func (rails/resource-get-action-func resource)
-                         :set-action-func (rails/resource-set-action-func resource)
-                         :resource resource))))
+      (make-rails/resource-buffer :type (rails/resource-type resource)
+                                  :resource-name file
+                                  :weight (rails/resource-weight resource)
+                                  :get-action-func (rails/resource-get-action-func resource)
+                                  :set-action-func (rails/resource-set-action-func resource)))))
 
-(defun rails/resources/buffer-for-file(root file)
+(defun rails/resources/get-buffer-for-file(root file)
   (let (resources)
     (setq resources
           (loop for res in rails/resources/list-defined
-                for allow = (rails/resources/resource-file-p res file)
+                for allow = (rails/resources/get-buffer-by-resource-for-file res file)
                 when allow
                 collect allow))
     (when (listp resources)
-      (car (sort* resources '> :key 'rails/buffer-weight)))))
+      (car (sort* resources '> :key 'rails/resource-buffer-weight)))))
 
-(defun rails/resources/associated-buffer-p (root buffer resource)
-  (let ((file (rails/buffer-name buffer))
+(defun rails/resources/files-to-items (resource files)
+  (unless (listp files)
+    (setq files (list files)))
+  (mapcar '(lambda(it)
+             (let ((name it)
+                   (file it))
+               (when (consp it)
+                 (setq name (car it)
+                       file (cdr it)))
+               (make-rails/resource-item :display-name name
+                                         :file file
+                                         :resource-type (rails/resource-type resource)
+                                         :resource-menu-group (rails/resource-menu-group resource)
+                                         :resource-display-name (rails/resource-display-name resource))))
+          files))
+
+(defun rails/resources/get-associated-items-by-resource (root buffer resource)
+  (let ((file (rails/resource-buffer-resource-name buffer))
         (file-func (rails/resource-resource-file-func resource))
-        result)
+        result name)
     (setq result
           (if file-func
               ;; resource-file-func
-              (apply file-func (list root file buffer resource))
+              (rails/resources/files-to-items
+               resource
+               (apply file-func (list root file buffer resource)))
             (progn
               ;; singularize
               (when-bind (pluralize (rails/resource-pluralize resource))
                 (setq file (singularize-string file)))
+              (setq name file)
               ;; dir
               (when-bind (dir (rails/resource-dir resource))
                 (setq file (concat dir file)))
@@ -126,15 +152,23 @@
               (when-bind (file-ext (rails/resource-file-ext resource))
                 (setq file (concat file file-ext)))
               (when (rails/file-exist-p root file)
-                (list (rails/resource-name resource) file)))))))
+                (rails/resources/files-to-items resource (list (cons name file)))))))))
 
-(defun rails/resources/associated-buffers(root buffer)
+(defun rails/resources/get-associated-items(root rails-buffer)
   (let (resources)
     (setq resources
           (loop for res in rails/resources/list-defined
-                for allow = (rails/resources/associated-buffer-p root buffer res)
+                for allow = (rails/resources/get-associated-items-by-resource root rails-buffer res)
                 when allow
                 collect allow))))
+
+(defun rails/resources/get-associated-resources(root rails-buffer)
+  (let (resources)
+    (setq resources
+          (loop for res in rails/resources/list-defined
+                for allow = (rails/resources/get-associated-items-by-resource root rails-buffer res)
+                when allow
+                collect res))))
 
 (defun rails/resources/link-of(resource)
   (let ((type (rails/resource-type resource))
@@ -150,15 +184,90 @@
           when allow
           collect res)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun rails/resources/goto-associated ()
+  (interactive)
+  (let* ((root (rails/root))
+         (rails-buffer (rails/resources/get-buffer-for-file root (rails/cut-root (buffer-file-name)))))
+    (rails/resources/goto-associated-using-ido root rails-buffer)))
+
+(defun rails/resources/goto-associated-using-menu (root rails-buffer)
+  (let (items menu last-p file)
+    (setq items
+          (rails/resources/get-associated-items root rails-buffer))
+    (setq items
+          (list-ext/group-by items
+                             '(lambda(i) (rails/resource-item-resource-menu-group (car i)))
+                             'string<))
+    (dolist (group items)
+      (let ((group-name (car group))
+            (group-items (cadr group)))
+        (when last-p
+          (add-to-list 'menu (list "--" "--") t))
+        (if (and (= 1 (length group-items))
+                 (< 1 (length (car group-items))))
+            (dolist (i (car group-items))
+              (add-to-list 'menu (cons (rails/resource-item-display-name i) i) t))
+          (dolist (i group-items)
+            (add-to-list 'menu (cons (rails/resource-item-resource-display-name (car i)) (car i)) t))))
+        (unless last-p
+          (setq last-p t)))
+    (setq file (rails/display-menu-using-popup "Go to..." menu))
+    (message "%S" file)
+    file))
+
+(defun rails/resources/goto-associated-using-ido (root rails-buffer)
+  (interactive)
+  (let (items resource file)
+    (setq resource
+          (rails/display-menu-using-ido "Go to"
+                                        (mapcar '(lambda(i) (cons (symbol-name (rails/resource-type i)) i))
+                                                (rails/resources/get-associated-resources root rails-buffer))))
+    (setq items
+          (rails/resources/get-associated-items-by-resource root rails-buffer resource))
+    (if (< 1 (length items))
+        (setq file
+              (rails/display-menu-using-ido (format "%s" (rails/resource-display-name resource))
+                                            (mapcar '(lambda(i) (cons (rails/resource-item-display-name i) i)) items)))
+      (setq file (car items)))
+    (message "%S" file)
+    file))
+
+(with-current-buffer "commercial.rb"
+  (setq test2 (rails/resources/goto-associated)))
+
+;; test
+
+;;;   (let (resource)
+;;;     (if resource-type
+;;;         (setq resource (rails/resources/find resource-type))
+;;;       (let ((resource-types
+;;;              (mapcar '(lambda(res) (cons (rails/resource-display-name res) res))
+;;;                      (rails/resources/get-associated-resources root rails-buffer))))
+;;;         (setq resource (rails/display-menu-using-popup "Select?: " resource-types))))
+
+;;;     (let ((items (rails/resources/get-associated-items-by-resource root
+;;;                                                                    rails-buffer
+;;;                                                                    resource)))
+;;;       (unless (= 1 (length items))
+;;;         (setq items (rails/display-menu-using-popup
+;;;                      (format "Select a %s: " (rails/resource-display-name resource))
+;;;                      (mapcar '(lambda(i) (cons (rails/resource-item-display-name i) i))
+;;;                              items))))
+;;;       (message "%S" items))))
 
 ;; (rails/resources/delete 'view)
-;; (rails/resources/clear)
+(rails/resources/clear)
 
 (rails/defresource 'view "View"
                    :dir "app/views"
+                   :menu-group 'view
                    :resource-name-func '(lambda(file) (string-ext/cut (file-name-directory file) "/" :end))
                    :resource-file-func '(lambda(root name buffer resource)
-                                          (rails/directory-files root (format "app/views/%s" name)))
+                                          (mapcar '(lambda(file)
+                                                     (cons file (concat name "/" file)))
+                                                  (rails/directory-files root (format "app/views/%s" name))))
                    :get-action-func '(lambda() (file-name-nondirectory (file-name-sans-extension (buffer-file-name)))))
 
 (rails/defresource 'migration "Migration"
@@ -174,6 +283,11 @@
                    :file-ext  "rb"
                    :pluralize t)
 
+(rails/defresource 'helper "Helper"
+                   :dir "app/helpers"
+                   :file-suffix "_helper"
+                   :file-ext  "rb")
+
 (rails/defresource 'mailer "Mailer"
                    :dir "app/models"
                    :file-ext  "rb"
@@ -181,6 +295,7 @@
                    :weight 2)
 
 (rails/defresource 'model-spec "RSpec Model"
+                   :menu-group 'spec
                    :dir "spec/models"
                    :file-suffix  "_spec"
                    :file-ext  "rb"

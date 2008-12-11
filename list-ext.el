@@ -6,7 +6,7 @@
         (push elem result)))
     (nreverse result)))
 
-(defun list-ext/group-by (list func)
+(defun list-ext/group-by (list func &optional sort)
   (let ((res '()))
     (dolist (it list)
       (let* ((key (funcall func it))
@@ -14,10 +14,14 @@
         (if res-key
             (push it (cadr res-key))
           (add-to-list 'res (list key (list it))))))
-    (mapcar
-     #'(lambda(it)
-         (list (car it) (nreverse (cadr it))))
-     (nreverse res))))
+    (setq res
+          (mapcar
+           #'(lambda(it)
+               (list (car it) (nreverse (cadr it))))
+           (nreverse res)))
+    (when sort
+      (setq res (sort* res sort :key 'car)))
+    res))
 
 (defun list-ext/options-value (key list)
   (cadr (memq key list)))

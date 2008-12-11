@@ -89,7 +89,7 @@
   "Added default ruby/rails filetypes to `auto-mode-alist' if not defined."
   (let ((modes
          '((ruby-mode "\\.rb\\'" "\\.rake\\'" "Rakefile\\'" "\\.rjs\\'" "\\.rxml\\'" "\\.builder\\'")
-           (html-mode "\\.erb\\'" "\\.rhtml\\'"))))
+           (eruby-html-mumamo "\\.erb\\'" "\\.rhtml\\'"))))
     (dolist (mode modes)
       (loop for regexp in (cdr mode)
             for allow = (and (not (find regexp auto-mode-alist :key 'car :test 'string=))
