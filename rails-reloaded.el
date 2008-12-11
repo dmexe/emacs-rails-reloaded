@@ -52,6 +52,7 @@
 (require 'rails-runner)
 (require 'rails-compile)
 (require 'rails-project)
+(require 'rails-resources)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -379,7 +380,8 @@ Structure of this list:
                            (rails/project/read-config (rails/root)))
       (rails/load-bundles)
       (set (make-local-variable 'rails/current-buffer)
-           (rails/determine-type-of-file (rails/root) file))
+           (rails/resources/get-buffer-for-file (rails/root) file))
+;;           (rails/determine-type-of-file (rails/root) file))
       (rails-minor-mode t)
       (rails/initialize-bundles (rails/root) file rails/current-buffer))))
 
@@ -454,7 +456,7 @@ Structure of this list:
   (let ((map (make-keymap)))
     (define-keys map
       ([menu-bar] (rails-minor-mode-menu-bar-map))
-      ((rails/short-key "<down>") 'rails/goto-from-current-file)
+      ((rails/short-key "<down>") 'rails/resources/goto-associated)
       ((rails/short-key "<up>")   'rails/toggle-current-file)
       ((rails/short-key "t")      'rails/toggle-current-file-by-link)
       ((rails/short-key "/")      'rails/runner/toggle-output-window)

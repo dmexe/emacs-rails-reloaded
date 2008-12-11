@@ -241,10 +241,12 @@ else return nil"
   (find-file (concat root file)))
 
 (defun rails/directory-files (root directory &optional full match nosort)
-  (loop for file in (directory-files (concat root "/" directory) full match nosort)
-        for allow = (not (files-ext/file-special-p file))
-        when allow
-        collect file))
+  (let ((fullname (concat root "/" directory)))
+    (when (file-directory-p fullname)
+      (loop for file in (directory-files fullname full match nosort)
+            for allow = (not (files-ext/file-special-p file))
+            when allow
+            collect file))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
