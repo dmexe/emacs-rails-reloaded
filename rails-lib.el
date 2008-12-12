@@ -298,11 +298,11 @@ else return nil"
 ;; Menu functions
 ;;
 
-(defun rails/display-menu (title menu)
+(defun rails/display-menu (title menu &optional force-ido)
   (let ((func
          (cond
-          ((and (eq rails/display-menu-method 'popup)
-                window-system)
+          ((and force-ido window-system
+                (eq rails/display-menu-method 'popup))
            'rails/display-menu-using-popup)
           (t
            'rails/display-menu-using-ido))))

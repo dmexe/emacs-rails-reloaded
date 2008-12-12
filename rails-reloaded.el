@@ -457,7 +457,7 @@ Structure of this list:
     (define-keys map
       ([menu-bar] (rails-minor-mode-menu-bar-map))
       ((rails/short-key "<down>") 'rails/resources/goto-associated)
-      ((rails/short-key "<up>")   'rails/toggle-current-file)
+      ((rails/short-key "<up>")   'rails/resources/toggle-by-link)
       ((rails/short-key "t")      'rails/toggle-current-file-by-link)
       ((rails/short-key "/")      'rails/runner/toggle-output-window)
       ((kbd "\e\e e")             'rails/set-default-environment)
