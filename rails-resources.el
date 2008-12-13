@@ -7,9 +7,11 @@
                           menu-group ;; string required
                           boundle-name ;; string
                           dir file-ext file-suffix skip-file-suffix ;; string
+                          expand-in-menu ;; boolean
                           pluralize ;; boolean
                           resource-name-func resource-files-func ;; commandp
-                          link-to test-to ;; list
+                          link-to ;; list
+                          test-to ;; symbol
                           get-action-func set-action-func ;; commandp
                           (weight 1)) ;; integer required
 
@@ -32,6 +34,7 @@
                                                   dir file-suffix file-ext
                                                   skip-file-suffix
                                                   pluralize resource-name-func resource-files-func
+                                                  expand-in-menu
                                                   link-to test-to
                                                   get-action-func set-action-func
                                                   weight)
@@ -49,8 +52,9 @@
                                                 (when file-ext
                                                   (concat "." file-ext)))
                                    :link-to (if (listp link-to) link-to (list link-to))
-                                   :test-to (if (listp test-to) test-to (list test-to))
+                                   :test-to (if (symbolp test-to) test-to (error "rails/resource#test-to must be the symbol"))
                                    :pluralize pluralize
+                                   :expand-in-menu expand-in-menu
                                    :resource-name-func resource-name-func
                                    :resource-files-func resource-files-func
                                    :get-action-func get-action-func
@@ -274,7 +278,7 @@
                        max-w w)))
           finally (return max-its))))
 
-(defun rails/resources/toggle-by-link (&optional force-ido)
+(defun rails/resources/toggle (&optional force-ido)
   (interactive)
   (let* ((root (rails/root))
          (rails-buffer (rails/resources/get-buffer-for-file root (rails/cut-root (buffer-file-name))))
@@ -289,6 +293,70 @@
                    (rails/display-menu "Select" menu force-ido)
                  (cdr (car menu))))
     (rails/resources/find-file-by-item root file)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Lookup resource for test
+;;
+
+(defun rails/resources/linked-from-test-item-of-buffer (root rails-buffer)
+  (let* ((type (rails/resource-buffer-type rails-buffer))
+         (resource (rails/resources/find type)))
+    (or
+     ;; direct link
+     (when-bind (test-res (rails/resources/find (rails/resource-test-to resource)))
+       (when-bind (its (rails/resources/get-associated-items-by-resource root rails-buffer test-res))
+         (car its)))
+     ;; test link from linked resource
+     (loop for lay-name in (rails/resource-link-to resource)
+           with assoc-ress  = (rails/resources/get-associated-resources root rails-buffer)
+           for lay-test-to  = (rails/resource-test-to (rails/resources/find lay-name))
+           for test-link    = (find lay-test-to assoc-ress :key 'rails/resource-type)
+           when test-link
+           return
+           (car
+            (rails/resources/get-associated-items-by-resource root rails-buffer test-link))))))
+
+(defun rails/resources/linked-to-test-item-of-buffer (root rails-buffer)
+  (let* ((type (rails/resource-buffer-type rails-buffer))
+         (resource (rails/resources/find type))
+         (assoc-ress (rails/resources/get-associated-resources root rails-buffer))
+         test-res)
+    (setq
+     test-res
+     (or
+      ;; direct link to resource
+      (loop for res in assoc-ress
+            for test = (eq type (rails/resource-test-to res))
+            when test
+            return res)
+      ;; test link to linked resource
+      (loop for lay-name in (rails/resource-link-to resource)
+            for test = (find lay-name assoc-ress :key 'rails/resource-test-to)
+            when test
+            return test)))
+    (when test-res
+      (car
+       (rails/resources/get-associated-items-by-resource root
+                                                         rails-buffer
+                                                         test-res)))))
+
+
+(defun rails/resources/toggle-test ()
+  (interactive)
+  (let* ((root (rails/root))
+         (rails-buffer (rails/resources/get-buffer-for-file root (rails/cut-root (buffer-file-name))))
+         (resource (rails/resources/find (rails/resource-buffer-type rails-buffer)))
+         item)
+    (setq item
+          (if (or (rails/resource-test-to resource)
+                  (loop for lay-name in (rails/resource-link-to resource)
+                        for lay = (rails/resources/find lay-name)
+                        when (rails/resource-test-to lay)
+                        return t))
+              (rails/resources/linked-from-test-item-of-buffer root rails-buffer)
+            (rails/resources/linked-to-test-item-of-buffer root rails-buffer)))
+    (rails/resources/find-file-by-item root item)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -307,14 +375,14 @@
       (let ((group-name (car group))
             (group-items (cadr group)))
         (when last-p
-          (add-to-list 'menu (list "--" "--") t))
-        (if (and (= 1 (length group-items))
-                 (< 1 (length (car group-items))))
-            (setq menu (rails/resources/items-to-menu menu (car group-items)))
-          (dolist (i group-items)
+          (setq menu (append menu (list (cons "--" "--"))))) ;; !! dot't use add-to-list
+        (dolist (i group-items)
+          (if (rails/resource-expand-in-menu (rails/resources/find
+                                              (rails/resource-item-resource-type
+                                               (car i))))
+              (setq menu (rails/resources/items-to-menu menu i))
             (add-to-list 'menu (cons (rails/resource-item-resource-display-name (car i)) (car i)) t))))
-        (unless last-p
-          (setq last-p t)))
+      (setq last-p t))
     (setq resource  (rails/resources/find (rails/resource-buffer-type rails-buffer)))
     (setq file (rails/display-menu-using-popup
                 (format "Go to from %s to:" (rails/resource-display-name resource))
@@ -342,9 +410,11 @@
   (interactive)
   (let* ((root (rails/root))
          (rails-buffer (rails/resources/get-buffer-for-file root (rails/cut-root (buffer-file-name)))))
-    (if force-ido
-        (rails/resources/goto-associated-using-ido root rails-buffer)
-      (rails/resources/goto-associated-using-menu root rails-buffer))))
+    (if (and window-system
+             (not force-ido)
+             (eq rails/display-menu-method 'popup))
+        (rails/resources/goto-associated-using-menu root rails-buffer)
+      (rails/resources/goto-associated-using-ido root rails-buffer))))
 
 
 ;; (rails/resources/delete 'view)
@@ -380,6 +450,7 @@
                                                      (cons file (concat name "/" file)))
                                                   (rails/directory-files root (format "app/views/%s" name))))
                    :get-action-func '(lambda() (file-name-nondirectory (file-name-sans-extension (buffer-file-name))))
+                   :expand-in-menu t
                    :link-to '(mailer controller)
                    :weight 2)
 
@@ -398,23 +469,70 @@
                    :file-ext  "rb"
                    :pluralize t)
 
-(rails/defresource 'model-spec "RSpec Model"
+(rails/defresource 'unit-test "Unit Test"
+                   :menu-group 'unit-test
+                   :bundle-name "Test::Unit"
+                   :dir "test/unit"
+                   :file-suffix  "_test"
+                   :file-ext  "rb"
+                   :pluralize t
+                   :test-to 'model)
+
+(rails/defresource 'unit-test-mailer "Unit Test Mailer"
+                   :menu-group 'unit-test
+                   :bundle-name "Test::Unit"
+                   :dir "test/unit"
+                   :file-suffix  "_test"
+                   :skip-file-suffix "_mailer"
+                   :file-ext  "rb"
+                   :weight 2
+                   :test-to 'mailer)
+
+(rails/defresource 'fixture "Fixture"
+                   :menu-group 'unit-test
+                   :bundle-name "Test::Unit"
+                   :dir "test/fixtures"
+                   :file-ext  "yml"
+                   :link-to '(unit-test unit-test-mailer))
+
+(rails/defresource 'functional-test "Functional Test"
+                   :menu-group 'unit-test
+                   :bundle-name "Test::Unit"
+                   :dir "test/functional"
+                   :file-suffix  "_controller_test"
+                   :file-ext  "rb"
+                   :test-to 'controller)
+
+(rails/defresource 'model-spec "Model RSpec"
                    :menu-group 'spec
+                   :bundle-name "RSpec"
                    :dir "spec/models"
                    :file-suffix  "_spec"
                    :file-ext  "rb"
-                   :test-to '(model mailer))
+                   :pluralize t
+                   :test-to 'model)
+
+(rails/defresource 'controller-spec "Controller RSpec"
+                   :menu-group 'spec
+                   :bundle-name "RSpec"
+                   :dir "spec/controllers"
+                   :file-suffix  "_controller_spec"
+                   :file-ext  "rb"
+                   :test-to 'controller)
+
+(rails/defresource 'helper-spec "Helper RSpec"
+                   :menu-group 'spec
+                   :bundle-name "RSpec"
+                   :dir "spec/helpers"
+                   :file-suffix  "_helper_spec"
+                   :file-ext  "rb"
+                   :test-to 'helper)
+
+(rails/defresource 'fixture-spec "Fixture"
+                   :menu-group 'spec
+                   :bundle-name "RSpec"
+                   :dir "spec/fixtures"
+                   :file-ext "yml"
+                   :link-to 'model-spec)
 
 (provide 'rails-resources)
-
-;; (setq mig (rails/resources/find 'migration))
-;; (setq mod (rails/resources/find 'model))
-;; (setq vi (rails/resources/find 'view))
-;; ;; (setq a (rails/resources/links-to-of mod))
-
-;; (setq buf (rails/resources/buffer-for-file "" "app/views/commercials/index.html"))
-;; (setq ff (rails/resources/associated-buffer-p "z:/apps/admon/" buf vi))
-
-
-;; (rails/directory-files "z:/apps/admon/" "app/views/permissions")
-

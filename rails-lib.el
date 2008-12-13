@@ -301,7 +301,8 @@ else return nil"
 (defun rails/display-menu (title menu &optional force-ido)
   (let ((func
          (cond
-          ((and force-ido window-system
+          ((and window-system
+                (not force-ido)
                 (eq rails/display-menu-method 'popup))
            'rails/display-menu-using-popup)
           (t
