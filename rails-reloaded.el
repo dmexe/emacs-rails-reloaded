@@ -123,7 +123,6 @@
   (setq rails/compile/single-file-list nil)
   (setq rails/compile/current-method-list nil)
   (rails-minor-mode-reset-keymap)
-  (rails/resources/clear)
   (rails-minor-mode-reset-keymap)
   (rails/bundles/reload))
 

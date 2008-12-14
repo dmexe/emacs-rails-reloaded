@@ -1,4 +1,5 @@
 (require 'cl)
+(require 'rails-resources)
 
 (defvar rails/bundles/disabled-list nil)
 (defvar rails/bundles/loaded-list nil)
@@ -39,6 +40,7 @@
   (interactive)
   (setq rails/bundles/loaded-list nil)
   (setq rails/bundles/loaded-p nil)
+  (rails/resources/clear)
   (rails/bundles/load))
 
 (defun rails/bundles/add-to-loaded-menu (title)
@@ -47,7 +49,7 @@
     (define-key-after rails-minor-mode-map
       [menu-bar rails bundles-loaded]
       (cons "Loaded Bundles" (make-sparse-keymap))
-      'bundles-title))
+      'env))
   (define-key rails-minor-mode-map
     (merge 'vector [menu-bar rails bundles-loaded]
            (list (string-ext/safe-symbol title))
@@ -56,7 +58,7 @@
           `(lambda()
              (interactive)
              (rails/bundles/toggle-enabled ,title)
-             (rails/bundles/reload))
+             (rails/reload-all))
           :button (cons :toggle (rails/bundles/enabled-p title)))))
 
 (defun rails/bundles/add-to-bundles-menu (title menumap)
