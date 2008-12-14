@@ -92,6 +92,8 @@
   "List of availabled bundles, don't edit the list manualy.
 To disable bundle loading setup the `rails/disabled-bundles' variable.")
 
+(setq rails/bundles-list nil)
+
 (defvar rails/bundles-func-list '()
   "Cached bundles functions, don't edit the list manualy.
 
@@ -174,7 +176,7 @@ Structure of this list:
 ;; Begin functions list
 ;;
 
-(defun rails/load-bundles ()
+(defun rails/load-bundles () )
   "Loading bundles from `rails/bundles'."
   (unless rails/bundles-loaded-p
     (dolist (bundle rails/bundles-list)

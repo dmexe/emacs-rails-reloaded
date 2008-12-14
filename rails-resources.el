@@ -53,7 +53,9 @@
                                                 (when file-ext
                                                   (concat "." file-ext)))
                                    :link-to (if (listp link-to) link-to (list link-to))
-                                   :test-to (if (symbolp test-to) test-to (error "rails/resource#test-to must be the symbol"))
+                                   :test-to (if (symbolp test-to)
+                                                test-to
+                                              (error "rails/resource#test-to must be the symbol"))
                                    :pluralize pluralize
                                    :expand-in-menu expand-in-menu
                                    :resource-name-func resource-name-func
@@ -76,10 +78,9 @@
 (defun rails/resources/clear ()
   (setq rails/resources/list-defined nil))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Lookup resource-buffer for file
-;;
+;;; ---------------------------------------------------------
+;;; - Lookup resource-buffer for file
+;;;
 
 (defun rails/resources/get-buffer-by-resource-for-file (resource file-name)
   (let ((file file-name))
@@ -126,10 +127,9 @@
     (when (listp resources)
       (car (sort* resources '> :key 'rails/resource-buffer-weight)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Lookup associated resources by resource-buffer
-;;
+;;; ---------------------------------------------------------
+;;; - Lookup associated resources by resource-buffer
+;;;
 
 (defun rails/resources/resource-files-to-items (resource files)
   (unless (listp files)
@@ -225,10 +225,9 @@
         when items
         collect res))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Menu functions
-;;
+;;; ---------------------------------------------------------
+;;; - Menu functions
+;;;
 
 (defun rails/resources/items-to-menu (menu items &optional display-resource-name)
   (let ((menu menu)
@@ -245,10 +244,9 @@
   (when (rails/resource-item-p item)
     (rails/find-file root (rails/resource-item-file item))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Lookup resource by link
-;;
+;;; ---------------------------------------------------------
+;;; - Lookup resource by link
+;;;
 
 (defun rails/resources/linked-to-items-of-buffer(root rails-buffer)
   (let* ((type (rails/resource-buffer-type rails-buffer))
@@ -295,10 +293,9 @@
                  (cdr (car menu))))
     (rails/resources/find-file-by-item root file)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Lookup resource for test
-;;
+;;; ---------------------------------------------------------
+;;; - Lookup resource for test
+;;;
 
 (defun rails/resources/linked-from-test-item-of-buffer (root rails-buffer)
   (let* ((type (rails/resource-buffer-type rails-buffer))
@@ -359,10 +356,9 @@
             (rails/resources/linked-to-test-item-of-buffer root rails-buffer)))
     (rails/resources/find-file-by-item root item)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Menu for associated resources
-;;
+;;; ---------------------------------------------------------
+;;; - Menu for associated resources
+;;;
 
 (defun rails/resources/goto-associated-using-menu (root rails-buffer)
   (let (items menu last-p file resource)
@@ -416,124 +412,5 @@
              (eq rails/display-menu-method 'popup))
         (rails/resources/goto-associated-using-menu root rails-buffer)
       (rails/resources/goto-associated-using-ido root rails-buffer))))
-
-
-;; (rails/resources/delete 'view)
-(rails/resources/clear)
-
-(rails/defresource 'controller "Controller"
-                   :dir "app/controllers"
-                   :file-ext  "rb"
-                   :resource-name-func '(lambda(file) (string-ext/string=~
-                                                  "^\\(application\\|\\(.*\\)_controller\\)$" file (or $2 $1)))
-                   :resource-files-func '(lambda(root name buffer resource)
-                                          (rails/directory-files root
-                                                                 "app/controllers" nil
-                                                                 (format "^%s_controller\\.rb$" name))))
-(rails/defresource 'mailer "Mailer"
-                   :dir "app/models"
-                   :file-ext  "rb"
-                   :skip-file-suffix "_mailer"
-                   :weight 2)
-
-(rails/defresource 'helper "Helper"
-                   :dir "app/helpers"
-                   :file-suffix "_helper"
-                   :file-ext  "rb"
-                   :link-to 'controller)
-
-(rails/defresource 'view "View"
-                   :dir "app/views"
-                   :menu-group 'view
-                   :resource-name-func '(lambda(file) (string-ext/cut (file-name-directory file) "/" :end))
-                   :resource-files-func '(lambda(root name buffer resource)
-                                          (mapcar '(lambda(file)
-                                                     (cons file (concat name "/" file)))
-                                                  (rails/directory-files root (format "app/views/%s" name))))
-                   :get-action-func '(lambda() (file-name-nondirectory (file-name-sans-extension (buffer-file-name))))
-                   :expand-in-menu t
-                   :link-to '(mailer controller)
-                   :weight 2)
-
-(rails/defresource 'migration "Migration"
-                   :dir "db/migrate"
-                   :file-ext  "rb"
-                   :resource-name-func '(lambda(file) (string-ext/string=~ "^[0-9]+_create_\\(.*\\)" file $1))
-                   :resource-files-func '(lambda(root name buffer resource)
-                                          (rails/directory-files root
-                                                                 "db/migrate" nil
-                                                                 (format "^[0-9]+_create_%s\\.rb$" name)))
-                   :link-to 'model)
-
-(rails/defresource 'model "Model"
-                   :dir "app/models"
-                   :file-ext  "rb"
-                   :pluralize t)
-
-(rails/defresource 'unit-test "Unit Test"
-                   :menu-group 'unit-test
-                   :bundle-name "Test::Unit"
-                   :dir "test/unit"
-                   :file-suffix  "_test"
-                   :file-ext  "rb"
-                   :pluralize t
-                   :test-to 'model)
-
-(rails/defresource 'unit-test-mailer "Unit Test Mailer"
-                   :menu-group 'unit-test
-                   :bundle-name "Test::Unit"
-                   :dir "test/unit"
-                   :file-suffix  "_test"
-                   :skip-file-suffix "_mailer"
-                   :file-ext  "rb"
-                   :weight 2
-                   :test-to 'mailer)
-
-(rails/defresource 'fixture "Fixture"
-                   :menu-group 'unit-test
-                   :bundle-name "Test::Unit"
-                   :dir "test/fixtures"
-                   :file-ext  "yml"
-                   :link-to '(unit-test unit-test-mailer))
-
-(rails/defresource 'functional-test "Functional Test"
-                   :menu-group 'unit-test
-                   :bundle-name "Test::Unit"
-                   :dir "test/functional"
-                   :file-suffix  "_controller_test"
-                   :file-ext  "rb"
-                   :test-to 'controller)
-
-(rails/defresource 'model-spec "Model RSpec"
-                   :menu-group 'spec
-                   :bundle-name "RSpec"
-                   :dir "spec/models"
-                   :file-suffix  "_spec"
-                   :file-ext  "rb"
-                   :pluralize t
-                   :test-to 'model)
-
-(rails/defresource 'controller-spec "Controller RSpec"
-                   :menu-group 'spec
-                   :bundle-name "RSpec"
-                   :dir "spec/controllers"
-                   :file-suffix  "_controller_spec"
-                   :file-ext  "rb"
-                   :test-to 'controller)
-
-(rails/defresource 'helper-spec "Helper RSpec"
-                   :menu-group 'spec
-                   :bundle-name "RSpec"
-                   :dir "spec/helpers"
-                   :file-suffix  "_helper_spec"
-                   :file-ext  "rb"
-                   :test-to 'helper)
-
-(rails/defresource 'fixture-spec "Fixture"
-                   :menu-group 'spec
-                   :bundle-name "RSpec"
-                   :dir "spec/fixtures"
-                   :file-ext "yml"
-                   :link-to 'model-spec)
 
 (provide 'rails-resources)

@@ -1,6 +1,7 @@
 (rails/defbundle "Basic"
-  (:menu (([new] (cons "Create a new view for current file" 'identity))
-          ([new2] (cons "Create a new view for current file" 'identity))))
+  (:menu
+   (([new] (cons "Create a new view for current file" 'identity))
+    ([new2] (cons "Create a new view for current file" 'identity))))
 
   (rails/defresource 'mailer "Mailer"
                      :dir "app/models"
@@ -40,4 +41,12 @@
   (rails/defresource 'model "Model"
                      :dir "app/models"
                      :file-ext  "rb"
+                     :pluralize t)
+
+  (rails/defresource 'observer "Observer"
+                     :dir "app/models"
+                     :file-ext  "rb"
+                     :file-suffix "_observer"
+                     :weight 2
+                     :link-to 'model
                      :pluralize t))

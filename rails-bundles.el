@@ -67,7 +67,7 @@
     (cons (concat title " Bundle") menumap)
     'bundles-title))
 
-(defmacro* rails/defbundle (name (&key menu) &body body)
+(defmacro* rails/defbundle (name (&key menu keys) &body body)
   `(progn
      (defconst
        ,(intern (format rails/bundles/name-fmt (string-ext/safe-symbol name)))
@@ -79,6 +79,9 @@
           (let ((map (make-sparse-keymap)))
             (define-keys map
               ,@menu))))
+       (when ,(not (not keys))
+         ,@(loop for (key func) in keys collect
+                 `(rails/define-key ,key ,func)))
        ,@body)))
 
 (provide 'rails-bundles)
