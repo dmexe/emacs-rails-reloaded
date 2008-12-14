@@ -3,6 +3,18 @@
    (([new] (cons "Create a new view for current file" 'identity))
     ([new2] (cons "Create a new view for current file" 'identity))))
 
+  (rails/defresource 'controller "Controller"
+                     :dir "app/controllers"
+                     :file-ext  "rb"
+                     :resource-name-func '(lambda(file) (string-ext/string=~
+                                                    "^\\(application\\|\\(.*\\)_controller\\)$"
+                                                    file
+                                                    (or $2 $1)))
+                     :resource-files-func '(lambda(root name buffer resource)
+                                             (rails/directory-files
+                                              root
+                                              "app/controllers" nil
+                                              (format "^%s_controller\\.rb$" name))))
   (rails/defresource 'mailer "Mailer"
                      :dir "app/models"
                      :file-ext  "rb"

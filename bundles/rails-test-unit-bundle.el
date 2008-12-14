@@ -1,10 +1,37 @@
+;;; ---------------------------------------------------------
+;;; - Functions
+;;;
+
+(defun rails/test-unit-bundle/single-file (root rails-buffer)
+  (rails/compile/run-file
+   root
+   rails-buffer
+   "Test::Unit"
+   rails/ruby/command
+   "%s"
+   "_test\\.rb$"))
+
+(defun rails/test-unit-bundle/current-method (root rails-buffer)
+  (when-bind (method (rails/ruby/current-method))
+    (rails/compile/run-file
+     root
+     rails-buffer
+     "Test::Unit"
+     rails/ruby/command
+     (concat "%s --name=" method)
+     "_test\\.rb$")))
+
+;;; ---------------------------------------------------------
+;;; - Bundle
+;;;
+
 (rails/defbundle "Test::Unit"
   (:menu
    (([method]    (cons "Run Current Mehtod" 'rails/compile/current-method))
     ([file]      (cons "Run Single File"   'rails/compile/single-file))))
 
   ;;; ---------------------------------------------------------
-  ;;; - Variables
+  ;;; - Setup tests
   ;;;
 
   (setq rails/compile/single-file-list
@@ -13,29 +40,6 @@
   (setq rails/compile/current-method-list
         (cons 'rails/test-unit-bundle/current-method
               rails/compile/current-method-list))
-
-  ;;; ---------------------------------------------------------
-  ;;; - Functions
-  ;;;
-
-  (defun rails/test-unit-bundle/single-file (root rails-buffer)
-    (rails/compile/run-file
-     root
-     rails-buffer
-     "Test::Unit"
-     rails/ruby/command
-     "%s"
-     "_test\\.rb$"))
-
-  (defun rails/test-unit-bundle/current-method (root rails-buffer)
-    (when-bind (method (rails/ruby/current-method))
-      (rails/compile/run-file
-       root
-       rails-buffer
-       "Test::Unit"
-       rails/ruby/command
-       (concat "%s --name=" method)
-       "_test\\.rb$")))
 
   ;;; ---------------------------------------------------------
   ;;; - Resources

@@ -39,8 +39,6 @@
   (interactive)
   (setq rails/bundles/loaded-list nil)
   (setq rails/bundles/loaded-p nil)
-  (rails/resources/clear)
-  (rails-minor-mode-reset-keymap)
   (rails/bundles/load))
 
 (defun rails/bundles/add-to-loaded-menu (title)

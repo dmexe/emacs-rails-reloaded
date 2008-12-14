@@ -65,7 +65,7 @@
        '(lambda (buf)
           (rails/project/apply root buf config))
        (buffer-list))
-      (rails/reload-bundles))))
+      (rails/reload-all))))
 
 (defun rails/project/read-config (root)
   (when (rails/file-exist-p root rails/project/config)

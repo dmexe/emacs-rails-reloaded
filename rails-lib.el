@@ -33,18 +33,12 @@
 (require 'string-ext)
 (require 'list-ext)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Variables
-;;
+;;; ---------------------------------------------------------
+;;; - Variables
+;;;
 
 (defvar rails/projects '())
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Customized variables
-;;
 
 (defcustom rails/search-files-in-dirs nil
   "Set this variable to search rails files only in them."
@@ -52,10 +46,9 @@
   :type '(repeat (directory :tag "Directory")))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; rails/root functions
-;;
+;;; ---------------------------------------------------------
+;;; - rails/root functions
+;;;
 
 (defun rails/root (&optional file)
   "Return RAILS_ROOT for FILE, if FILE not set using `buffer-file-name' or `default-directory' instead it.
@@ -131,105 +124,14 @@ else return nil"
           root)))))
 
 (defmacro rails/with-current-buffer (&rest body)
-  `(when (rails/buffer-p rails/current-buffer)
+  `(when (rails/resource-buffer-p rails/current-buffer)
      (rails/with-root (buffer-file-name)
        ,@body)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Bundles functions
-;;
 
-(defun rails/bundle-enable-p (bundle)
-  (and (not (member bundle rails/disabled-bundles))
-       (rails/bundle-group-enable-p
-        (rails/bundle-group bundle))))
-
-(defun rails/bundle-func (bundle-symbol func-name)
-  (when (rails/bundle-enable-p bundle-symbol)
-    (let* ((name (string-ext/from-symbol bundle-symbol))
-           (name (concat "rails/" name "/" func-name))
-           (name (intern name)))
-      (if (fboundp name)
-          name nil))))
-
-(defun rails/bundles-func-by-buffer (rails-buffer func-name)
-  (when (rails/buffer-p rails-buffer)
-    (rails/bundle-func
-     (string-ext/from-symbol (rails/buffer-type rails-buffer))
-     func-name)))
-
-(defun rails/bundles-func (func-name &optional layout)
-  (let ((key (car (assoc func-name rails/bundles-func-list)))
-        (alist (cadr (assoc func-name rails/bundles-func-list))))
-    (if key
-        (rails/bundles-func-filter-by-layout layout alist)
-      (progn
-        (dolist (bundle rails/bundles-list)
-          (let ((func (rails/bundle-func bundle func-name)))
-            (when func
-              (add-to-list 'alist (cons func bundle) t))))
-        (push (list func-name alist) rails/bundles-func-list)
-        (rails/bundles-func-filter-by-layout layout alist)))))
-
-(defun rails/bundles-func-filter-by-layout (layout func-list)
-  (setq func-list
-        (remove* t func-list
-                 :key 'cdr
-                 :test-not
-                 '(lambda (n it)
-                    (rails/bundle-enable-p
-                     (intern (concat ":" (symbol-name it)))))))
-  (when func-list
-    (if layout
-        (let* ((names (find layout rails/layouts-list :key 'car))
-               (names (mapcar
-                       (lambda (sym)
-                         (intern (substring (symbol-name sym) 1)))
-                       names)))
-          (loop for (func . bundle) in func-list
-                for allow = (memq bundle names)
-                when allow
-                collect func))
-      (mapcar 'car func-list))))
-
-(defun rails/add-to-bundles-group (group bundle)
-  (if (find group rails/bundles-group-list :key 'car :test 'string=)
-      (push bundle (cdr (find group rails/bundles-group-list :key 'car :test 'string=)))
-    (add-to-list 'rails/bundles-group-list (list group bundle))
-    (rails/add-to-bundles-group-menu group)))
-
-(defun rails/bundle-group (bundle)
-  (loop for group in rails/bundles-group-list
-        for found = (find bundle (cdr group))
-        when found do (return (car group))))
-
-(defun rails/bundle-group-members (group)
-  (cdr (find group rails/bundles-group-list :key 'car :test 'string=)))
-
-(defun rails/bundle-group-enable-p (bundle-name)
-  (not (find bundle-name rails/disabled-bundles-group-list :test 'string=)))
-
-(defun rails/bundle-group-toggle-enabled (bundle-name)
-  (if (not (rails/bundle-group-enable-p bundle-name))
-      (setq rails/disabled-bundles-group-list
-            (remove* bundle-name rails/disabled-bundles-group-list :test 'string=))
-    (add-to-list 'rails/disabled-bundles-group-list bundle-name))
-  rails/disabled-bundles-group-list)
-
-(defmacro rails/define-bundle (name-sym resource-type bundle-group &rest body)
-  `(progn
-     (when ,bundle-group
-       (rails/add-to-bundles-group ,bundle-group ,name-sym))
-     (when (rails/bundle-group-enable-p ,bundle-group)
-       (when ,resource-type
-         (rails/add-to-resource-types-list ,resource-type))
-       ,@body)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Files functions
-;;
+;;; ---------------------------------------------------------
+;;; - Rails files functions
+;;;
 
 (defun rails/file-exist-p (root file)
   (file-exists-p (concat root file)))
@@ -248,55 +150,9 @@ else return nil"
             when allow
             collect file))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Goto item functions
-;;
-
-(defun rails/group-by-goto-item-group (goto-items)
-  (list-ext/group-by goto-items 'rails/goto-item-group))
-
-(defun rails/directory-to-goto-menu (root dir title &rest options)
-  (let ((files
-         (files-ext/find-recursive-files '(lambda (it)
-                                            (unless (files-ext/file-special-p it) it))
-                                         (list-ext/options-value :regexp options)
-                                         (concat root dir)))
-        (filter-by
-         (or (list-ext/options-value :filter-by options)
-             'stringp))
-        (name-by
-         (or (list-ext/options-value :name-by options)
-             'file-name-nondirectory))
-        (append-items (list-ext/options-value :append options))
-        (reverse (list-ext/options-value :reverse options))
-        (limit (list-ext/options-value :limit options))
-        goto-items)
-    (when files
-      (setq goto-items
-        (loop for file in files
-              for allow = (funcall filter-by (concat root dir file))
-              when allow
-              collect (make-rails/goto-item
-                       :name (funcall name-by file)
-                       :file (concat dir file))))
-      (when reverse
-        (setq goto-items (reverse goto-items)))
-      (when (and limit
-                 (< limit (length goto-items)))
-        (nbutlast goto-items (- (length goto-items) limit)))
-      (when append-items
-        (dolist (it append-items)
-          (add-to-list 'goto-items it t)))
-      (setq goto-items (rails/group-by-goto-item-group goto-items))
-      (rails/menu-from-goto-item-alist root title goto-items))
-    goto-items))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Menu functions
-;;
+;;; ---------------------------------------------------------
+;;; - Menu functions
+;;;
 
 (defun rails/display-menu (title menu &optional force-ido)
   (let ((func
@@ -350,89 +206,9 @@ else return nil"
         (when line
           (goto-line line)))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Resources, layouts, type links and functions
-;;
-
-(defun rails/add-to-resource-types-list (type)
-  (add-to-list 'rails/resource-types-list type))
-
-(defun rails/resource-type-of-buffer (rails-buffer &rest options)
-  (when (rails/buffer-p rails-buffer)
-    (let ((type (rails/buffer-type rails-buffer)))
-      (unless (eq type (opt-val :exclude options))
-        (find type rails/resource-types-list)))))
-
-(defun rails/add-to-layouts-list (layout child)
-  (let ((exist (find layout rails/layouts-list :key 'car)))
-    (if exist
-        (setf (cdr (find layout rails/layouts-list :key 'car))
-              (cdr (append exist (list child))))
-      (add-to-list 'rails/layouts-list (list layout child)))
-    rails/layouts-list))
-
-(defun rails/layout-p (layout child)
-  (car (memq child (rails/layout-childs layout))))
-
-(defun rails/layout-for-type (type)
-  (or (car (find type rails/layouts-list :key 'car))        ; TYPE is the layout
-      (loop for layout in (mapcar 'car rails/layouts-list)  ; TYPE inside the layout
-            for allow = (rails/layout-p layout type)
-            when allow do (return layout))
-      type))                                                ; TYPE is the layout, but not defined
-
-(defun rails/layout-childs (layout)
-  (find layout rails/layouts-list :key 'car))
-
-(defun rails/add-type-link (type-group type link)
-  (if (find type-group rails/linked-types-alist :key 'car)
-      (push (cons type link) (cdr (find type-group rails/linked-types-alist :key 'car)))
-    (add-to-list 'rails/linked-types-alist (list type-group (cons type link)))))
-
-(defun rails/type-link-for (type-group type)
-  (when-bind (type-group (find type-group rails/linked-types-alist :key 'car))
-    (let ((links (cdr type-group)))
-      (or (cdr (find type links :key 'car))
-          (car (find type links :key 'cdr))))))
-
-(defun rails/type-link-by-bundle-group-and-layout (bundle-group layout type-group type)
-  (let ((bundles (cdr (find bundle-group rails/bundles-group-list :key 'car :test 'string=)))
-        (group (cdr (find type-group rails/linked-types-alist :key 'car))))
-    (or
-     ;; this type
-     (when (and (member type bundles)
-                (find type group
-                      :test '(lambda(i j) (or (eq i (car j))
-                                         (eq i (cdr j))))))
-       type)
-     ;; this layout
-     (when (and (member layout bundles)
-                (find layout group
-                      :test '(lambda(i j) (or (eq i (car j))
-                                         (eq i (cdr j))))))
-       layout)
-     ;; this linked type
-     (loop for i in group
-           for first = (when (eq type (car i))
-                         (cdr i))
-           for last  = (when (eq type (cdr i))
-                         (car i))
-           when (or first last)
-           do (return (or first last)))
-     ;; this linked layout
-     (loop for i in group
-           for first = (when (eq layout (car i))
-                         (cdr i))
-           for last  = (when (eq layout (cdr i))
-                         (car i))
-           when (or first last)
-           do (return (or first last))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Keys and menus functions
-;;
+;;; ---------------------------------------------------------
+;;; - Key functions
+;;;
 
 (defmacro rails/key (key)
   `(kbd ,(concat rails-minor-mode-prefix-key " " rails-minor-mode-prefix2-key  " " key)))
@@ -460,46 +236,9 @@ else return nil"
     (merge 'vector '[menu-bar rails toggle] (list (string-ext/safe-symbol title)) 'eq)
     (list 'menu-item (concat "Go to current " title) func :enable t) 'separator))
 
-(defun rails/add-to-bundles-menu (title menumap))
-;;;   (define-key-after rails-minor-mode-map
-;;;     (merge 'vector [menu-bar rails] (list (string-ext/safe-symbol title)) 'eq)
-;;;     (cons (concat title " Bundle") menumap)
-;;;     'bundles-title))
-
-(defun rails/add-to-bundles-group-menu (title)
-  (unless (lookup-key rails-minor-mode-map
-                      [menu-bar rails bundles-groups])
-    (define-key-after rails-minor-mode-map
-      [menu-bar rails bundles-groups]
-      (cons "Bundles Groups" (make-sparse-keymap)) 'bundles-separator))
-    (define-key rails-minor-mode-map
-      (merge 'vector [menu-bar rails bundles-groups] (list (string-ext/safe-symbol title)) 'eq)
-      (list 'menu-item title `(lambda()
-                                (interactive)
-                                (rails/bundle-group-toggle-enabled ,title)
-                                (rails/reload-bundles))
-            :button (cons :toggle (rails/bundle-group-enable-p title)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Special functions
-;;
-
-(defun rails/mailer-p (root file)
-  (when (fboundp 'rails/mailer/mailer-p)
-    (rails/mailer/mailer-p (concat root file))))
-
-(defun rails/resource-mailer-p (root resource)
-  (when (fboundp 'rails/mailer/exist-p)
-    (rails/mailer/exist-p root resource)))
-
-(defun rails/observer-p (root file)
-  (when (fboundp 'rails/observer/observer-p)
-    (rails/observer/observer-p (concat root file))))
-
-(defun rails/resource-observer-p (root resource)
-  (when (fboundp 'rails/observer/exist-p)
-    (rails/observer/exist-p root resource)))
+;;; ---------------------------------------------------------
+;;; - Misc functions
+;;;
 
 (defun rails/environments (root)
   (mapcar

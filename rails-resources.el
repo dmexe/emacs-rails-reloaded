@@ -88,8 +88,7 @@
       ;; dir
       (when-bind (dir (rails/resource-dir resource))
         (unless (string-ext/start-p file dir) (throw 'result nil))
-        (setq file (string-ext/cut file dir :begin))
-        (setq file-in-dir file))
+        (setq file (string-ext/cut file dir :begin)))
       ;; file-ext
       (when-bind (file-ext (rails/resource-file-ext resource))
         (unless (string-ext/end-p file file-ext) (throw 'result nil))

@@ -1,45 +1,52 @@
-(rails/defbundle "RSpec"
-  (:menu
-   (([method]    (cons "Run Current Mehtod" 'rails/compile/current-method))
-    ([file]      (cons "Run Single File"   'rails/compile/single-file))))
+;;; ---------------------------------------------------------
+;;; - Variables
+;;;
 
+(defvar rails/rspec-bundle/command "spec")
+(defvar rails/rspec-bundle/spec-options "-O spec/spec.opts")
 
-  ;;; ---------------------------------------------------------
-  ;;; - Variables
-  ;;;
+;;; ---------------------------------------------------------
+;;; - Functions
+;;;
 
-  (defvar rails/rspec-bundle/command "spec")
-  (defvar rails/rspec-bundle/spec-options "-O spec/spec.opts")
+(defun rails/rspec-bundle/single-file (root rails-buffer)
+  (rails/compile/run-file
+   root
+   rails-buffer
+   "RSpec"
+   rails/rspec-bundle/command
+   (concat "%s" (format " %s" rails/rspec-bundle/spec-options))
+   "_spec\\.rb$"))
 
-  (setq rails/compile/single-file-list
-        (cons 'rails/rspec-bundle/single-file
-              rails/compile/single-file-list))
-  (setq rails/compile/current-method-list
-        (cons 'rails/rspec-bundle/current-method
-              rails/compile/current-method-list))
-
-  ;;; ---------------------------------------------------------
-  ;;; - Functions
-  ;;;
-
-  (defun rails/rspec-bundle/single-file (root rails-buffer)
+(defun rails/rspec-bundle/current-method (root rails-buffer)
+  (when-bind (line (line-number-at-pos))
     (rails/compile/run-file
      root
      rails-buffer
      "RSpec"
      rails/rspec-bundle/command
-     (concat "%s" (format " %s" rails/rspec-bundle/spec-options))
-     "_spec\\.rb$"))
+     (concat "%s" (format " %s -l %s" rails/rspec-bundle/spec-options line))
+     "_spec\\.rb$")))
 
-  (defun rails/rspec-bundle/current-method (root rails-buffer)
-    (when-bind (line (line-number-at-pos))
-      (rails/compile/run-file
-       root
-       rails-buffer
-       "RSpec"
-       rails/rspec-bundle/command
-       (concat "%s" (format " %s -l %s" rails/rspec-bundle/spec-options line))
-       "_spec\\.rb$")))
+;;; ---------------------------------------------------------
+;;; - Bundle
+;;;
+
+(rails/defbundle "RSpec"
+  (:menu
+   (([method]    (cons "Run Current Mehtod" 'rails/compile/current-method))
+    ([file]      (cons "Run Single File"   'rails/compile/single-file))))
+
+  ;;; ---------------------------------------------------------
+  ;;; - Setup tests
+  ;;;
+
+  (setq rails/compile/single-file-list
+      (cons 'rails/rspec-bundle/single-file
+            rails/compile/single-file-list))
+  (setq rails/compile/current-method-list
+      (cons 'rails/rspec-bundle/current-method
+            rails/compile/current-method-list))
 
   ;;; ---------------------------------------------------------
   ;;; - Resources

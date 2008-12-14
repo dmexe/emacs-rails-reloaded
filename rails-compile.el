@@ -86,6 +86,7 @@
   (setq rails/runner/after-stop-func-list
         '(rails/runner/popup-buffer-if-failed)))
 
+;; TODO: goto-item
 (defun rails/compile/run-file (root rails-buffer bundle-group-name command args-pattern &optional file-pattern)
   (let* ((type (when (rails/buffer-p rails-buffer)
                  (rails/buffer-type rails-buffer)))
