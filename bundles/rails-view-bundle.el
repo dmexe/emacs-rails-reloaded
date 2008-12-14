@@ -112,6 +112,7 @@
           (add-to-list 'files new-item t)
         (list new-item)))))
 
+
 (defun rails/view/goto-item-from-rails-buffer (root file rails-current-buffer)
   (when (rails/resource-type-of-buffer rails-current-buffer)
     (when-bind (action-name (rails/current-buffer-action-name))

@@ -460,11 +460,11 @@ else return nil"
     (merge 'vector '[menu-bar rails toggle] (list (string-ext/safe-symbol title)) 'eq)
     (list 'menu-item (concat "Go to current " title) func :enable t) 'separator))
 
-(defun rails/add-to-bundles-menu (title menumap)
-  (define-key-after rails-minor-mode-map
-    (merge 'vector [menu-bar rails] (list (string-ext/safe-symbol title)) 'eq)
-    (cons (concat title " Bundle") menumap)
-    'bundles-title))
+(defun rails/add-to-bundles-menu (title menumap))
+;;;   (define-key-after rails-minor-mode-map
+;;;     (merge 'vector [menu-bar rails] (list (string-ext/safe-symbol title)) 'eq)
+;;;     (cons (concat title " Bundle") menumap)
+;;;     'bundles-title))
 
 (defun rails/add-to-bundles-group-menu (title)
   (unless (lookup-key rails-minor-mode-map

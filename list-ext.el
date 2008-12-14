@@ -1,3 +1,5 @@
+(require 'cl)
+
 (defun list-ext/uniq (list)
   "Return a list of unique elements."
   (let ((result '()))

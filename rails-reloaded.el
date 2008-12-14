@@ -53,6 +53,7 @@
 (require 'rails-compile)
 (require 'rails-project)
 (require 'rails-resources)
+(require 'rails-bundles)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -458,7 +459,6 @@ Structure of this list:
       ([menu-bar] (rails-minor-mode-menu-bar-map))
       ((rails/short-key "<down>") 'rails/resources/goto-associated)
       ((rails/short-key "<up>")   'rails/resources/toggle)
-;;;       ((rails/short-key "t")      'rails/toggle-current-file-by-link)
       ((rails/short-key "t")      'rails/resources/toggle-test)
       ((rails/short-key "/")      'rails/runner/toggle-output-window)
       ((kbd "\e\e e")             'rails/set-default-environment)

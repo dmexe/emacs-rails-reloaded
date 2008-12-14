@@ -1,3 +1,5 @@
+(require 'cl)
+
 (defvar rails/proxy/ssh "ssh")
 (defvar rails/proxy/ssh-args "-t -t -q")
 

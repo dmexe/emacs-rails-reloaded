@@ -1,3 +1,4 @@
+(require 'cl)
 (require 'core-ext)
 (require 'inflections)
 (require 'rails-lib)
@@ -401,7 +402,7 @@
     (if (< 1 (length items))
         (setq file
               (rails/display-menu-using-ido (format "%s" (rails/resource-display-name resource))
-                                            (rails/resources/items-to-menu menu items)))
+                                            (rails/resources/items-to-menu '() items)))
       (setq file (car items)))
     (rails/resources/find-file-by-item root file)
     file))

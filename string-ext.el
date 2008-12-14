@@ -86,7 +86,7 @@ else return nil."
 
 (defun string-ext/safe-symbol (str)
   "Return symbol from STR and replace and non word chars to '-'."
-  (intern (replace-regexp-in-string "\\W" "-"
+  (intern (replace-regexp-in-string "[^a-zA-z0-9]+" "-"
            (downcase str))))
 
 (provide 'string-ext)
