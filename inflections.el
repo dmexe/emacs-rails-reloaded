@@ -37,13 +37,14 @@
 (defvar inflection-uncountables nil)
 
 (defmacro define-inflectors (&rest specs)
-  `(loop for (type . rest) in (quote ,specs) do
-         (case type
-           (:singular (push rest inflection-singulars))
-           (:plural (push rest inflection-plurals))
-           (:irregular (push rest inflection-irregulars))
-           (:uncountable (setf inflection-uncountables
-                               (append rest inflection-uncountables))))))
+  `(progn
+     ,@(loop for (type . rest) in specs collect
+             (case type
+               (:singular    `(push ',rest inflection-singulars))
+               (:plural      `(push ',rest inflection-plurals))
+               (:irregular   `(push ',rest inflection-irregulars))
+               (:uncountable `(setf inflection-uncountables
+                                    (append ',rest inflection-uncountables)))))))
 
 (define-inflectors
   (:plural "$" "s")

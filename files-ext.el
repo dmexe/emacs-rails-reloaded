@@ -26,13 +26,9 @@
                       (expand-file-name dir)))
 
 (defun files-ext/file-in-directories-p (dir-list file)
-  (let (res)
-    (mapc
-     '(lambda (it)
-        (when (files-ext/file-in-directory-p it file)
-          (setq res it)))
-     dir-list)
-    res))
+  (loop for dir in dir-list
+        when (files-ext/file-in-directory-p dir file)
+        return dir))
 
 (defun files-ext/write-string-to-file (file string)
   "Write a string to a file (erasing the previous content)."

@@ -34,12 +34,12 @@
                "../"  "../../foo")))
 
 (deftest "`files-ext/file-in-directories-p'"
-  (assert-t (files-ext/file-in-directories-p
-             '("/Users/dima/" "/Users/joe/")
-             "/Users/dima/foo.bar"))
-  (assert-t (files-ext/file-in-directories-p
-             '("../" "/tmp")   "./foo"))
-  (assert-t (files-ext/file-in-directories-p
-             '("/tmp" "../" )  "../foo"))
+  (assert-equal "/Users/dima/"
+                (files-ext/file-in-directories-p '("/Users/dima/" "/Users/joe/")
+                                                "/Users/dima/foo.bar"))
+  (assert-equal "../"
+                (files-ext/file-in-directories-p '("../" "/tmp")   "./foo"))
+  (assert-equal "../"
+                (files-ext/file-in-directories-p '("/tmp" "../" )  "../foo"))
   (assert-nil (files-ext/file-in-directories-p
                '("../" "/tmp")  "../../foo")))
