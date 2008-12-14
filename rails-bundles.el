@@ -23,7 +23,7 @@
   (unless rails/bundles/loaded-p
     (let* ((bdir (concat
                   (file-name-directory (locate-library "rails-reloaded"))
-                  "newbundles"))
+                  "bundles"))
            (files (directory-files bdir nil rails/bundles/file-regexp)))
       (dolist (file files)
         (load (concat bdir "/" (file-name-sans-extension file)))

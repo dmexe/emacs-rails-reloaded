@@ -1,61 +1,78 @@
-(require 'cl)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Constants
-;;
-(defvar rails/rspec/command "spec")
-(defvar rails/rspec/spec-options "-O spec/spec.opts")
+(rails/defbundle "RSpec"
+  (:menu
+   (([method]    (cons "Run Current Mehtod" 'rails/compile/current-method))
+    ([file]      (cons "Run Single File"   'rails/compile/single-file))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Functions
-;;
+  ;;; ---------------------------------------------------------
+  ;;; - Variables
+  ;;;
 
-(defun rails/rspec/single-file (root rails-buffer)
-  (rails/compile/run-file
-   root
-   rails-buffer
-   "RSpec"
-   rails/rspec/command
-   (concat "%s" (format " %s" rails/rspec/spec-options))
-   "_spec\\.rb$"))
+  (defvar rails/rspec-bundle/command "spec")
+  (defvar rails/rspec-bundle/spec-options "-O spec/spec.opts")
 
-(defun rails/rspec/current-method (root rails-buffer)
-  (when-bind (line (line-number-at-pos))
+  (setq rails/compile/single-file-list
+        (cons 'rails/rspec-bundle/single-file
+              rails/compile/single-file-list))
+  (setq rails/compile/current-method-list
+        (cons 'rails/rspec-bundle/current-method
+              rails/compile/current-method-list))
+
+  ;;; ---------------------------------------------------------
+  ;;; - Functions
+  ;;;
+
+  (defun rails/rspec-bundle/single-file (root rails-buffer)
     (rails/compile/run-file
      root
      rails-buffer
      "RSpec"
-     rails/rspec/command
-     (concat "%s" (format " %s -l %s" rails/rspec/spec-options line))
-     "_spec\\.rb$")))
+     rails/rspec-bundle/command
+     (concat "%s" (format " %s" rails/rspec-bundle/spec-options))
+     "_spec\\.rb$"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Callbacks
-;;
+  (defun rails/rspec-bundle/current-method (root rails-buffer)
+    (when-bind (line (line-number-at-pos))
+      (rails/compile/run-file
+       root
+       rails-buffer
+       "RSpec"
+       rails/rspec-bundle/command
+       (concat "%s" (format " %s -l %s" rails/rspec-bundle/spec-options line))
+       "_spec\\.rb$")))
 
-(defun rails/rspec/load ()
-  (rails/define-bundle
-   :rspec nil "RSpec"
-  (setq rails/compile/single-file-list
-        (cons 'rails/rspec/single-file
-              rails/compile/single-file-list))
-  (setq rails/compile/current-method-list
-        (cons 'rails/rspec/current-method
-              rails/compile/current-method-list))
-  (rails/define-key "<return>" 'rails/rspec/run-current-file-as-spec)
-  (let ((map (make-sparse-keymap)))
-    (define-keys map
-      ([method]    (cons "Run Current Mehtod" 'rails/compile/current-method))
-      ([file]      (cons "Run Single File"   'rails/compile/single-file)))
-    (rails/add-to-bundles-menu "RSpec" map))))
+  ;;; ---------------------------------------------------------
+  ;;; - Resources
+  ;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Interactives
-;;
+  (rails/defresource 'model-spec "Model RSpec"
+                     :menu-group 'spec
+                     :bundle-name "RSpec"
+                     :dir "spec/models"
+                     :file-suffix  "_spec"
+                     :file-ext  "rb"
+                     :pluralize t
+                     :test-to 'model)
 
-(provide 'rails-rspec-bundle)
+  (rails/defresource 'controller-spec "Controller RSpec"
+                     :menu-group 'spec
+                     :bundle-name "RSpec"
+                     :dir "spec/controllers"
+                     :file-suffix  "_controller_spec"
+                     :file-ext  "rb"
+                     :test-to 'controller)
+
+  (rails/defresource 'helper-spec "Helper RSpec"
+                     :menu-group 'spec
+                     :bundle-name "RSpec"
+                     :dir "spec/helpers"
+                     :file-suffix  "_helper_spec"
+                     :file-ext  "rb"
+                     :test-to 'helper)
+
+  (rails/defresource 'fixture-spec "Fixture"
+                     :menu-group 'spec
+                     :bundle-name "RSpec"
+                     :dir "spec/fixtures"
+                     :file-ext "yml"
+                     :link-to 'model-spec))
