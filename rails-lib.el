@@ -124,10 +124,10 @@ else return nil"
           root)))))
 
 (defmacro rails/with-current-buffer (&rest body)
-  `(when (rails/resource-buffer-p rails/current-buffer)
-     (rails/with-root (buffer-file-name)
-       ,@body)))
-
+  `(if (rails/resource-buffer-p rails/current-buffer)
+       (rails/with-root (buffer-file-name)
+         ,@body)
+     (rails/notify "Curent buffer it's not a rails resource." :error)))
 
 ;;; ---------------------------------------------------------
 ;;; - Rails files functions

@@ -27,6 +27,8 @@
 
 ;;; Code:
 
+(require 'rails-resources)
+
 (defvar rails/compile/single-file-list '())
 (defvar rails/compile/current-method-list '())
 
@@ -86,35 +88,27 @@
   (setq rails/runner/after-stop-func-list
         '(rails/runner/popup-buffer-if-failed)))
 
-;; TODO: goto-item
-(defun rails/compile/run-file (root rails-buffer bundle-group-name command args-pattern &optional file-pattern)
-  (let* ((type (when (rails/buffer-p rails-buffer)
-                 (rails/buffer-type rails-buffer)))
-         (link (when type
-                 (rails/type-link-by-bundle-group-and-layout
-                  bundle-group-name
-                  (rails/buffer-layout rails-buffer)
-                  :tests type))))
+(defun rails/compile/run-file (root rails-buffer command args-pattern &optional file-pattern)
+  (let ((item
+         (when rails-buffer
+           (rails/resources/get-associated-test-item-for-buffer root
+                                                                rails-buffer)))
+        file)
     (cond
-     ((and link type)
-      (when-bind (func (rails/bundle-func link "goto-item-from-rails-buffer"))
-        (let ((goto-item (funcall func root
-                                  (rails/cut-root (rails/buffer-file rails-buffer))
-                                  rails-buffer)))
-          (when (rails/goto-item-p goto-item)
-            (rails/compile/run root
-                               command
-                               (format args-pattern
-                                       (rails/goto-item-file goto-item)))
-            t))))
-    ((and file-pattern
-          (string-ext/string=~ file-pattern (buffer-file-name) t))
+     (item
+      (setq file (rails/resource-item-file item))
+      (rails/compile/run root
+                         command
+                         (format args-pattern
+                                 file)))
+     ((and file-pattern
+           (string-ext/string=~ file-pattern (buffer-file-name) t))
       (rails/compile/run root
                          command
                          (format args-pattern
                                  (rails/cut-root (buffer-file-name)))))
-    (t
-     (rails/notify "Can't run current file." :error)))))
+     (t
+      (rails/notify "Can't run current file as a test." :error)))))
 
 (defun rails/compile/single-file ()
   (interactive)

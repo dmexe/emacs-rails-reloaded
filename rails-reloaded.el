@@ -62,8 +62,6 @@
 (defconst rails/version "0.99"
   "emacs-rails version string")
 
-(defvar rails/current-buffer nil)
-
 (defvar rails/notify-func-list '(rails/notify-growl))
 
 ;;; ---------------------------------------------------------

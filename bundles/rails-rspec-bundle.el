@@ -13,7 +13,6 @@
   (rails/compile/run-file
    root
    rails-buffer
-   "RSpec"
    rails/rspec-bundle/command
    (concat "%s" (format " %s" rails/rspec-bundle/spec-options))
    "_spec\\.rb$"))
@@ -23,7 +22,6 @@
     (rails/compile/run-file
      root
      rails-buffer
-     "RSpec"
      rails/rspec-bundle/command
      (concat "%s" (format " %s -l %s" rails/rspec-bundle/spec-options line))
      "_spec\\.rb$")))

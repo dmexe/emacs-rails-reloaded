@@ -6,7 +6,6 @@
   (rails/compile/run-file
    root
    rails-buffer
-   "Test::Unit"
    rails/ruby/command
    "%s"
    "_test\\.rb$"))
@@ -16,7 +15,6 @@
     (rails/compile/run-file
      root
      rails-buffer
-     "Test::Unit"
      rails/ruby/command
      (concat "%s --name=" method)
      "_test\\.rb$")))
