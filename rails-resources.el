@@ -232,15 +232,12 @@
 ;;; - Menu functions
 ;;;
 
-(defun rails/resources/items-to-menu (menu items &optional display-resource-name)
-  (let ((menu menu)
-        func)
-    (setq func
-          (if display-resource-name
-              'rails/resource-item-resource-display-name
-            'rails/resource-item-display-name))
+(defun rails/resources/items-to-menu (menu items &optional name-func)
+  (let ((menu menu))
+    (unless name-func
+      (setq name-func 'rails/resource-item-resource-display-name))
     (dolist (it items)
-      (add-to-list 'menu (cons (apply func (list it)) it) t))
+      (add-to-list 'menu (cons (apply name-func (list it)) it) t))
     menu))
 
 (defun rails/resources/find-file-by-item (root item)
@@ -289,7 +286,7 @@
      (setq items
            (if (rails/resource-link-to resource)
                (rails/resources/linked-to-items-of-buffer root rails/current-buffer)
-             (rails/resources/linked-items-of-buffer root rails-buffer)))
+             (rails/resources/linked-items-of-buffer root rails/current-buffer)))
      (setq menu (rails/resources/items-to-menu menu items))
      (setq file (if (< 1 (length menu))
                     (rails/display-menu "Select" menu force-ido)
@@ -391,10 +388,16 @@
 ;;; - Menu for associated resources
 ;;;
 
-(defun rails/resources/goto-associated-using-menu (root rails-buffer)
-  (let (items menu last-p file resource)
+(defun rails/resources/goto-associated-using-menu (root rails-buffer &optional resource)
+  (let (items menu last-p file)
     (setq items
-          (rails/resources/get-associated-items root rails-buffer))
+          (if resource
+              (list
+               (rails/resources/get-associated-items-by-resource root
+                                                                 rails-buffer
+                                                                 resource))
+          (rails/resources/get-associated-items root
+                                                rails-buffer)))
     (setq items
           (list-ext/group-by
            items
@@ -409,27 +412,32 @@
           (if (rails/resource-expand-in-menu (rails/resources/find
                                               (rails/resource-item-resource-type
                                                (car i))))
-              (setq menu (rails/resources/items-to-menu menu i))
+              (setq menu (rails/resources/items-to-menu menu i 'rails/resource-item-display-name))
             (add-to-list 'menu
                          (cons (rails/resource-item-resource-display-name (car i))
                                (car i))
                          t))))
       (setq last-p t))
     (setq resource  (rails/resources/find (rails/resource-buffer-type rails-buffer)))
-    (setq file (rails/display-menu-using-popup
-                (format "Go to from %s to:" (rails/resource-display-name resource))
-                menu))
+    (setq file
+          (if (and resource
+                   (= 1 (length menu)))
+              (cdr (car menu))
+            (rails/display-menu-using-popup
+             (format "Go to from %s to:" (rails/resource-display-name resource))
+             menu)))
     (rails/resources/find-file-by-item root file)
     file))
 
-(defun rails/resources/goto-associated-using-ido (root rails-buffer)
-  (let (items resource file)
-    (setq resource
-          (rails/display-menu-using-ido
-           "Go to"
-           (mapcar '(lambda(i) (cons (symbol-name (rails/resource-type i)) i))
-                   (rails/resources/get-associated-resources root
-                                                             rails-buffer))))
+(defun rails/resources/goto-associated-using-ido (root rails-buffer &optional resource)
+  (let (items file)
+    (unless resource
+      (setq resource
+            (rails/display-menu-using-ido
+             "Go to"
+             (mapcar '(lambda(i) (cons (symbol-name (rails/resource-type i)) i))
+                     (rails/resources/get-associated-resources root
+                                                               rails-buffer)))))
     (setq items
           (rails/resources/get-associated-items-by-resource root
                                                             rails-buffer
@@ -443,14 +451,17 @@
     (rails/resources/find-file-by-item root file)
     file))
 
-(defun rails/resources/goto-associated (&optional force-ido)
+(defun rails/resources/goto-associated (&optional resource-type force-ido)
   (interactive)
   (rails/with-current-buffer
-   (let ((root (rails/root)))
+   (let ((root (rails/root))
+         resource)
+     (when resource-type
+       (setq resource (rails/resources/find resource-type)))
      (if (and window-system
               (not force-ido)
               (eq rails/display-menu-method 'popup))
-         (rails/resources/goto-associated-using-menu root rails/current-buffer)
-       (rails/resources/goto-associated-using-ido root rails/current-buffer)))))
+         (rails/resources/goto-associated-using-menu root rails/current-buffer resource)
+       (rails/resources/goto-associated-using-ido root rails/current-buffer resource)))))
 
 (provide 'rails-resources)
