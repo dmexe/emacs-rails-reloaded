@@ -418,14 +418,15 @@
                                (car i))
                          t))))
       (setq last-p t))
-    (setq resource  (rails/resources/find (rails/resource-buffer-type rails-buffer)))
-    (setq file
-          (if (and resource
-                   (= 1 (length menu)))
-              (cdr (car menu))
-            (rails/display-menu-using-popup
-             (format "Go to from %s to:" (rails/resource-display-name resource))
-             menu)))
+    (when menu
+      (setq resource  (rails/resources/find (rails/resource-buffer-type rails-buffer)))
+      (setq file
+            (if (and resource
+                     (= 1 (length menu)))
+                (cdr (car menu))
+              (rails/display-menu-using-popup
+               (format "Go to from %s to:" (rails/resource-display-name resource))
+               menu))))
     (rails/resources/find-file-by-item root file)
     file))
 
@@ -463,5 +464,93 @@
               (eq rails/display-menu-method 'popup))
          (rails/resources/goto-associated-using-menu root rails/current-buffer resource)
        (rails/resources/goto-associated-using-ido root rails/current-buffer resource)))))
+
+;;; ---------------------------------------------------------
+;;; - Goto resource
+;;;
+(defun rails/resources/get-compared-resources-list (resource)
+  (let ((dir (rails/resource-dir resource))
+        resources)
+    (setq resources
+          (loop for res in rails/resources/list-defined
+                when (string-ext/start-p (rails/resource-dir res)
+                                         dir)
+                collect res))
+    (add-to-list 'resources resource)
+    (loop for res in resources
+          for file-mask = ""
+          collect
+          (progn
+            ;; skip-file-suffix
+            (when-bind (skip-file-suffix (rails/resource-skip-file-suffix res))
+              (setq file-mask (concat file-mask skip-file-suffix)))
+            ;; file-suffix
+            (when-bind (file-suffix (rails/resource-file-suffix res))
+              (setq file-mask (concat file-mask file-suffix)))
+            ;; file-ext
+            (when-bind (file-ext (rails/resource-file-ext res))
+              (setq file-mask (concat file-mask file-ext)))
+            (setq file-mask (concat "^\\(.*\\)" (regexp-quote file-mask) "$"))
+            (list (rails/resource-type res)
+                  file-mask
+                  (rails/resource-weight res))))))
+
+(defun rails/resources/compare-file-by-compared-list (file list)
+  (let ((max-weight 0)
+        max-match
+        max-res)
+    (loop for (res regexp weight) in list
+          for match = (string-ext/string=~ regexp file $1)
+          when (and match
+                    (> weight max-weight))
+          do
+          (progn
+            (setq max-weight weight
+                  max-match match
+                  max-res res)))
+    (cons max-res max-match)))
+
+(defun rails/resources/list-items-by-resource (root rails-buffer resource)
+  (let ((dir (rails/resource-dir resource))
+        (type (rails/resource-type resource))
+        (comp-list (rails/resources/get-compared-resources-list resource))
+        file-mask)
+    (setq file-mask
+          (nth 1 (find type comp-list :key 'car)))
+
+    (setq files (rails/directory-files-recursive root dir nil file-mask))
+    (setq files
+          (loop for file in files
+                for alist = (rails/resources/compare-file-by-compared-list file comp-list)
+                for res-type = (car alist)
+                for res-name = (cdr alist)
+                when (eq res-type type)
+                collect
+                (make-rails/resource-item
+                 :file (concat dir file)
+                 :display-name res-name
+                 :resource-type (rails/resource-type resource)
+                 :resource-menu-group (rails/resource-menu-group resource)
+                 :resource-display-name res-name)))
+    (when rails-buffer
+      (setq files  (rails/resources/filter-buffer-in-items rails-buffer files)))
+    (setq files (rails/resources/items-to-menu '() files))
+    (setq item (rails/display-menu "File" files t))
+    (rails/resources/find-file-by-item root item)))
+
+(defun rails/resources/goto-resource (&optional resource-type)
+  (interactive)
+  (when-bind (root (rails/root))
+    (let (resource)
+      (when resource-type
+        (setq resource (rails/resources/find resource-type)))
+      (unless resource
+        (let (items item)
+          (setq items
+                (loop for it in rails/resources/list-defined
+                      collect (cons (symbol-name (rails/resource-type it))
+                                    it)))
+          (setq resource (rails/display-menu "Select resource" items t))))
+      (rails/resources/list-items-by-resource root rails/current-buffer resource))))
 
 (provide 'rails-resources)

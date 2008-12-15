@@ -150,6 +150,15 @@ else return nil"
             when allow
             collect file))))
 
+(defun rails/directory-files-recursive (root directory &optional full match nosort)
+  (let ((fullname (concat root "/" directory)))
+    (when (file-directory-p fullname)
+      (loop for file in (find-recursive-directory-relative-files
+                         fullname "" match)
+            for allow = (not (files-ext/file-special-p file))
+            when allow
+            collect file))))
+
 ;;; ---------------------------------------------------------
 ;;; - Menu functions
 ;;;
