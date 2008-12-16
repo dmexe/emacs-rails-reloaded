@@ -33,6 +33,10 @@
 
 (defvar rails/resources/list-defined nil)
 
+;;; ---------------------------------------------------------
+;;; - CRUD functions
+;;;
+
 (defun* rails/defresource (type display-name &key menu-group bundle-name
                                                   dir file-suffix file-ext
                                                   skip-file-suffix
@@ -81,52 +85,87 @@
   (setq rails/resources/list-defined nil))
 
 ;;; ---------------------------------------------------------
-;;; - Lookup resource-buffer for file
+;;; - Comparable functions
 ;;;
-
-(defun rails/resources/get-buffer-by-resource-for-file (resource file-name)
-  (let ((file file-name))
-    (catch 'result
-      ;; dir
-      (when-bind (dir (rails/resource-dir resource))
-        (unless (string-ext/start-p file dir) (throw 'result nil))
-        (setq file (string-ext/cut file dir :begin)))
-      ;; file-ext
-      (when-bind (file-ext (rails/resource-file-ext resource))
-        (unless (string-ext/end-p file file-ext) (throw 'result nil))
-        (setq file (string-ext/cut file file-ext :end)))
-      ;; file-suffix
-      (when-bind (file-suffix (rails/resource-file-suffix resource))
-        (unless (string-ext/end-p file file-suffix) (throw 'result nil))
-        (setq file (string-ext/cut file file-suffix :end)))
-      ;; skip-file-suffix
-      (when-bind (skip-file-suffix (rails/resource-skip-file-suffix resource))
-        (unless (string-ext/end-p file skip-file-suffix) (throw 'result nil)))
-      ;; resource-name-func
-      (when-bind (resource-name-func (rails/resource-resource-name-func resource))
-        (let ((res (apply resource-name-func (list file))))
-          (unless res (throw 'result nil))
-          (setq file res)))
-      ;; pluralize
-      (when (rails/resource-pluralize resource)
-        (setq file (pluralize-string file)))
-      ;; make resource
-      (make-rails/resource-buffer :type (rails/resource-type resource)
-                                  :resource-name file
-                                  :file-name file-name
-                                  :weight (rails/resource-weight resource)
-                                  :get-action-func (rails/resource-get-action-func resource)
-                                  :set-action-func (rails/resource-set-action-func resource)))))
-
-(defun rails/resources/get-buffer-for-file(root file)
+(defun rails/resources/get-compared-resources-alist (resource-or-file)
   (let (resources)
     (setq resources
           (loop for res in rails/resources/list-defined
-                for allow = (rails/resources/get-buffer-by-resource-for-file res file)
-                when allow
-                collect allow))
-    (when (listp resources)
-      (car (sort* resources '> :key 'rails/resource-buffer-weight)))))
+                when (or
+                      (and (rails/resource-p resource-or-file)
+                           (string-ext/start-p (rails/resource-dir res)
+                                               (rails/resource-dir resource-or-file)))
+                      (and (stringp resource-or-file)
+                           (string-ext/start-p resource-or-file
+                                               (rails/resource-dir res))))
+                collect res))
+    (when (rails/resource-p resource-or-file)
+      (add-to-list 'resources resource-or-file))
+    (loop for res in resources
+          for file-mask = ""
+          for file-suffix = ""
+          collect
+          (progn
+            ;; skip-file-suffix
+            (when-bind (skip-file-suffix (rails/resource-skip-file-suffix res))
+              (setq file-suffix skip-file-suffix))
+            ;; file-suffix
+            (when-bind (file-suffix (rails/resource-file-suffix res))
+              (setq file-mask (concat file-mask file-suffix)))
+            ;; file-ext
+            (when-bind (file-ext (rails/resource-file-ext res))
+              (setq file-mask (concat file-mask file-ext)))
+            (setq file-mask (format "^\\(.*%s\\)%s$"
+                                    (regexp-quote file-suffix)
+                                    (regexp-quote file-mask)))
+            (cons res
+                  file-mask)))))
+
+(defun rails/resources/compare-file-by-compared-alist (file alist)
+  (let ((max-weight 0)
+        max-match
+        max-res)
+    (loop for (res . regexp) in alist
+          for dir    = (rails/resource-dir res)
+          for in-dir = (string-ext/start-p file dir)
+          for match  = (string-ext/string=~ regexp
+                                            (string-ext/cut file
+                                                            dir
+                                                            :begin)
+                                            $1)
+          when (and in-dir
+                    match
+                    (> (rails/resource-weight res) max-weight))
+          do
+          (progn
+            (setq max-weight (rails/resource-weight res)
+                  max-match match
+                  max-res res)))
+    (cons max-res max-match)))
+
+;;; ---------------------------------------------------------
+;;; - Lookup resource-buffer for file
+;;;
+
+(defun rails/resources/get-buffer-for-file(root file)
+  (let* ((comp-alist (rails/resources/get-compared-resources-alist file))
+         (res-alist (rails/resources/compare-file-by-compared-alist file
+                                                                    comp-alist))
+         res-name
+         res)
+    (when res-alist
+      (setq res-name (cdr res-alist)
+            res      (car res-alist))
+      (when-bind (func (rails/resource-resource-name-func res))
+        (setq res-name (funcall func res-name)))
+      (when (rails/resource-pluralize res)
+        (setq res-name (pluralize-string res-name)))
+      (make-rails/resource-buffer :type (rails/resource-type res)
+                                  :resource-name res-name
+                                  :file-name file
+                                  :weight (rails/resource-weight res)
+                                  :get-action-func (rails/resource-get-action-func res)
+                                  :set-action-func (rails/resource-set-action-func res)))))
 
 ;;; ---------------------------------------------------------
 ;;; - Lookup associated resources by resource-buffer
@@ -468,63 +507,23 @@
 ;;; ---------------------------------------------------------
 ;;; - Goto resource
 ;;;
-(defun rails/resources/get-compared-resources-list (resource)
-  (let ((dir (rails/resource-dir resource))
-        resources)
-    (setq resources
-          (loop for res in rails/resources/list-defined
-                when (string-ext/start-p (rails/resource-dir res)
-                                         dir)
-                collect res))
-    (add-to-list 'resources resource)
-    (loop for res in resources
-          for file-mask = ""
-          collect
-          (progn
-            ;; skip-file-suffix
-            (when-bind (skip-file-suffix (rails/resource-skip-file-suffix res))
-              (setq file-mask (concat file-mask skip-file-suffix)))
-            ;; file-suffix
-            (when-bind (file-suffix (rails/resource-file-suffix res))
-              (setq file-mask (concat file-mask file-suffix)))
-            ;; file-ext
-            (when-bind (file-ext (rails/resource-file-ext res))
-              (setq file-mask (concat file-mask file-ext)))
-            (setq file-mask (concat "^\\(.*\\)" (regexp-quote file-mask) "$"))
-            (list (rails/resource-type res)
-                  file-mask
-                  (rails/resource-weight res))))))
-
-(defun rails/resources/compare-file-by-compared-list (file list)
-  (let ((max-weight 0)
-        max-match
-        max-res)
-    (loop for (res regexp weight) in list
-          for match = (string-ext/string=~ regexp file $1)
-          when (and match
-                    (> weight max-weight))
-          do
-          (progn
-            (setq max-weight weight
-                  max-match match
-                  max-res res)))
-    (cons max-res max-match)))
-
 (defun rails/resources/list-items-by-resource (root rails-buffer resource)
   (let ((dir (rails/resource-dir resource))
         (type (rails/resource-type resource))
-        (comp-list (rails/resources/get-compared-resources-list resource))
-        file-mask)
+        (comp-alist (rails/resources/get-compared-resources-alist resource))
+        file-mask files item)
+    (message "%S" comp-alist)
     (setq file-mask
-          (nth 1 (find type comp-list :key 'car)))
+          (cdr (find resource comp-alist :key 'car)))
 
-    (setq files (rails/directory-files-recursive root dir nil file-mask))
+    (setq files (rails/directory-files-recursive root dir file-mask))
     (setq files
           (loop for file in files
-                for alist = (rails/resources/compare-file-by-compared-list file comp-list)
-                for res-type = (car alist)
+                for alist    = (rails/resources/compare-file-by-compared-alist (concat dir file)
+                                                                               comp-alist)
+                for res      = (car alist)
                 for res-name = (cdr alist)
-                when (eq res-type type)
+                when (eq (rails/resource-type res) type)
                 collect
                 (make-rails/resource-item
                  :file (concat dir file)
