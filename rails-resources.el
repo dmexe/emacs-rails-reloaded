@@ -141,7 +141,8 @@
             (setq max-weight (rails/resource-weight res)
                   max-match match
                   max-res res)))
-    (cons max-res max-match)))
+    (when max-res
+      (cons max-res max-match))))
 
 ;;; ---------------------------------------------------------
 ;;; - Lookup resource-buffer for file
@@ -156,6 +157,7 @@
     (when res-alist
       (setq res-name (cdr res-alist)
             res      (car res-alist))
+
       (when-bind (func (rails/resource-resource-name-func res))
         (setq res-name (funcall func res-name)))
       (when (rails/resource-pluralize res)
@@ -512,7 +514,6 @@
         (type (rails/resource-type resource))
         (comp-alist (rails/resources/get-compared-resources-alist resource))
         file-mask files item)
-    (message "%S" comp-alist)
     (setq file-mask
           (cdr (find resource comp-alist :key 'car)))
 

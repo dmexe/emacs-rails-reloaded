@@ -54,4 +54,13 @@
                      :file-suffix "_observer"
                      :weight 2
                      :link-to 'model
-                     :pluralize t))
+                     :pluralize t)
+
+  (rails/defresource 'stylesheet "Stylesheet"
+                     :dir "public/stylesheets"
+                     :file-ext  "css")
+
+  (rails/defresource 'javascript "Javascript"
+                     :dir "public/javascripts"
+                     :file-ext  "css")
+ )
