@@ -12,7 +12,7 @@
                           dir file-ext file-suffix skip-file-suffix ;; string
                           expand-in-menu ;; boolean
                           pluralize ;; boolean
-                          resource-name-func resource-files-func ;; commandp
+                          file-pattern ;; pattern
                           link-to ;; list
                           test-to ;; symbol
                           get-action-func set-action-func ;; commandp
@@ -40,7 +40,7 @@
 (defun* rails/defresource (type display-name &key menu-group bundle-name
                                                   dir file-suffix file-ext
                                                   skip-file-suffix
-                                                  pluralize resource-name-func resource-files-func
+                                                  pluralize file-pattern
                                                   expand-in-menu
                                                   link-to test-to
                                                   get-action-func set-action-func
@@ -64,8 +64,7 @@
                                               (error "rails/resource#test-to must be the symbol"))
                                    :pluralize pluralize
                                    :expand-in-menu expand-in-menu
-                                   :resource-name-func resource-name-func
-                                   :resource-files-func resource-files-func
+                                   :file-pattern file-pattern
                                    :get-action-func get-action-func
                                    :set-action-func set-action-func
                                    :weight (if (not weight) 1 weight)))
@@ -157,11 +156,11 @@
     (when res-alist
       (setq res-name (cdr res-alist)
             res      (car res-alist))
-
-      (when-bind (func (rails/resource-resource-name-func res))
-        (setq res-name (funcall func res-name)))
       (when (rails/resource-pluralize res)
         (setq res-name (pluralize-string res-name)))
+      (when-bind (pattern (rails/resource-file-pattern res))
+        (setq pattern (replace-regexp-in-string "{name}" "\\\\(.*\\\\)" pattern))
+        (setq res-name (string-ext/string=~ pattern res-name $1)))
       (make-rails/resource-buffer :type (rails/resource-type res)
                                   :resource-name res-name
                                   :file-name file
@@ -228,27 +227,33 @@
 
 (defun rails/resources/get-associated-items-by-resource (root rails-buffer resource &optional no-buffer-filter)
   (let ((file (rails/resource-buffer-resource-name rails-buffer))
-        (file-func (rails/resource-resource-files-func resource))
-        result name)
+        result name pattern-p)
     (setq result
-          (if file-func
-              ;; resource-files-func
-              (apply file-func (list root file rails-buffer resource))
-            (progn
-              ;; singularize
-              (when-bind (pluralize (rails/resource-pluralize resource))
-                (setq file (singularize-string file)))
-              (setq name file)
-              ;; dir
-              (when-bind (dir (rails/resource-dir resource))
-                (setq file (concat dir file)))
-              ;; file-suffix
-              (when-bind (file-suffix (rails/resource-file-suffix resource))
-                (setq file (concat file file-suffix)))
-              ;; file-ext
-              (when-bind (file-ext (rails/resource-file-ext resource))
-                (setq file (concat file file-ext)))
-              (when (rails/file-exist-p root file)
+          (progn
+            (setq name file)
+            ;; singularize
+            (when-bind (pluralize (rails/resource-pluralize resource))
+              (setq file (singularize-string file)))
+            ;; pattern
+            (when-bind (pattern (rails/resource-file-pattern resource))
+              (setq file (replace-regexp-in-string "{name}" file pattern))
+              (setq pattern-p t))
+            ;; dir
+            (when-bind (dir (rails/resource-dir resource))
+              (setq file (concat dir file)))
+            ;; file-suffix
+            (when-bind (file-suffix (rails/resource-file-suffix resource))
+              (setq file (concat file file-suffix)))
+            ;; file-ext
+            (when-bind (file-ext (rails/resource-file-ext resource))
+              (setq file (concat file file-ext)))
+            (if pattern-p
+                (let ((dir (file-name-directory file))
+                      (file (file-name-nondirectory file))
+                      files)
+                  (loop for it in (rails/directory-files-recursive root dir file)
+                        collect (cons it (concat dir it))))
+              (when (file-exists-p (concat root file))
                 (list (cons name file))))))
     (setq result
           (rails/resources/resource-files-to-items resource result))

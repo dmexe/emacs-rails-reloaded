@@ -23,11 +23,7 @@
   (rails/defresource 'view "View"
                      :dir "app/views"
                      :menu-group 'view
-                     :resource-name-func '(lambda(file) (string-ext/cut (file-name-directory file) "/" :end))
-                     :resource-files-func '(lambda(root name buffer resource)
-                                             (mapcar '(lambda(file)
-                                                        (cons file (concat name "/" file)))
-                                                     (rails/directory-files root (format "app/views/%s" name))))
+                     :file-pattern "{name}/.*"
                      :get-action-func '(lambda() (file-name-nondirectory (file-name-sans-extension (buffer-file-name))))
                      :expand-in-menu t
                      :link-to '(mailer controller)
@@ -36,11 +32,7 @@
   (rails/defresource 'migration "Migration"
                      :dir "db/migrate"
                      :file-ext  "rb"
-                     :resource-name-func '(lambda(file) (string-ext/string=~ "^[0-9]+_create_\\(.*\\)" file $1))
-                     :resource-files-func '(lambda(root name buffer resource)
-                                             (rails/directory-files root
-                                                                    "db/migrate" nil
-                                                                    (format "^[0-9]+_create_%s\\.rb$" name)))
+                     :file-pattern  "[0-9]+_create_{name}"
                      :link-to 'model)
 
   (rails/defresource 'model "Model"
