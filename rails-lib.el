@@ -153,8 +153,8 @@ else return nil"
 (defun rails/directory-files-recursive (root directory &optional regexp)
   (let ((fullname (concat root "/" directory)))
     (when (file-directory-p fullname)
-      (loop for file in (find-recursive-directory-relative-files
-                         fullname "" regexp)
+      (loop for file in (files-ext/directory-files-recursive
+                         fullname regexp)
             for allow = (not (files-ext/file-special-p file))
             when allow
             collect file))))
