@@ -53,7 +53,7 @@
 
 (defun rails/compile/match-error (limit)
   (catch 'found
-    (while (re-search-forward "\\(?:\\[\\|^\\|\s+\\|(\\)?\\([^ :\n\]+\\):\\([0-9]+\\)+\\b" limit t)
+    (while (re-search-forward "\\(?:\\[\\|^\\|\\s+\\|(\\)?\\([^ :\n\]+\\):\\([0-9]+\\)+\\b" limit t)
       (let ((file (match-string 1))
             (root (rails/root default-directory)))
         (when root
