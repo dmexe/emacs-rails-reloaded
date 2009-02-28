@@ -35,12 +35,22 @@
         cur-dir
         fst
         it
-        done)
+        done
+        filter-list)
     (push "" dir-stack)
     (while (car dir-stack)
       (setq done t)
       (setq cur-dir (car dir-stack))
-      (push (directory-files (concat dir cur-dir) nil regexp) files-stack)
+      (setq filter-list (directory-files (concat dir cur-dir) nil))
+
+      (setq filter-list (remove-if '(lambda(i)
+                                      (and
+                                       (not (file-directory-p (concat dir cur-dir i)))
+                                       (not (string-match regexp i))))
+                                   filter-list))
+;;      (message-box "%S" filter-list)
+;;      (push (directory-files (concat dir cur-dir) nil regexp) files-stack)
+      (push filter-list files-stack)
       (while (and (> (length files-stack) 0)
                   done)
         (setq fst (pop files-stack))
