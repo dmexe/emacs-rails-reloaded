@@ -44,8 +44,7 @@
   ;;;
 
   (rails/defresource 'unit-test "Unit Test"
-                   :menu-group 'unit-test
-                   :bundle-name "Test::Unit"
+                   :group 'unit-test
                    :dir "test/unit"
                    :file-suffix  "_test"
                    :file-ext  "rb"
@@ -53,8 +52,7 @@
                    :test-to 'model)
 
   (rails/defresource 'unit-test-mailer "Unit Test Mailer"
-                     :menu-group 'unit-test
-                     :bundle-name "Test::Unit"
+                     :group 'unit-test
                      :dir "test/unit"
                      :file-suffix  "_test"
                      :skip-file-suffix "_mailer"
@@ -63,15 +61,13 @@
                      :test-to 'mailer)
 
   (rails/defresource 'fixture "Fixture"
-                     :menu-group 'unit-test
-                     :bundle-name "Test::Unit"
+                     :group 'unit-test
                      :dir "test/fixtures"
                      :file-ext  "yml"
                      :link-to '(unit-test unit-test-mailer))
 
   (rails/defresource 'functional-test "Functional Test"
-                     :menu-group 'unit-test
-                     :bundle-name "Test::Unit"
+                     :group 'unit-test
                      :dir "test/functional"
                      :file-suffix  "_controller_test"
                      :file-ext  "rb"

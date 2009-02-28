@@ -6,8 +6,8 @@
 (defvar rails/current-buffer nil)
 
 (defstruct rails/resource type ;; symbol, required
-                          display-name ;; string, required
-                          menu-group ;; string required
+                          title ;; string, required
+                          group ;; string required
                           boundle-name ;; string
                           dir file-ext file-suffix skip-file-suffix ;; string
                           expand-in-menu ;; boolean
@@ -19,17 +19,17 @@
                           (weight 1)) ;; integer required
 
 (defstruct rails/resource-buffer type
-                                 resource-name
-                                 file-name
+                                 title
+                                 file
                                  get-action-func
                                  set-action-func
                                  (weight 1)) ;; must be integer
 
 (defstruct rails/resource-item file
-                               display-name
+                               title
                                resource-type
-                               resource-menu-group
-                               resource-display-name)
+                               resource-group
+                               resource-title)
 
 (defvar rails/resources/list-defined nil)
 
@@ -37,20 +37,20 @@
 ;;; - CRUD functions
 ;;;
 
-(defun* rails/defresource (type display-name &key menu-group bundle-name
-                                                  dir file-suffix file-ext
-                                                  skip-file-suffix
-                                                  pluralize file-pattern
-                                                  expand-in-menu
-                                                  link-to test-to
-                                                  get-action-func set-action-func
-                                                  weight)
+(defun* rails/defresource (type title &key group
+                                           dir file-suffix file-ext
+                                           skip-file-suffix
+                                           pluralize file-pattern
+                                           expand-in-menu
+                                           link-to test-to
+                                           get-action-func set-action-func
+                                           weight)
   (when (rails/resources/find type)
     (error (format "Resource %s already defined" type)))
   (let (res)
     (setq res (make-rails/resource :type type
-                                   :menu-group (if menu-group (symbol-name menu-group) "acore")
-                                   :display-name display-name
+                                   :group (if group (symbol-name group) "acore")
+                                   :title title
                                    :dir (if (string-ext/end-p dir "/") dir (concat dir "/"))
                                    :file-suffix file-suffix
                                    :skip-file-suffix skip-file-suffix
@@ -162,8 +162,8 @@
         (setq pattern (replace-regexp-in-string "{name}" "\\\\(.*\\\\)" pattern))
         (setq res-name (string-ext/string=~ pattern res-name $1)))
       (make-rails/resource-buffer :type (rails/resource-type res)
-                                  :resource-name res-name
-                                  :file-name file
+                                  :title res-name
+                                  :file file
                                   :weight (rails/resource-weight res)
                                   :get-action-func (rails/resource-get-action-func res)
                                   :set-action-func (rails/resource-set-action-func res)))))
@@ -184,14 +184,14 @@
                   file (cdr it)))
           (unless (string-ext/start-p file dir)
             (setq file (concat dir file)))
-          (make-rails/resource-item :display-name name
+          (make-rails/resource-item :title name
                                     :file file
                                     :resource-type (rails/resource-type resource)
-                                    :resource-menu-group (rails/resource-menu-group resource)
-                                    :resource-display-name (rails/resource-display-name resource)))))
+                                    :resource-group (rails/resource-group resource)
+                                    :resource-title (rails/resource-title resource)))))
 
 (defun rails/resources/filter-buffer-in-items (rails-buffer items)
-  (let ((compared-file (rails/resource-buffer-file-name rails-buffer)))
+  (let ((compared-file (rails/resource-buffer-file rails-buffer)))
     (loop for item in items
           for allow = (not (string= compared-file (rails/resource-item-file item)))
           when allow
@@ -226,7 +226,7 @@
     result))
 
 (defun rails/resources/get-associated-items-by-resource (root rails-buffer resource &optional no-buffer-filter)
-  (let ((file (rails/resource-buffer-resource-name rails-buffer))
+  (let ((file (rails/resource-buffer-title rails-buffer))
         result name pattern-p)
     (setq result
           (progn
@@ -281,7 +281,7 @@
 (defun rails/resources/items-to-menu (menu items &optional name-func)
   (let ((menu menu))
     (unless name-func
-      (setq name-func 'rails/resource-item-resource-display-name))
+      (setq name-func 'rails/resource-item-resource-title))
     (dolist (it items)
       (add-to-list 'menu (cons (apply name-func (list it)) it) t))
     menu))
@@ -447,7 +447,7 @@
     (setq items
           (list-ext/group-by
            items
-           '(lambda(i) (rails/resource-item-resource-menu-group (car i)))
+           '(lambda(i) (rails/resource-item-resource-group (car i)))
            'string<))
     (dolist (group items)
       (let ((group-name (car group))
@@ -458,9 +458,9 @@
           (if (rails/resource-expand-in-menu (rails/resources/find
                                               (rails/resource-item-resource-type
                                                (car i))))
-              (setq menu (rails/resources/items-to-menu menu i 'rails/resource-item-display-name))
+              (setq menu (rails/resources/items-to-menu menu i 'rails/resource-item-title))
             (add-to-list 'menu
-                         (cons (rails/resource-item-resource-display-name (car i))
+                         (cons (rails/resource-item-resource-title (car i))
                                (car i))
                          t))))
       (setq last-p t))
@@ -471,7 +471,7 @@
                      (= 1 (length menu)))
                 (cdr (car menu))
               (rails/display-menu-using-popup
-               (format "Go to from %s to:" (rails/resource-display-name resource))
+               (format "Go to from %s to:" (rails/resource-title resource))
                menu))))
     (rails/resources/find-file-by-item root file)
     file))
@@ -492,7 +492,7 @@
     (if (< 1 (length items))
         (setq file
               (rails/display-menu-using-ido
-               (format "%s" (rails/resource-display-name resource))
+               (format "%s" (rails/resource-title resource))
                (rails/resources/items-to-menu '() items)))
       (setq file (car items)))
     (rails/resources/find-file-by-item root file)
@@ -533,10 +533,10 @@
                 collect
                 (make-rails/resource-item
                  :file (concat dir file)
-                 :display-name res-name
+                 :title res-name
                  :resource-type (rails/resource-type resource)
-                 :resource-menu-group (rails/resource-menu-group resource)
-                 :resource-display-name res-name)))
+                 :resource-group (rails/resource-group resource)
+                 :resource-title res-name)))
     (when rails-buffer
       (setq files  (rails/resources/filter-buffer-in-items rails-buffer files)))
     (setq files (rails/resources/items-to-menu '() files))

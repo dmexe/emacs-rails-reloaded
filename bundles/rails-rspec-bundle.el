@@ -51,8 +51,7 @@
   ;;;
 
   (rails/defresource 'model-spec "Model RSpec"
-                     :menu-group 'spec
-                     :bundle-name "RSpec"
+                     :group 'spec
                      :dir "spec/models"
                      :file-suffix  "_spec"
                      :file-ext  "rb"
@@ -60,24 +59,21 @@
                      :test-to 'model)
 
   (rails/defresource 'controller-spec "Controller RSpec"
-                     :menu-group 'spec
-                     :bundle-name "RSpec"
+                     :group 'spec
                      :dir "spec/controllers"
                      :file-suffix  "_controller_spec"
                      :file-ext  "rb"
                      :test-to 'controller)
 
   (rails/defresource 'helper-spec "Helper RSpec"
-                     :menu-group 'spec
-                     :bundle-name "RSpec"
+                     :group 'spec
                      :dir "spec/helpers"
                      :file-suffix  "_helper_spec"
                      :file-ext  "rb"
                      :test-to 'helper)
 
   (rails/defresource 'fixture-spec "Fixture"
-                     :menu-group 'spec
-                     :bundle-name "RSpec"
+                     :group 'spec
                      :dir "spec/fixtures"
                      :file-ext "yml"
                      :link-to 'model-spec))
