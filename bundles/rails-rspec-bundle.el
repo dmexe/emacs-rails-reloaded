@@ -50,7 +50,7 @@
   ;;; - Resources
   ;;;
 
-  (rails/defresource 'model-spec "Model RSpec"
+  (rails/defresource 'model-spec "RSpec Model"
                      :group 'spec
                      :dir "spec/models"
                      :file-suffix  "_spec"
@@ -58,21 +58,21 @@
                      :pluralize t
                      :test-to 'model)
 
-  (rails/defresource 'controller-spec "Controller RSpec"
+  (rails/defresource 'controller-spec "RSpec Controller"
                      :group 'spec
                      :dir "spec/controllers"
                      :file-suffix  "_controller_spec"
                      :file-ext  "rb"
                      :test-to 'controller)
 
-  (rails/defresource 'helper-spec "Helper RSpec"
+  (rails/defresource 'helper-spec "RSpec Helper"
                      :group 'spec
                      :dir "spec/helpers"
                      :file-suffix  "_helper_spec"
                      :file-ext  "rb"
                      :test-to 'helper)
 
-  (rails/defresource 'fixture-spec "Fixture RSpec"
+  (rails/defresource 'fixture-spec "RSpec Fixture"
                      :group 'spec
                      :dir "spec/fixtures"
                      :file-ext "yml"

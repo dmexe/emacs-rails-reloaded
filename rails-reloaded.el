@@ -206,7 +206,6 @@
   (let ((map (make-keymap)))
     (define-keys map
       ([menu-bar] (rails-minor-mode-menu-bar-map))
-      ((rails/short-key "<down>") 'rails/resources/goto-associated)
       ((rails/short-key "<up>")   'rails/resources/toggle)
       ((rails/short-key "t")      'rails/resources/toggle-test)
       ((rails/short-key "g")      'rails/resources/anything-associated)
