@@ -8,7 +8,6 @@
 (defstruct rails/resource type ;; symbol, required
                           title ;; string, required
                           group ;; string required
-                          boundle-name ;; string
                           dir file-ext file-suffix skip-file-suffix ;; string
                           expand-in-menu ;; boolean
                           pluralize ;; boolean
@@ -114,7 +113,7 @@
             ;; file-ext
             (when-bind (file-ext (rails/resource-file-ext res))
               (setq file-mask (concat file-mask file-ext)))
-            (setq file-mask (format "^\\(.*%s\\)%s$"
+            (setq file-mask (format "\\(.*%s\\)%s$"
                                     (regexp-quote file-suffix)
                                     (regexp-quote file-mask)))
             (cons res
@@ -225,7 +224,7 @@
           (add-to-list 'result its t))))
     result))
 
-(defun rails/resources/get-associated-items-by-resource (root rails-buffer resource &optional no-buffer-filter)
+(defun rails/resources/get-associated-items-by-resource (root rails-buffer resource &optional unused-no-buffer-filter)
   (let ((file (rails/resource-buffer-title rails-buffer))
         result name pattern-p)
     (setq result
@@ -255,11 +254,7 @@
                         collect (cons it (concat dir it))))
               (when (file-exists-p (concat root file))
                 (list (cons name file))))))
-    (setq result
-          (rails/resources/resource-files-to-items resource result))
-    (if no-buffer-filter
-        result
-      (rails/resources/filter-buffer-in-items rails-buffer result))))
+    (rails/resources/resource-files-to-items resource result)))
 
 (defun rails/resources/get-associated-items(root rails-buffer)
   (rails/resources/filter-dublicated-files-in-items
@@ -291,7 +286,7 @@
     (rails/find-file root (rails/resource-item-file item))))
 
 ;;; ---------------------------------------------------------
-;;; - Lookup resource by link
+;;; ?? - Lookup resource by link
 ;;;
 
 (defun rails/resources/linked-to-items-of-buffer(root rails-buffer)
@@ -394,7 +389,7 @@
 (defun rails/resources/test-buffer-p (root rails-buffer)
   "Return resource contains :test-to link, otherwise return nil."
   (let ((resource (rails/resources/find
-                    (rails/resource-buffer-type rails-buffer))))
+                   (rails/resource-buffer-type rails-buffer))))
     (or
      ;; direct link
      (and (rails/resource-test-to resource) resource)
@@ -521,8 +516,9 @@
         file-mask files item)
     (setq file-mask
           (cdr (find resource comp-alist :key 'car)))
-
     (setq files (rails/directory-files-recursive root dir file-mask))
+;;;     (dolist (i (rails/directory-files-recursive "~/Sites/pro2" "app/controllers/" "controller\\.rb$"))
+;;;       (message i))
     (setq files
           (loop for file in files
                 for alist    = (rails/resources/compare-file-by-compared-alist (concat dir file)
@@ -557,5 +553,113 @@
                                     it)))
           (setq resource (rails/display-menu "Select resource" items t))))
       (rails/resources/list-items-by-resource root rails/current-buffer resource))))
+
+;;; ---------------------------------------------------------
+;;; - Anything
+;;;
+
+(defvar anything-rails-current-buffer nil)
+
+(defvar anything-c-source-rails-associated
+      '((name . "Goto from current to")
+        (init . (lambda ()
+                  (setq anything-rails-current-buffer
+                        (current-buffer))))
+        (candidates . rails/resources/anything-associated-func)
+        (action
+         ("Goto" . rails/resources/anything-find-file-by-item))))
+
+(defun rails/resources/anything-find-file-by-item (item)
+  (with-current-buffer anything-rails-current-buffer
+    (rails/resources/find-file-by-item (rails/root) item)))
+
+(defun rails/resources/anything-associated-func ()
+  (let ((buf anything-rails-current-buffer))
+    (with-current-buffer buf
+      (let ((root (rails/root))
+            items result)
+        (setq items (rails/resources/get-associated-items root rails/current-buffer))
+        (setq items
+              (list-ext/group-by
+               items
+               '(lambda(i) (rails/resource-item-resource-group (car i)))
+               'string<))
+        (dolist (i items)
+          (dolist (ii (cadr i))
+            (if (and (= 1 (length ii))
+                     (not (rails/resource-expand-in-menu
+                           (rails/resources/find (rails/resource-item-resource-type (car ii))))))
+                (progn
+                  (add-to-list 'result (cons (rails/resource-item-resource-title (car ii))
+                                             (car ii)) t))
+              (progn
+                (dolist (it ii)
+                  (add-to-list 'result (cons
+                                        (concat (rails/resource-item-resource-title it)
+                                                " "
+                                                (rails/resource-item-title it))
+                                        it) t))))))
+        (mapcar
+         '(lambda (i)
+            (if (string= (rails/resource-item-file (cdr i))
+                         (rails/resource-buffer-file rails/current-buffer))
+                (cons (concat ">" (car i) "<") (cdr i))
+              i))
+         result)))))
+
+(defun rails/resources/anything-associated ()
+  (interactive)
+  (rails/with-current-buffer
+   (let ((root (rails/root)))
+     (anything (list anything-c-source-rails-associated)))))
+
+(defun rails/resources/anything-goto-resource-items-alist (root resource)
+  (let ((dir (rails/resource-dir resource))
+        (type (rails/resource-type resource))
+        (comp-alist (rails/resources/get-compared-resources-alist resource))
+        file-mask files item)
+    (setq file-mask
+          (cdr (find resource comp-alist :key 'car)))
+    (setq files (rails/directory-files-recursive root dir file-mask))
+    (setq files
+          (loop for file in files
+                for alist    = (rails/resources/compare-file-by-compared-alist (concat dir file)
+                                                                               comp-alist)
+                for res      = (car alist)
+                for res-name = (cdr alist)
+                when (eq (rails/resource-type res) type)
+                collect
+                (make-rails/resource-item
+                 :file (concat dir file)
+                 :title res-name
+                 :resource-type (rails/resource-type resource)
+                 :resource-group (rails/resource-group resource)
+                 :resource-title res-name)))
+    (let ((suffix (rails/resource-file-suffix resource))
+          (ext (rails/resource-file-ext resource)))
+      (mapcar
+       (lambda (i)
+         (cons (concat (rails/resource-item-title i) suffix ext)
+               i))
+       files))))
+
+(defun rails/resources/anything-goto ()
+  (interactive)
+  (rails/with-current-buffer
+   (let ((root (rails/root))
+         result)
+     (setq result
+           (loop for res in  rails/resources/list-defined  ;;(list (rails/resources/find 'fixture))
+                 for cand = (rails/resources/anything-goto-resource-items-alist root res)
+                 collect
+                 (list (cons 'name  (rails/resource-title res))
+                       (cons 'init  (lambda ()
+                                      (setq anything-rails-current-buffer
+                                            (current-buffer))))
+                       (cons 'candidates  cand)
+                       (cons 'limit 100)
+                       (list 'action
+                             (cons "Goto" 'rails/resources/anything-find-file-by-item)))))
+     (anything result))))
 
 (provide 'rails-resources)

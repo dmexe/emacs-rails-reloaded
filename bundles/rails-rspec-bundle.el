@@ -72,7 +72,7 @@
                      :file-ext  "rb"
                      :test-to 'helper)
 
-  (rails/defresource 'fixture-spec "Fixture"
+  (rails/defresource 'fixture-spec "Fixture RSpec"
                      :group 'spec
                      :dir "spec/fixtures"
                      :file-ext "yml"

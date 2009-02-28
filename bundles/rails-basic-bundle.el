@@ -54,5 +54,5 @@
 
   (rails/defresource 'javascript "Javascript"
                      :dir "public/javascripts"
-                     :file-ext  "css")
+                     :file-ext  "js")
  )
