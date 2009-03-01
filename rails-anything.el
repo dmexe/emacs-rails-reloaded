@@ -146,12 +146,15 @@
            (cons title file)))
        files))))
 
-(defun rails/anything/goto ()
+(defun rails/anything/goto (&optional resource-type)
   (interactive)
   (rails/with-root (buffer-file-name)
     (let ((root (rails/root))
+          (resources (if resource-type
+                         (list (rails/resources/find resource-type))
+                       rails/resources/list-defined))
           result)
-      (loop for res in  rails/resources/list-defined
+      (loop for res in  resources
             for cand = (rails/anything/goto-resource-items-alist
                         root
                         (current-buffer)

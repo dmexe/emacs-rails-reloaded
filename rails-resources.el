@@ -57,6 +57,22 @@
 (defvar rails/resources/list-defined nil)
 
 ;;; ---------------------------------------------------------
+;;; - Menu functions
+;;;
+
+(defun rails/resources/add-goto-menu (resource)
+  (let ((title (rails/resource-title resource))
+        (type  (rails/resource-type resource)))
+    (define-key rails-minor-mode-map
+      (merge 'vector [menu-bar rails goto]
+             (list type)
+             'eq)
+      (list 'menu-item (pluralize-string title)
+            `(lambda()
+               (interactive)
+               (rails/anything/goto ',type))))))
+
+;;; ---------------------------------------------------------
 ;;; - CRUD functions
 ;;;
 
@@ -91,7 +107,8 @@
                                    :get-action-func get-action-func
                                    :set-action-func set-action-func
                                    :weight (if (not weight) 1 weight)))
-    (add-to-list 'rails/resources/list-defined res t)))
+    (add-to-list 'rails/resources/list-defined res t)
+    (rails/resources/add-goto-menu res)))
 
 (defun rails/resources/find (resource-type)
   (when (stringp resource-type)

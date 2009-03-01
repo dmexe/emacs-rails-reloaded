@@ -180,10 +180,9 @@
       ([rails project edit]          (cons "Edit Project Settings" 'rails/project/edit))
       ([rails env-separator]       (cons "--" "--"))
       ([rails toggle]              (cons "Go To From Current File" (make-sparse-keymap)))
-      ([rails toggle separator]      (cons "--" "--"))
       ([rails toggle toggle-test]    (cons "Toggle Test/Implementation" 'rails/resources/toggle-test))
-      ([rails toggle goto]           (cons "Go to..." 'rails/resources/goto-associated))
       ([rails toggle toggle]         (cons "Toggle" 'rails/resources/toggle))
+      ([rails toggle goto]           (cons "Go to..." 'rails/anything/associated))
       ([rails goto]                (cons "Go To" (make-sparse-keymap))))
   map))
 
