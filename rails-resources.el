@@ -430,12 +430,29 @@
 ;;;
 
 (defvar anything-rails-current-buffer nil)
+(defvar anything-rails-current-root nil)
 
 (defvar anything-c-source-rails-associated
       '((name . "Goto from current to")
         (init . rails/resources/anything-init-func)
         (candidates . rails/resources/anything-associated-func)
+        (candidate-number-limit . 100)
         (type . file)))
+
+(defun rails/resources/anything-load-triggers ()
+  (loop for triggers in rails/bundles/trigger-list
+        collect
+        (let ((name (cadr triggers))
+              (its (cddr triggers))
+              result)
+          (add-to-list 'result (cons 'name name))
+          (add-to-list 'result (cons 'init 'rails/resources/anything-init-func))
+          (add-to-list 'result (cons 'candidate-number-limit 100))
+          (dolist (tr its)
+            (add-to-list 'result tr))
+          result)))
+
+;;(setq b (rails/resources/anything-load-triggers))
 
 (defun rails/resources/anything-hightlight-current (current)
   (setq current (concat ">" current "<"))
@@ -443,7 +460,9 @@
 
 (defun rails/resources/anything-init-func ()
   (setq anything-rails-current-buffer
-        (current-buffer)))
+        (current-buffer))
+  (setq anything-rails-current-root
+        (rails/root)))
 
 (defun rails/resources/anything-make-filename (root item)
   (concat root (rails/resource-item-file item)))
@@ -493,8 +512,10 @@
 (defun rails/resources/anything-associated ()
   (interactive)
   (rails/with-current-buffer
-   (let ((root (rails/root)))
-     (anything (list anything-c-source-rails-associated)))))
+   (let ((root (rails/root))
+         (sources (rails/resources/anything-load-triggers)))
+     (add-to-list 'sources anything-c-source-rails-associated t)
+     (anything sources))))
 
 (defun rails/resources/anything-goto-resource-items-alist (root buffer resource)
   (let ((dir (rails/resource-dir resource))
@@ -533,19 +554,20 @@
   (interactive)
   (rails/with-root (buffer-file-name)
     (let ((root (rails/root))
-          result)
-      (setq result
-            (loop for res in  rails/resources/list-defined
-                  for cand = (rails/resources/anything-goto-resource-items-alist
-                              root
-                              (current-buffer)
-                              res)
-                  collect
-                  (list (cons 'name  (rails/resource-title res))
-                        (cons 'init  'rails/resources/anything-init-func)
-                        (cons 'candidates  cand)
-                        (cons 'limit 100)
-                        (cons 'type 'file))))
+          (result (rails/resources/anything-load-triggers)))
+      (loop for res in  rails/resources/list-defined
+            for cand = (rails/resources/anything-goto-resource-items-alist
+                        root
+                        (current-buffer)
+                        res)
+            do
+            (add-to-list 'result
+                         (list (cons 'name  (rails/resource-title res))
+                               (cons 'init  'rails/resources/anything-init-func)
+                               (cons 'candidates  cand)
+                               (cons 'candidate-number-limit 100)
+                               (cons 'type 'file))
+                         t))
       (anything result))))
 
 (provide 'rails-resources)

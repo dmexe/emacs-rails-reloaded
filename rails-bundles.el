@@ -4,6 +4,7 @@
 (defvar rails/bundles/disabled-list nil)
 (defvar rails/bundles/loaded-list nil)
 (defvar rails/bundles/loaded-p nil)
+(defvar rails/bundles/trigger-list nil)
 
 (defconst rails/bundles/file-regexp "^rails-\\(.*\\)-bundle\.el$")
 (defconst rails/bundles/name-fmt "rails/%s-bundle/name")
@@ -40,6 +41,7 @@
   (interactive)
   (setq rails/bundles/loaded-list nil)
   (setq rails/bundles/loaded-p nil)
+  (setq rails/bundles/trigger-list nil)
   (rails/resources/clear)
   (rails/bundles/load))
 
@@ -67,7 +69,7 @@
     (cons (concat title " Bundle") menumap)
     'bundles-title))
 
-(defmacro* rails/defbundle (name (&key menu keys) &body body)
+(defmacro* rails/defbundle (name (&key menu keys triggers) &body body)
   `(progn
      (defconst
        ,(intern (format rails/bundles/name-fmt (string-ext/safe-symbol name)))
@@ -79,6 +81,10 @@
           (let ((map (make-sparse-keymap)))
             (define-keys map
               ,@menu))))
+       (when ,(not (not triggers))
+         ,@(loop for tr in triggers
+                 collect
+                 `(add-to-list 'rails/bundles/trigger-list ',tr)))
        (when ,(not (not keys))
          ,@(loop for (key func) in keys collect
                  `(rails/define-key ,key ,func)))

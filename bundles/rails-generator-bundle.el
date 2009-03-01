@@ -86,16 +86,18 @@
 ;;; - Interactives
 ;;;
 
-(defun rails/generator-bundle/generate ()
+(defun rails/generator-bundle/generate (&optional task)
   "Run a Generator task."
   (interactive)
   (when-bind (root (rails/root))
-    (let ((task (rails/completing-read "What generate"
-                                       (rails/generator-bundle/list-of-tasks root)
-                                       nil
-                                       (car rails/generator-bundle/history)
-                                       'rails/generator-bundle/history))
-          options)
+    (let (options)
+      (unless task
+        (setq task
+              (rails/completing-read "What generate"
+                                     (rails/generator-bundle/list-of-tasks root)
+                                     nil
+                                     (car rails/generator-bundle/history)
+                                     'rails/generator-bundle/history)))
       (unless (string-ext/empty-p task)
         (setq options (read-string (format "Name and/or options for [%s]: " task)))
         (unless (string-ext/empty-p options)
@@ -105,16 +107,18 @@
                                       options
                                       rails/generator-bundle/options))))))
 
-(defun rails/generator-bundle/destroy ()
+(defun rails/generator-bundle/destroy (&optional task)
   "Run a Destroy task."
   (interactive)
   (when-bind (root (rails/root))
-    (let ((task (rails/completing-read "What destroy"
-                                       (rails/generator-bundle/list-of-tasks root)
-                                       nil
-                                       (car rails/generator-bundle/history)
-                                       'rails/generator-bundle/history))
-          options)
+    (let (options)
+      (unless task
+        (setq task
+              (rails/completing-read "What destroy"
+                                     (rails/generator-bundle/list-of-tasks root)
+                                     nil
+                                     (car rails/generator-bundle/history)
+                                     'rails/generator-bundle/history)))
       (unless (string-ext/empty-p task)
         (setq options (read-string (format "Name of [%s]: " task)))
         (unless (string-ext/empty-p options)
@@ -136,4 +140,27 @@
     ([create]  (cons "Generate" 'rails/generator-bundle/generate)))
    :keys
    (("e" 'rails/generator-bundle/generate)
-    ("E" 'rails/generator-bundle/destroy))))
+    ("E" 'rails/generator-bundle/destroy))
+   :triggers
+   (("gen" "Generate"
+     (candidates
+      .
+      (lambda ()
+        (when (string-match "^gen" anything-pattern)
+          (mapcar
+           (lambda (i)
+             (cons (format "gen %s" i) i))
+           (rails/generator-bundle/list-of-tasks anything-rails-current-root)))))
+     (action ("Run" . rails/generator-bundle/generate))
+     (requires-pattern . 3))
+    ("des" "Destroy"
+     (candidates
+      .
+      (lambda ()
+        (when (string-match "^des" anything-pattern)
+          (mapcar
+           (lambda (i)
+             (cons (format "des %s" i) i))
+           (rails/generator-bundle/list-of-tasks anything-rails-current-root)))))
+     (action ("Run" . rails/generator-bundle/destroy))
+     (requires-pattern . 3)))))

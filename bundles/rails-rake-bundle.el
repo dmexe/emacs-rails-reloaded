@@ -7,7 +7,7 @@
 (defconst rails/rake-bundle/command "rake")
 (defconst rails/rake-bundle/tasks-cache-file "tmp/.tasks-cache")
 (defvar rails/rake-bundle/history nil)
-(defvar rails/rake-bundle/tasks-regexp "^rake\s+\\([^ ]+\\)\s+"
+(defvar rails/rake-bundle/tasks-regexp "^rake\s+\\([^ ]+\\)\s+\#\\(.*\\)"
   "Regexp to match tasks list in `rake --tasks` output.")
 
 (defvar rails/rake-bundle/task-keywords-alist
@@ -40,20 +40,29 @@
                                                              root "rake --tasks")
                                                             "\n")
                                    for task = (unless (string-ext/empty-p str)
-                                                (string-ext/string=~ rails/rake-bundle/tasks-regexp str $1))
+                                                (string-ext/string=~ rails/rake-bundle/tasks-regexp
+                                                                     str
+                                                                     (when $1 (cons $1 $2))))
                                    when task collect task)))
                   (files-ext/write-string-to-file
                    (concat root rails/rake-bundle/tasks-cache-file)
                    (prin1-to-string tasks))
-                  tasks)))
+                  (mapcar 'car tasks))))
 
 (defun rails/rake-bundle/list-of-tasks (root)
   "Return all available tasks and create tasks cache file."
   (let* ((cache-file (concat root rails/rake-bundle/tasks-cache-file)))
     (if (file-exists-p cache-file)
-        (files-ext/read-from-file cache-file)
+        (mapcar 'car
+                (files-ext/read-from-file cache-file))
       (rails/rake-bundle/create-tasks-cache root))))
 
+(defun rails/rake-bundle/alist-of-tasks (root)
+  "Return all available tasks and descriptions and create tasks cache file."
+  (let* ((cache-file (concat root rails/rake-bundle/tasks-cache-file)))
+    (unless (file-exists-p cache-file)
+      (rails/rake-bundle/create-tasks-cache root))
+    (files-ext/read-from-file cache-file)))
 
 (defun rails/rake-bundle/task-run (root task &optional args keywords after-stop-funcs)
   "Run a Rake task in RAILS_ROOT with MAJOR-MODE."
@@ -147,15 +156,17 @@
       (when (not (string-ext/empty-p task))
         (rails/rake-bundle/task-run root task)))))
 
-(defun rails/rake-bundle/run-with-args ()
+(defun rails/rake-bundle/run-with-args (&optional task)
   "Run a Rake task with arguments ARGS."
   (interactive)
   (when-bind (root (rails/root))
-    (let ((task (rails/completing-read "What task run"
-                                       (rails/rake-bundle/list-of-tasks root)
-                                       nil
-                                       (car rails/rake-bundle/history)
-                                       'rails/rake-bundle/history))
+    (let ((task (if task
+                    task
+                  (rails/completing-read "What task run"
+                                         (rails/rake-bundle/list-of-tasks root)
+                                         nil
+                                         (car rails/rake-bundle/history)
+                                         'rails/rake-bundle/history)))
           args)
       (when (not (string-ext/empty-p task))
         (setq args (read-string (format "Arguments fo %s: " task)))
@@ -186,4 +197,18 @@
    :keys
    (("r"    'rails/rake-bundle/run)
     ("R"    'rails/rake-bundle/run-with-args)
-    ("\C-r" 'rails/rake-bundle/list-tasks))))
+    ("\C-r" 'rails/rake-bundle/list-tasks))
+   :triggers
+   (("rake" "Rake Task"
+     (candidates .
+      (lambda()
+        (when (string-match "^rake" anything-pattern)
+          (mapcar
+           (lambda (i) (cons (format "rake %s %s"
+                                (car i)
+                                (propertize (cdr i) 'face font-lock-comment-face))
+                        (car i)))
+           (rails/rake-bundle/alist-of-tasks anything-rails-current-root)))))
+     (action ("Run" . (lambda (i) (rails/rake-bundle/run i)))
+             ("Run with Arguments" . (lambda (i) (rails/rake-bundle/run-with-args i))))
+     (requires-pattern . 4)))))
