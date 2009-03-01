@@ -5,18 +5,13 @@
 ;;;
 
 (defconst rails/rake-bundle/command "rake")
-(defconst rails/rake-bundle/tasks-cache-file "tmp/.tasks-cache")
+(defconst rails/rake-bundle/tasks-cache-file "tmp/.rake-tasks-cache")
 (defvar rails/rake-bundle/history nil)
-(defvar rails/rake-bundle/tasks-regexp "^rake\s+\\([^ ]+\\)\s+\#\\(.*\\)"
+(defvar rails/rake-bundle/tasks-regexp "^rake\s+\\([^ ]+\\)\s+\\(.*\\)$"
   "Regexp to match tasks list in `rake --tasks` output.")
 
 (defvar rails/rake-bundle/task-keywords-alist
-  '(("^-D$"        . (("^\s+.*"
-                       (0 font-lock-comment-face))
-                      ("\\(rake\\) \\([^ ]+\\)"
-                       (1 font-lock-function-name-face)
-                       (2 font-lock-string-face))))
-    ("^notes.*$"   . (("^\\([^ ]+\\):"
+  '(("^notes.*$"   . (("^\\([^ ]+\\):"
                        (0 font-lock-string-face))
                       ("^ +\\(\\*\\) \\(\\[[ 0-9]+\\]\\( \\[\\w+\\]\\)?\\) \\(.*\\)$"
                        (1 font-lock-function-name-face)
@@ -24,8 +19,7 @@
                        (4 font-lock-comment-face))))))
 
 (defvar rails/rake-bundle/task-after-stop-alist
-  '(("^-D$"        . rails/rake-bundle/after-stop-task-list)
-    ("^notes.*$"   . rails/rake-bundle/after-stop-notes)))
+  '(("^notes.*$"   . rails/rake-bundle/after-stop-notes)))
 
 (defvar rails/rake-bundle/task-name nil)
 
@@ -38,7 +32,7 @@
   (in-directory root
                 (let ((tasks (loop for str in (split-string (rails/proxy/shell-command-to-string
                                                              root "rake --tasks")
-                                                            "\n")
+                                                            "[\r\n]+")
                                    for task = (unless (string-ext/empty-p str)
                                                 (string-ext/string=~ rails/rake-bundle/tasks-regexp
                                                                      str
@@ -102,17 +96,6 @@
   (if (zerop ret-val)
       (rails/notify (format "Task %s was successfuly stopped" rails/rake-bundle/task-name) :notice)
     (rails/notify (format "Failed to run task %s" rails/rake-bundle/task-name) :notice)))
-
-(defun rails/rake-bundle/after-stop-task-list (&rest args)
-  (save-excursion
-    (while (re-search-forward rails/rake-bundle/tasks-regexp nil t)
-      (let ((root rails/runner/buffer-rails-root)
-            (task (match-string 1)))
-        (make-button (match-beginning 1) (match-end 1)
-                     :type 'rails/button
-                     :task task
-                     :func (lambda(ov)(rails/rake-bundle/run (overlay-get ov :task))))))))
-
 
 (defun rails/rake-bundle/after-stop-notes (&rest args)
   (save-excursion
@@ -182,7 +165,7 @@
   "List of availabled Rake tasks."
   (interactive)
   (when-bind (root (rails/root))
-    (rails/rake-bundle/task-run root "-D")))
+    (anything (rails/resources/anything-load-triggers) "rake")))
 
 ;;; ---------------------------------------------------------
 ;;; - Bundle

@@ -101,7 +101,7 @@
     ([redo]      (cons "Redo Last Migration" 'rails/database-bundle/migrate-redo))
     ([rollback]  (cons "Migrate to Previous Version" 'rails/database-bundle/migrate-rollback))
     ([version]   (cons "Migrate to Version" 'rails/database-bundle/migrate-to-version))
-    ([migrate]   (cons "Migrate to Current" 'rails/database-bundle/migrate)))
+    ([migrate]   (cons "Migrate" 'rails/database-bundle/migrate)))
    :keys
    (("d m" 'rails/database-bundle/migrate)
     ("d v" 'rails/database-bundle/migrate-to-version)
@@ -112,23 +112,23 @@
    (("db" "Database Tasks"
      (candidates
       .
-      (lambda()
+      (lambda ()
         (when (string-match "^db" anything-pattern)
           (list
            (cons
-            (format "db migrate %s" (propertize "Migrate" 'face 'font-lock-comment-face))
+            (format "db migrate %s" (propertize "# Migrate" 'face 'font-lock-comment-face))
             'rails/database-bundle/migrate)
            (cons
-            (format "db clone %s" (propertize "Clone Development DB to Test DB" 'face 'font-lock-comment-face))
+            (format "db clone %s" (propertize "# Clone Development DB to Test DB" 'face 'font-lock-comment-face))
             'rails/database-bundle/clone)
            (cons
-            (format "db version %s" (propertize "Migrate to Version" 'face 'font-lock-comment-face))
+            (format "db version %s" (propertize "# Migrate to Version" 'face 'font-lock-comment-face))
             'rails/database-bundle/migrate-to-version)
            (cons
-            (format "db redo %s" (propertize "Redo Last Migration" 'face 'font-lock-comment-face))
+            (format "db redo %s" (propertize "# Redo Last Migration" 'face 'font-lock-comment-face))
             'rails/database-bundle/migrate-redo)
            (cons
-            (format "db rollback %s" (propertize "Migrate to Previous Version" 'face 'font-lock-comment-face))
+            (format "db rollback %s" (propertize "# Migrate to Previous Version" 'face 'font-lock-comment-face))
             'rails/database-bundle/migrate-rollback)))))
      (action ("Run" . (lambda (i) (funcall i))))
      (requires-pattern . 2)))))
