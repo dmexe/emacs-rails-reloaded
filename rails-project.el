@@ -4,10 +4,6 @@
 
 ;; Authors: Dmitry Galinsky <dima dot exe at gmail dot com>,
 
-;; Keywords: ruby rails languages
-;; $URL: svn+ssh://rubyforge.org/var/svn/emacs-rails/trunk/rails.el $
-;; $Id: rails.el 225 2008-03-02 21:07:10Z dimaexe $
-
 ;;; License
 
 ;; This program is free software; you can redistribute it and/or
@@ -74,5 +70,4 @@
       (when (listp config)
         config))))
 
-;;(rails/project/read-config "~/Sites/pro2/")
 (provide 'rails-project)

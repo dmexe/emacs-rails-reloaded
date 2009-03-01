@@ -1,12 +1,8 @@
-;;; rails-resources.el --- menage resources
+;;; rails-resources.el ---
 
 ;; Copyright (C) 2006 Dmitry Galinsky <dima dot exe at gmail dot com>
 
 ;; Authors: Dmitry Galinsky <dima dot exe at gmail dot com>,
-
-;; Keywords: ruby rails languages
-;; $URL: svn+ssh://rubyforge.org/var/svn/emacs-rails/trunk/rails.el $
-;; $Id: rails.el 225 2008-03-02 21:07:10Z dimaexe $
 
 ;;; License
 

@@ -6,8 +6,6 @@
 ;;          Rezikov Peter <crazypit13 (at) gmail.com>
 
 ;; Keywords: ruby rails languages
-;; $URL: svn+ssh://rubyforge.org/var/svn/emacs-rails/trunk/rails.el $
-;; $Id: rails.el 225 2008-03-02 21:07:10Z dimaexe $
 
 ;;; License
 
