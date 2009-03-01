@@ -124,7 +124,8 @@ else return nil"
           root)))))
 
 (defmacro rails/with-current-buffer (&rest body)
-  `(if (rails/resource-buffer-p rails/current-buffer)
+  `(if (and (rails/resource-buffer-p rails/current-buffer)
+            (rails/resource-buffer-title rails/current-buffer))
        (rails/with-root (buffer-file-name)
          ,@body)
      (rails/notify "Curent buffer it's not a rails resource." :error)))

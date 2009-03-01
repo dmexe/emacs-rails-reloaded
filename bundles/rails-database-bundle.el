@@ -107,4 +107,28 @@
     ("d v" 'rails/database-bundle/migrate-to-version)
     ("d r" 'rails/database-bundle/migrate-rollback)
     ("d R" 'rails/database-bundle/migrate-redo)
-    ("d c" 'rails/database-bundle/clone))))
+    ("d c" 'rails/database-bundle/clone))
+   :triggers
+   (("db" "Database Tasks"
+     (candidates
+      .
+      (lambda()
+        (when (string-match "^db" anything-pattern)
+          (list
+           (cons
+            (format "db migrate %s" (propertize "Migrate" 'face 'font-lock-comment-face))
+            'rails/database-bundle/migrate)
+           (cons
+            (format "db clone %s" (propertize "Clone Development DB to Test DB" 'face 'font-lock-comment-face))
+            'rails/database-bundle/clone)
+           (cons
+            (format "db version %s" (propertize "Migrate to Version" 'face 'font-lock-comment-face))
+            'rails/database-bundle/migrate-to-version)
+           (cons
+            (format "db redo %s" (propertize "Redo Last Migration" 'face 'font-lock-comment-face))
+            'rails/database-bundle/migrate-redo)
+           (cons
+            (format "db rollback %s" (propertize "Migrate to Previous Version" 'face 'font-lock-comment-face))
+            'rails/database-bundle/migrate-rollback)))))
+     (action ("Run" . (lambda (i) (funcall i))))
+     (requires-pattern . 2)))))
