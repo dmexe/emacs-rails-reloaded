@@ -6,23 +6,36 @@
     (when (file-exists-p script)
       script)))
 
-(defun rails/apidock-bundle/search (q)
-  (let ((result (shell-command-to-string
-                 (format "ruby %s %s"
+(defun rails/apidock-bundle/search (q &optional mod)
+  (let* ((mod (or mod "rails"))
+         (result (shell-command-to-string
+                 (format "ruby %s %s %s"
                          (rails/apidock-bundle/locate-script)
+                         mod
                          q))))
     (unless (string-ext/empty-p result)
       (read result))))
 
 (rails/defbundle "Apidock"
   (:triggers
-   (("apidock" "Search on Apidock"
+   (("apidock-rails" "Search on apidock.com/rails"
      (candidates
       .
       (lambda ()
-        (let ((rs (rails/apidock-bundle/search anything-pattern)))
+        (let ((rs (rails/apidock-bundle/search anything-pattern "rails")))
           rs)))
-     (action ("Goto" . browse-url))
+     (action ("Browse Url" . browse-url))
+     (requires-pattern . 3)
+     (candidate-number-limit . 10)
+     (volatile)
+     (delayed))
+    ("apidock-rspec" "Search on apidock.com/rspec"
+     (candidates
+      .
+      (lambda ()
+        (let ((rs (rails/apidock-bundle/search anything-pattern "rspec")))
+          rs)))
+     (action ("Browse Url" . browse-url))
      (requires-pattern . 3)
      (candidate-number-limit . 10)
      (volatile)

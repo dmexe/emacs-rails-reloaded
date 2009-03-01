@@ -59,15 +59,16 @@ def to_lisp(mod, data)
                    ""
                  end
     url_prefix = "http://apidock.com/#{mod}/#{url_prefix}"
+    title = it[:name].dup
+    title << " (#{it[:path]})" if it[:path]
     line = case it[:type]
            when "method"
              if it[:method_type] == "instance"
-               ["#{it[:path]}##{it[:name]}", "#{url_prefix}#{it[:name]}"]
+               [title, "#{url_prefix}#{it[:name]}"]
              else
-               ["#{it[:path]}.#{it[:name]}", "#{url_prefix}#{it[:name]}/class"]
+               [title, "#{url_prefix}#{it[:name]}/class"]
              end
            when "class", "module"
-             title = it[:path] ? "#{it[:path]}::#{it[:name]}" : it[:name]
              [title, "#{url_prefix}#{it[:name]}"]
            end
     result << line
@@ -78,4 +79,6 @@ def to_lisp(mod, data)
   "(" + result.join("\n") + ")"
 end
 
-puts search("rails", ARGV.first.to_s.strip) if ARGV.first
+mod = ARGV.size > 1 ? ARGV.first : "rails"
+q = ARGV.last
+puts search(mod, q) if q
