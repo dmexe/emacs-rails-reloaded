@@ -165,7 +165,7 @@
   "List of availabled Rake tasks."
   (interactive)
   (when-bind (root (rails/root))
-    (anything (rails/resources/anything-load-triggers) "rake")))
+    (anything (rails/anything/load-triggers) "rake")))
 
 ;;; ---------------------------------------------------------
 ;;; - Bundle
@@ -183,8 +183,9 @@
     ("\C-r" 'rails/rake-bundle/list-tasks))
    :triggers
    (("rake" "Rake Task"
-     (candidates .
-      (lambda()
+     (candidates
+      .
+      (lambda ()
         (when (string-match "^rake" anything-pattern)
           (mapcar
            (lambda (i) (cons (format "rake %s %s"
