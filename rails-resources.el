@@ -33,8 +33,7 @@
                           title ;; string, required
                           group ;; string required
                           dir file-ext file-suffix skip-file-suffix ;; string
-                          expand-in-menu ;; boolean
-                          pluralize ;; boolean
+                          options ;; (availabled 'pluralize 'expand-in-menu), list or symbol
                           file-pattern ;; pattern
                           link-to ;; list
                           test-to ;; symbol
@@ -55,6 +54,13 @@
                                resource-title)
 
 (defvar rails/resources/list-defined nil)
+
+;;; ---------------------------------------------------------
+;;; - Struct functions
+;;;
+
+(defun rails/resource-options-p (resource test)
+  (not (not (memq test (rails/resource-options resource)))))
 
 ;;; ---------------------------------------------------------
 ;;; - Menu functions
@@ -79,8 +85,8 @@
 (defun* rails/defresource (type title &key group
                                            dir file-suffix file-ext
                                            skip-file-suffix
-                                           pluralize file-pattern
-                                           expand-in-menu
+                                           file-pattern
+                                           options
                                            link-to test-to
                                            get-action-func set-action-func
                                            weight)
@@ -97,12 +103,11 @@
                                                   file-ext
                                                 (when file-ext
                                                   (concat "." file-ext)))
+                                   :options (if (listp options) options (list options))
                                    :link-to (if (listp link-to) link-to (list link-to))
                                    :test-to (if (symbolp test-to)
                                                 test-to
                                               (error "rails/resource#test-to must be the symbol"))
-                                   :pluralize pluralize
-                                   :expand-in-menu expand-in-menu
                                    :file-pattern file-pattern
                                    :get-action-func get-action-func
                                    :set-action-func set-action-func
@@ -196,7 +201,7 @@
     (when res-alist
       (setq res-name (cdr res-alist)
             res      (car res-alist))
-      (when (rails/resource-pluralize res)
+      (when (rails/resource-options-p res 'pluralize)
         (setq res-name (pluralize-string res-name)))
       (when-bind (pattern (rails/resource-file-pattern res))
         (setq pattern (replace-regexp-in-string "{name}" "\\\\(.*\\\\)" pattern))
@@ -229,13 +234,6 @@
                                     :resource-type (rails/resource-type resource)
                                     :resource-group (rails/resource-group resource)
                                     :resource-title (rails/resource-title resource)))))
-
-(defun rails/resources/filter-buffer-in-items (rails-buffer items)
-  (let ((compared-file (rails/resource-buffer-file rails-buffer)))
-    (loop for item in items
-          for allow = (not (string= compared-file (rails/resource-item-file item)))
-          when allow
-          collect item)))
 
 (defun rails/resources/filter-dublicated-files-in-items (items)
   (let (result deleted)
@@ -272,7 +270,7 @@
           (progn
             (setq name file)
             ;; singularize
-            (when-bind (pluralize (rails/resource-pluralize resource))
+            (when-bind (pluralize (rails/resource-options-p resource 'pluralize))
               (setq file (singularize-string file)))
             ;; pattern
             (when-bind (pattern (rails/resource-file-pattern resource))

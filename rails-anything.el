@@ -83,8 +83,9 @@
         (dolist (i items)
           (dolist (ii (cadr i))
             (if (and (= 1 (length ii))
-                     (not (rails/resource-expand-in-menu
-                           (rails/resources/find (rails/resource-item-resource-type (car ii))))))
+                     (not (rails/resource-options-p
+                           (rails/resources/find (rails/resource-item-resource-type (car ii)))
+                           'expand-in-menu)))
                 (progn
                   (add-to-list 'result (cons (rails/resource-item-resource-title (car ii))
                                              (car ii)) t))

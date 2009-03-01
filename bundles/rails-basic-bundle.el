@@ -25,7 +25,7 @@
                      :group 'view
                      :file-pattern "{name}/.*"
                      :get-action-func '(lambda() (file-name-nondirectory (file-name-sans-extension (buffer-file-name))))
-                     :expand-in-menu t
+                     :options 'expand-in-menu
                      :link-to '(mailer controller)
                      :weight 2)
 
@@ -38,7 +38,7 @@
   (rails/defresource 'model "Model"
                      :dir "app/models"
                      :file-ext  "rb"
-                     :pluralize t)
+                     :options 'pluralize)
 
   (rails/defresource 'observer "Observer"
                      :dir "app/models"
@@ -46,7 +46,7 @@
                      :file-suffix "_observer"
                      :weight 2
                      :link-to 'model
-                     :pluralize t)
+                     :options 'pluralize)
 
   (rails/defresource 'stylesheet "Stylesheet"
                      :dir "public/stylesheets"

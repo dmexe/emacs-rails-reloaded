@@ -55,7 +55,7 @@
                      :dir "spec/models"
                      :file-suffix  "_spec"
                      :file-ext  "rb"
-                     :pluralize t
+                     :options 'pluralize
                      :test-to 'model)
 
   (rails/defresource 'controller-spec "RSpec Controller"

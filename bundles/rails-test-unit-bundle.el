@@ -48,7 +48,7 @@
                    :dir "test/unit"
                    :file-suffix  "_test"
                    :file-ext  "rb"
-                   :pluralize t
+                   :options 'pluralize
                    :test-to 'model)
 
   (rails/defresource 'unit-test-mailer "Unit Test Mailer"
