@@ -109,10 +109,8 @@
 (defun rails/anything/associated ()
   (interactive)
   (rails/with-current-buffer
-   (let ((root (rails/root))
-         (sources (rails/anything/load-triggers)))
-     (add-to-list 'sources anything-c-source-rails-associated t)
-     (anything sources))))
+   (let ((root (rails/root)))
+     (anything (list anything-c-source-rails-associated)))))
 
 (defun rails/anything/goto-resource-items-alist (root buffer resource)
   (let ((dir (rails/resource-dir resource))
@@ -151,7 +149,7 @@
   (interactive)
   (rails/with-root (buffer-file-name)
     (let ((root (rails/root))
-          (result (rails/anything/load-triggers)))
+          result)
       (loop for res in  rails/resources/list-defined
             for cand = (rails/anything/goto-resource-items-alist
                         root
@@ -166,5 +164,16 @@
                                (cons 'type 'file))
                          t))
       (anything result))))
+
+;;; ---------------------------------------------------------
+;;; - advice anything sources
+;;;
+(defadvice anything-normalize-sources (around rails-anything activate)
+  (let ((sources ad-do-it))
+    (when (rails/root)
+      (let ((result (rails/anything/load-triggers)))
+        (dolist (it sources)
+          (add-to-list 'result it t))
+        (setq ad-return-value result)))))
 
 (provide 'rails-anything)
