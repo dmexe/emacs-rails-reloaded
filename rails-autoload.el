@@ -39,8 +39,9 @@
                                    "rails-bytecompile.el")
                     (byte-compile-file file))))
          (path (file-name-directory (locate-library "rails-reloaded"))))
-    (mapc func (directory-files path t "\\.el\\'"))
-    (mapc func (directory-files (concat path "bundles/") t "\\.el\\'"))))
+    (mapc func (directory-files path                     t "\\.el\\'"))
+    (mapc func (directory-files (concat path "bundles/") t "\\.el\\'"))
+    (mapc func (directory-files (concat path "vendor/")  t "\\.el\\'"))))
 
 (defun rails/selftest ()
   "Run unit tests for rails-reloaded library."

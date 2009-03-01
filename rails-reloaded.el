@@ -54,6 +54,7 @@
 (require 'rails-project)
 (require 'rails-resources)
 (require 'rails-bundles)
+(require 'rails-anything)
 
 ;;; ---------------------------------------------------------
 ;;; - Variables
@@ -208,8 +209,8 @@
       ([menu-bar] (rails-minor-mode-menu-bar-map))
       ((rails/short-key "<up>")   'rails/resources/toggle)
       ((rails/short-key "t")      'rails/resources/toggle-test)
-      ((rails/short-key "g")      'rails/resources/anything-associated)
-      ((rails/short-key "G")      'rails/resources/anything-goto)
+      ((rails/short-key "g")      'rails/anything/associated)
+      ((rails/short-key "G")      'rails/anything/goto)
       ((rails/short-key "/")      'rails/runner/toggle-output-window)
       ((kbd "\e\e e")             'rails/set-default-environment)
       ((rails/key ".")            'rails/compile/single-file)
