@@ -70,7 +70,7 @@
       (list 'menu-item (pluralize-string title)
             `(lambda()
                (interactive)
-               (rails/anything/goto ',type))))))
+               (rails/goto ',type))))))
 
 ;;; ---------------------------------------------------------
 ;;; - CRUD functions

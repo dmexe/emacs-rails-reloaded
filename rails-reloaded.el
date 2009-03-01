@@ -146,6 +146,14 @@
     (when (not (string-ext/empty-p env))
       (setq rails/default-environment env))))
 
+(defun rails/goto (&optional resource-type)
+  (interactive)
+  (rails/anything/goto resource-type))
+
+(defun rails/goto-associated ()
+  (interactive)
+  (rails/anything/associated))
+
 ;;; ---------------------------------------------------------
 ;;; - Rails minor mode
 ;;;
@@ -182,7 +190,7 @@
       ([rails toggle]              (cons "Go To From Current File" (make-sparse-keymap)))
       ([rails toggle toggle-test]    (cons "Toggle Test/Implementation" 'rails/resources/toggle-test))
       ([rails toggle toggle]         (cons "Toggle" 'rails/resources/toggle))
-      ([rails toggle goto]           (cons "Go to..." 'rails/anything/associated))
+      ([rails toggle goto]           (cons "Go to..." 'rails/goto-associated))
       ([rails goto]                (cons "Go To" (make-sparse-keymap))))
   map))
 
@@ -206,8 +214,8 @@
       ([menu-bar] (rails-minor-mode-menu-bar-map))
       ((rails/short-key "<up>")   'rails/resources/toggle)
       ((rails/short-key "t")      'rails/resources/toggle-test)
-      ((rails/short-key "g")      'rails/anything/associated)
-      ((rails/short-key "G")      'rails/anything/goto)
+      ((rails/short-key "g")      'rails/goto-associated)
+      ((rails/short-key "G")      'rails/goto)
       ((rails/short-key "/")      'rails/runner/toggle-output-window)
       ((kbd "\e\e e")             'rails/set-default-environment)
       ((rails/key ".")            'rails/compile/single-file)
