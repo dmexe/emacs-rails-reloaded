@@ -310,7 +310,7 @@
 
 ;;; ---------------------------------------------------------
 ;;; - Menu functions
-;;;
+;;; TODO: remove bellow after the toggle refactoring.
 
 (defun rails/resources/items-to-menu (menu items &optional name-func)
   (let ((menu menu))

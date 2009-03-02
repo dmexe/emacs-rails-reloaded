@@ -3,9 +3,11 @@
 require 'rubygems'
 require 'activesupport'
 
+LIMIT = 12
+
 def create_data(data_file, file)
   result = []
-  File.open(file, "rb") do |f|
+  File.open(file, "r") do |f|
     str = f.read
     keywords,data = str.split(";")
     data.gsub!(/^[^=]+= /, "")
@@ -21,7 +23,7 @@ def create_data(data_file, file)
       result << i
     end
   end
-  File.open(data_file, "wb") do |f|
+  File.open(data_file, "w") do |f|
     f.write Marshal.dump(result)
   end
 end
@@ -47,7 +49,7 @@ def search(mod, str)
   return if result.empty?
 
   result = result.sort_by{ |a| a[:score] }.reverse
-  to_lisp(mod, result)
+  to_lisp(mod, result[0..LIMIT])
 end
 
 def to_lisp(mod, data)
@@ -79,6 +81,12 @@ def to_lisp(mod, data)
   "(" + result.join("\n") + ")"
 end
 
-mod = ARGV.size > 1 ? ARGV.first : "rails"
-q = ARGV.last
-puts search(mod, q) if q
+STDOUT.flush
+loop do
+  line = STDIN.gets
+  mod, q =  /(\w+)(.*)$/.match(line)[1..2]
+  q.strip!
+  puts search(mod, q) unless q.blank?
+  puts "APIDOCK_EOF"
+  STDOUT.flush
+end
