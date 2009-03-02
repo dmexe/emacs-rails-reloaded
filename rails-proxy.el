@@ -28,7 +28,7 @@
 (defvar rails/proxy/ssh-args "-t -t -q")
 (defvar rails/proxy/tunnel-local-port "80")
 (defvar rails/proxy/tunnel-args "-t -t -q -L %s:127.0.0.1:%s %s")
-(defvar rails/proxy/tunnel-buffer "*rails remote tunnel :%s*")
+(defvar rails/proxy/tunnel-buffer "*tunnel %s*")
 
 (defvar rails/proxy/dir-list
   '(("z:/apps/" "dima-exe@d2.undev.ru" "/home/dima-exe/apps/")))
@@ -91,7 +91,7 @@
                         remote-port
                         (cadr plist)))
           (name (format rails/proxy/tunnel-buffer remote-port)))
-      (unless (get-buffer rails/proxy/tunnel-buffer)
+      (unless (get-buffer name)
         (start-process-shell-command name
                                      name
                                      rails/proxy/ssh
@@ -101,6 +101,5 @@
   (let ((name (format rails/proxy/tunnel-buffer remote-port)))
     (when-bind (proc (get-buffer-process name))
       (kill-process proc))))
-
 
 (provide 'rails-proxy)
