@@ -5,7 +5,7 @@ require 'activesupport'
 
 def create_data(data_file, file)
   result = []
-  File.open(file) do |f|
+  File.open(file, "rb") do |f|
     str = f.read
     keywords,data = str.split(";")
     data.gsub!(/^[^=]+= /, "")
@@ -21,7 +21,7 @@ def create_data(data_file, file)
       result << i
     end
   end
-  File.open(data_file, File::WRONLY | File::TRUNC | File::CREAT) do |f|
+  File.open(data_file, "wb") do |f|
     f.write Marshal.dump(result)
   end
 end

@@ -76,4 +76,10 @@
                      :group 'spec
                      :dir "spec/fixtures"
                      :file-ext "yml"
+                     :link-to 'model-spec)
+
+  (rails/defresource 'factory-spec "RSpec Factory"
+                     :dir "spec/factories"
+                     :file-ext  "rb"
+                     :options  'pluralize
                      :link-to 'model-spec))
