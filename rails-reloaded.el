@@ -213,9 +213,9 @@
     (define-keys map
       ([menu-bar] (rails-minor-mode-menu-bar-map))
       ((rails/short-key "<up>")     'rails/resources/toggle)
-      ((rails/short-key "<return>") 'rails/resources/toggle-test)
-      ((rails/short-key ";")        'rails/goto-associated)
-      ((rails/short-key "'")        'rails/goto)
+      ((rails/short-key "t")        'rails/resources/toggle-test)
+      ((rails/short-key "'")        'rails/goto-associated)
+      ((rails/short-key ";")        'rails/goto)
       ((rails/short-key "/")        'rails/runner/toggle-output-window)
       ((kbd "\e\e e")               'rails/set-default-environment)
       ((rails/key ".")              'rails/compile/single-file)

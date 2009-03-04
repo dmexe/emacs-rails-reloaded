@@ -122,7 +122,8 @@ BUFFER-MAJOR-MODE."
       (with-current-buffer (get-buffer rails/runner/buffer-name)
         (let ((buffer-read-only nil))
           (delete-region (point-min) (point-max)))))
-    (in-directory root
+    (in-directory (if (string-ext/end-p root "/")
+                      root (concat root "/"))
       (let ((proc (rails/proxy/shell-command root
                                              rails/runner/buffer-name
                                              rails/runner/buffer-name
@@ -130,6 +131,8 @@ BUFFER-MAJOR-MODE."
                                              parameters)))
         (rails/runner/prepare-buffer proc)
         (with-current-buffer (process-buffer proc)
+          (setq default-directory (if (string-ext/end-p root "/")
+                                      root (concat root "/")))
           (if (opt-val :mode options)
               (funcall (opt-val :mode options))
             (rails/runner/output-mode))

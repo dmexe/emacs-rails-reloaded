@@ -442,12 +442,15 @@
   (let ((test-res (rails/resources/test-buffer-p root rails-buffer)))
     (if test-res
         ;; it's the test, run it
-        (rails/resources/get-associated-items-by-resource root
-                                                          rails-buffer
-                                                          test-res)
+        (car
+         (rails/resources/get-associated-items-by-resource
+          root
+          rails-buffer
+          test-res))
       ;; it's have the link to test
-      (rails/resources/linked-to-test-item-of-buffer root
-                                                     rails-buffer))))
+      (rails/resources/linked-to-test-item-of-buffer
+       root
+       rails-buffer))))
 
 (defun rails/resources/toggle-test ()
   (interactive)

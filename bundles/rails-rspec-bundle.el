@@ -2,7 +2,7 @@
 ;;; - Variables
 ;;;
 
-(defvar rails/rspec-bundle/command "spec")
+(defvar rails/rspec-bundle/command (format "%s script/spec" rails/ruby/command))
 (defvar rails/rspec-bundle/spec-options "-O spec/spec.opts")
 
 ;;; ---------------------------------------------------------

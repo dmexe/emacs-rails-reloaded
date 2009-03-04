@@ -87,18 +87,24 @@
 (defun rails/compile/run-file (root rails-buffer command args-pattern &optional file-pattern)
   (let ((item
          (when rails-buffer
-           (rails/resources/get-associated-test-item-for-buffer root
-                                                                rails-buffer)))
+           (rails/resources/get-associated-test-item-for-buffer
+            root
+            rails-buffer)))
+        (match (when file-pattern
+                 (string-ext/string=~ file-pattern
+                                      (rails/resource-buffer-file rails-buffer)
+                                      t)))
         file)
     (cond
-     (item
+     ((and item
+           (if file-pattern match t))
       (setq file (rails/resource-item-file item))
       (rails/compile/run root
                          command
                          (format args-pattern
                                  file)))
      ((and file-pattern
-           (string-ext/string=~ file-pattern (buffer-file-name) t))
+           match)
       (rails/compile/run root
                          command
                          (format args-pattern
