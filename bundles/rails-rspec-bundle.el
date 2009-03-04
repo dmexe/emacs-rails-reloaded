@@ -2,7 +2,7 @@
 ;;; - Variables
 ;;;
 
-(defvar rails/rspec-bundle/command (format "%s script/spec" rails/ruby/command))
+(setq rails/rspec-bundle/command rails/ruby/command)
 (defvar rails/rspec-bundle/spec-options "-O spec/spec.opts")
 
 ;;; ---------------------------------------------------------
@@ -14,7 +14,7 @@
    root
    rails-buffer
    rails/rspec-bundle/command
-   (concat "%s" (format " %s" rails/rspec-bundle/spec-options))
+   (concat "script/spec %s" (format " %s" rails/rspec-bundle/spec-options))
    "_spec\\.rb$"))
 
 (defun rails/rspec-bundle/current-method (root rails-buffer)
@@ -23,7 +23,7 @@
      root
      rails-buffer
      rails/rspec-bundle/command
-     (concat "%s" (format " %s -l %s" rails/rspec-bundle/spec-options line))
+     (concat "script/spec %s" (format " %s -l %s" rails/rspec-bundle/spec-options line))
      "_spec\\.rb$")))
 
 (defun rails/rspec-bundle/run-spec-task (root task args)

@@ -85,18 +85,20 @@
         '(rails/runner/popup-buffer-if-failed)))
 
 (defun rails/compile/run-file (root rails-buffer command args-pattern &optional file-pattern)
-  (let ((item
-         (when rails-buffer
-           (rails/resources/get-associated-test-item-for-buffer
-            root
-            rails-buffer)))
-        (match (when file-pattern
-                 (string-ext/string=~ file-pattern
-                                      (rails/resource-buffer-file rails-buffer)
+  (let* ((item
+          (when rails-buffer
+            (rails/resources/get-associated-test-item-for-buffer
+             root
+             rails-buffer)))
+         (match (when file-pattern
+                  (string-ext/string=~ file-pattern
+                                       (or
+                                        (when item (rails/resource-item-file item))
+                                        (rails/resource-buffer-file rails-buffer))
                                       t)))
         file)
     (cond
-     (item
+     ((and item (if file-pattern match t))
       (setq file (rails/resource-item-file item))
       (rails/compile/run root
                          command
