@@ -420,10 +420,23 @@
             when test
             return test)))
     (when test-res
-      (car
-       (rails/resources/get-associated-items-by-resource root
-                                                         rails-buffer
-                                                         test-res)))))
+      (let ((items (rails/resources/get-associated-items-by-resource
+                    root
+                    rails-buffer
+                    test-res))
+            (bfile (regexp-quote (file-name-nondirectory
+                                  (rails/resource-buffer-file rails-buffer)))))
+        (or
+         ;; try find in multiple items by regexp (eq using to find view spec)
+         (loop for it in items
+               for match = (string-ext/string=~
+                            bfile
+                            (rails/resource-item-file it)
+                            it)
+               when match
+               return it)
+         ;; return first
+        (car items))))))
 
 (defun rails/resources/test-buffer-p (root rails-buffer)
   "Return resource contains :test-to link, otherwise return nil."

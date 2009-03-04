@@ -96,8 +96,7 @@
                                       t)))
         file)
     (cond
-     ((and item
-           (if file-pattern match t))
+     (item
       (setq file (rails/resource-item-file item))
       (rails/compile/run root
                          command

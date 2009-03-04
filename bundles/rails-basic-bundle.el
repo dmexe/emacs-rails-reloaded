@@ -22,7 +22,7 @@
 
   (rails/defresource 'view "View"
                      :dir "app/views"
-                     :group 'view
+                     :group 'viewa
                      :file-pattern "{name}/.*"
                      :get-action-func '(lambda() (file-name-nondirectory (file-name-sans-extension (buffer-file-name))))
                      :options 'expand-in-menu

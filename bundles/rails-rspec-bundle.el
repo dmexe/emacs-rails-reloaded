@@ -89,4 +89,13 @@
                      :dir "spec/factories"
                      :file-ext  "rb"
                      :options  'pluralize
-                     :link-to 'model-spec))
+                     :link-to 'model-spec)
+
+  (rails/defresource 'view-spec "RSpec View"
+                     :group 'views
+                     :dir "spec/views"
+                     :file-suffix  "_spec"
+                     :file-pattern "{name}/.*"
+                     :file-ext  "rb"
+                     :options 'expand-in-menu
+                     :test-to 'view ))
