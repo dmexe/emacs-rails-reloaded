@@ -9,6 +9,7 @@
 (defvar rails/rake-bundle/history nil)
 (defvar rails/rake-bundle/tasks-regexp "^rake\s+\\([^ ]+\\)\s+\\(.*\\)$"
   "Regexp to match tasks list in `rake --tasks` output.")
+(defvar rails/rake-bundle/tasks-runners-alist nil)
 
 (defvar rails/rake-bundle/task-keywords-alist
   '(("^notes.*$"   . (("^\\([^ ]+\\):"
@@ -58,7 +59,7 @@
       (rails/rake-bundle/create-tasks-cache root))
     (files-ext/read-from-file cache-file)))
 
-(defun rails/rake-bundle/task-run (root task &optional args keywords after-stop-funcs)
+(defun rails/rake-bundle/task-run-with-rake (root task &optional args keywords after-stop-funcs)
   "Run a Rake task in RAILS_ROOT with MAJOR-MODE."
   (when (and task root)
     (unless keywords
@@ -87,6 +88,19 @@
         (when after-stop-funcs
           (add-to-list 'rails/runner/after-stop-func-list after-stop-funcs t))))
     (add-to-list 'rails/runner/after-stop-func-list 'rails/rake-bundle/after-stop-notify t)))
+
+(defun rails/rake-bundle/task-run (root task &optional args keywords after-stop-funcs)
+  (let (runner)
+    (setq
+     runner
+     (loop for it in rails/rake-bundle/tasks-runners-alist
+           for found = (string-ext/string=~ (car it) task it)
+           when found
+           return found))
+    (if runner
+        (funcall (cdr runner) root task args)
+      (rails/rake-bundle/task-run-with-rake root task args keywords after-stop-funcs))))
+
 
 ;;; ---------------------------------------------------------
 ;;; - After stop functions
@@ -195,4 +209,6 @@
            (rails/rake-bundle/alist-of-tasks anything-rails-current-root)))))
      (action ("Run" . (lambda (i) (rails/rake-bundle/run i)))
              ("Run with Arguments" . (lambda (i) (rails/rake-bundle/run-with-args i))))
-     (requires-pattern . 4)))))
+     (requires-pattern . 4))))
+
+  (setq rails/rake-bundle/tasks-runners-alist nil))

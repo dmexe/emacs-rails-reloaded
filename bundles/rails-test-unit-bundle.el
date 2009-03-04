@@ -19,6 +19,11 @@
      (concat "%s --name=" method)
      "_test\\.rb$")))
 
+(defun rails/test-unit-bundle/run-test-task (root task args)
+  (rails/compile/run root
+                     rails/rake-bundle/command
+                     (format "%s %s" task (if args args ""))))
+
 ;;; ---------------------------------------------------------
 ;;; - Bundle
 ;;;
@@ -38,6 +43,9 @@
   (setq rails/compile/current-method-list
         (cons 'rails/test-unit-bundle/current-method
               rails/compile/current-method-list))
+
+  (add-to-list 'rails/rake-bundle/tasks-runners-alist
+               '("^test" . rails/test-unit-bundle/run-test-task))
 
   ;;; ---------------------------------------------------------
   ;;; - Resources

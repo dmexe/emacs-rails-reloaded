@@ -26,6 +26,11 @@
      (concat "%s" (format " %s -l %s" rails/rspec-bundle/spec-options line))
      "_spec\\.rb$")))
 
+(defun rails/rspec-bundle/run-spec-task (root task args)
+  (rails/compile/run root
+                     rails/rake-bundle/command
+                     (format "%s %s" task (if args args ""))))
+
 ;;; ---------------------------------------------------------
 ;;; - Bundle
 ;;;
@@ -46,6 +51,8 @@
       (cons 'rails/rspec-bundle/current-method
             rails/compile/current-method-list))
 
+  (add-to-list 'rails/rake-bundle/tasks-runners-alist
+               '("^spec" . rails/rspec-bundle/run-spec-task))
   ;;; ---------------------------------------------------------
   ;;; - Resources
   ;;;
