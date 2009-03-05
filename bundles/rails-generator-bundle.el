@@ -129,6 +129,16 @@
   (when-bind (root (rails/root))
     (rails/generator-bundle/create-cache root)))
 
+(defun rails/generator-bundle/gen ()
+  (interactive)
+  (when-bind (root (rails/root))
+    (rails/anything/run-with-pattern "gen ")))
+
+(defun rails/generator-bundle/des ()
+  (interactive)
+  (when-bind (root (rails/root))
+    (rails/anything/run-with-pattern "des ")))
+
 ;;; ---------------------------------------------------------
 ;;; - Bundle
 ;;;
@@ -136,11 +146,11 @@
 (rails/defbundle "Generator"
   (:menu
    (([reset]   (cons "Reset Cache" 'rails/generator-bundle/reset-cache))
-    ([destroy] (cons "Destroy" 'rails/generator-bundle/destroy))
-    ([create]  (cons "Generate" 'rails/generator-bundle/generate)))
+    ([destroy] (cons "Destroy" 'rails/generator-bundle/des))
+    ([create]  (cons "Generate" 'rails/generator-bundle/gen)))
    :keys
-   (("e" 'rails/generator-bundle/generate)
-    ("E" 'rails/generator-bundle/destroy))
+   (("e" 'rails/generator-bundle/gen)
+    ("E" 'rails/generator-bundle/des))
    :triggers
    (("gen" "Generate"
      (candidates

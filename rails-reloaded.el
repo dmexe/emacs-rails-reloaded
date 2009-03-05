@@ -191,7 +191,8 @@
       ([rails toggle toggle-test]    (cons "Toggle Test/Implementation" 'rails/resources/toggle-test))
       ([rails toggle toggle]         (cons "Toggle" 'rails/resources/toggle))
       ([rails toggle goto]           (cons "Go to..." 'rails/goto-associated))
-      ([rails goto]                (cons "Go To" (make-sparse-keymap))))
+      ([rails goto]                (cons "Go To" (make-sparse-keymap)))
+      ([rails find]                (cons "Find file" 'rails/goto)))
   map))
 
 (defun rails-minor-mode-environments-menu (&optional args)

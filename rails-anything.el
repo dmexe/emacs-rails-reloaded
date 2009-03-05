@@ -170,6 +170,9 @@
                          t))
       (anything result))))
 
+(defun rails/anything/run-with-pattern (pattern)
+  (anything (rails/anything/load-triggers) pattern))
+
 ;;; ---------------------------------------------------------
 ;;; - advice anything sources
 ;;;

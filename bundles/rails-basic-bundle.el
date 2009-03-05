@@ -51,9 +51,7 @@
     t))
 
 (rails/defbundle "Basic"
-  (:menu
-   (([new] (cons "Create a new view for current file" 'identity))
-    ([new2] (cons "Create a new view for current file" 'identity))))
+  ()
 
   (rails/defresource 'controller "Controller"
                      :dir "app/controllers"

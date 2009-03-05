@@ -179,7 +179,7 @@
   "List of availabled Rake tasks."
   (interactive)
   (when-bind (root (rails/root))
-    (anything (rails/anything/load-triggers) "rake")))
+    (rails/anything/run-with-pattern "rake ")))
 
 ;;; ---------------------------------------------------------
 ;;; - Bundle
@@ -188,13 +188,9 @@
 (rails/defbundle "Rake"
   (:menu
    (([reset]     (cons "Reset Tasks Cache" 'rails/rake-bundle/reset-cache))
-    ([list]      (cons "List Tasks" 'rails/rake-bundle/list-tasks))
-    ([task-args] (cons "Run Rake Task with Arguments" 'rails/rake-bundle/run-with-args))
-    ([task]      (cons "Run Rake Task" 'rails/rake-bundle/run)))
+    ([task]      (cons "Run Rake Task" 'rails/rake-bundle/list-tasks)))
    :keys
-   (("r"    'rails/rake-bundle/run)
-    ("R"    'rails/rake-bundle/run-with-args)
-    ("\C-r" 'rails/rake-bundle/list-tasks))
+   (("r"    'rails/rake-bundle/anything))
    :triggers
    (("rake" "Rake Task"
      (candidates

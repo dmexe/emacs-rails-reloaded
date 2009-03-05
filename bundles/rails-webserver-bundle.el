@@ -135,7 +135,7 @@
       (unless port
         (setq port (rails/completing-read "and port"
                                           nil
-                                          t
+                                          nil
                                           (format "%s" rails/webserver-bundle/port)))
         (when (zerop (string-to-number port))
           (setq port rails/webserver-bundle/port)))
