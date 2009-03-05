@@ -91,7 +91,7 @@
                         remote-port
                         (cadr plist)))
           (name (format rails/proxy/tunnel-buffer remote-port)))
-      (unless (get-buffer name)
+      (unless (get-buffer-process name)
         (start-process-shell-command name
                                      name
                                      rails/proxy/ssh
