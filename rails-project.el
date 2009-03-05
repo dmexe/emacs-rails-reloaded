@@ -30,6 +30,9 @@
   :group 'rails
   :type 'string)
 
+(defvar rails/project/template
+  "((rails/webserver-bundle/port . 3000)\n (rails/default-environment   . \"development\")\n (rails/bundles/disabled-list . (test-unit)))\n")
+
 (defun rails/project/apply (root buffer config)
   (with-current-buffer buffer
     (when-bind (root (rails/root))
@@ -49,6 +52,8 @@
     (setq root (rails/root)))
   (when root
     (rails/find-file root rails/project/config)
+    (when (string-ext/empty-p (buffer-substring-no-properties (point-min) (point-max)))
+      (insert rails/project/template))
     (add-hook 'after-save-hook 'rails/project/update t t)))
 
 (defun rails/project/update (&optional root)

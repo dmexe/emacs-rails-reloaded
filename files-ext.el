@@ -48,7 +48,9 @@
   "Read sexpr from a file named FILE-NAME."
   (with-temp-buffer
     (insert-file-contents file-name)
-    (read (current-buffer))))
+    (goto-char (point-min))
+    (unless (string-ext/empty-p (buffer-substring-no-properties (point-min) (point-max)))
+      (read (current-buffer)))))
 
 (defun files-ext/directory-files-recursive (dir regexp)
   (let ((dir-stack '())
