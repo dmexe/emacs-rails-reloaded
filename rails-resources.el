@@ -35,16 +35,13 @@
                           dir file-ext file-suffix skip-file-suffix ;; string
                           options ;; (availabled 'pluralize 'expand-in-menu), list or symbol
                           file-pattern ;; pattern
-                          link-to ;; list
                           test-to ;; symbol
-                          get-action-func set-action-func ;; commandp
+                          toggle ;; alist (toggle-to-func . toggle-from-func)
                           (weight 1)) ;; integer required
 
 (defstruct rails/resource-buffer type
                                  title
                                  file
-                                 get-action-func
-                                 set-action-func
                                  (weight 1)) ;; must be integer
 
 (defstruct rails/resource-item file
@@ -87,8 +84,8 @@
                                            skip-file-suffix
                                            file-pattern
                                            options
-                                           link-to test-to
-                                           get-action-func set-action-func
+                                           test-to
+                                           toggle
                                            weight)
   (when (rails/resources/find type)
     (error (format "Resource %s already defined" type)))
@@ -104,13 +101,11 @@
                                                 (when file-ext
                                                   (concat "." file-ext)))
                                    :options (if (listp options) options (list options))
-                                   :link-to (if (listp link-to) link-to (list link-to))
                                    :test-to (if (symbolp test-to)
                                                 test-to
                                               (error "rails/resource#test-to must be the symbol"))
                                    :file-pattern file-pattern
-                                   :get-action-func get-action-func
-                                   :set-action-func set-action-func
+                                   :toggle toggle
                                    :weight (if (not weight) 1 weight)))
     (add-to-list 'rails/resources/list-defined res t)
     (rails/resources/add-goto-menu res)))
@@ -127,6 +122,16 @@
 
 (defun rails/resources/clear ()
   (setq rails/resources/list-defined nil))
+
+(defun rails/resources/find-file-by-item (root item)
+  (when (rails/resource-item-p item)
+    (rails/find-file root (rails/resource-item-file item))))
+
+(defun rails/resources/notify-item (item &optional title file)
+  (rails/notify (format "%s: %s"
+                        (if title title (rails/resource-item-resource-title item))
+                        (if file file (rails/resource-item-file item)))
+                :notice))
 
 ;;; ---------------------------------------------------------
 ;;; - Comparable functions
@@ -209,9 +214,7 @@
       (make-rails/resource-buffer :type (rails/resource-type res)
                                   :title res-name
                                   :file file
-                                  :weight (rails/resource-weight res)
-                                  :get-action-func (rails/resource-get-action-func res)
-                                  :set-action-func (rails/resource-set-action-func res)))))
+                                  :weight (rails/resource-weight res)))))
 
 ;;; ---------------------------------------------------------
 ;;; - Lookup associated resources by resource-buffer
@@ -308,117 +311,68 @@
         when items
         collect res))
 
-;;; ---------------------------------------------------------
-;;; - Menu functions
-;;; TODO: remove bellow after the toggle refactoring.
-
-(defun rails/resources/items-to-menu (menu items &optional name-func)
-  (let ((menu menu))
-    (unless name-func
-      (setq name-func 'rails/resource-item-resource-title))
-    (dolist (it items)
-      (add-to-list 'menu (cons (apply name-func (list it)) it) t))
-    menu))
-
-(defun rails/resources/find-file-by-item (root item)
-  (when (rails/resource-item-p item)
-    (rails/find-file root (rails/resource-item-file item))))
 
 ;;; ---------------------------------------------------------
-;;; ?? - Lookup resource by link
+;;; - Toggle resource
 ;;;
 
-(defun rails/resources/linked-to-items-of-buffer(root rails-buffer)
-  (let* ((type (rails/resource-buffer-type rails-buffer))
-         (resource (rails/resources/find type))
-         (link-to (rails/resource-link-to resource)))
-    (loop for name in link-to
-          with max-w   = 0
-          with max-its = nil
-          for res = (rails/resources/find name)
-          for w   = (rails/resource-weight res)
-          do (when (> w max-w)
-               (when-bind (its (rails/resources/get-associated-items-by-resource root rails-buffer res))
-                 (setf max-its its
-                       max-w w)))
-          finally (return max-its))))
-
-(defun rails/resources/linked-items-of-buffer(root rails-buffer)
-  (let* ((type (rails/resource-buffer-type rails-buffer))
-         (resource (rails/resources/find type)))
-    (loop for res in rails/resources/list-defined
-          with max-w   = 0
-          with max-its = nil
-          for defined = (memq type (rails/resource-link-to res))
-          for w       = (rails/resource-weight res)
-          do (when (and defined (> w max-w))
-               (when-bind (its (rails/resources/get-associated-items-by-resource root rails-buffer res))
-                 (setf max-its its
-                       max-w w)))
-          finally (return max-its))))
-
-(defun rails/resources/toggle (&optional force-ido)
+(defun rails/resources/toggle ()
   (interactive)
   (rails/with-current-buffer
    (let* ((root (rails/root))
-          (resource (rails/resources/find (rails/resource-buffer-type rails/current-buffer)))
-          items menu file)
-     (setq items
-           (if (rails/resource-link-to resource)
-               (rails/resources/linked-to-items-of-buffer root rails/current-buffer)
-             (rails/resources/linked-items-of-buffer root rails/current-buffer)))
-     (setq menu (rails/resources/items-to-menu menu items))
-     (setq file (if (< 1 (length menu))
-                    (rails/display-menu "Select" menu force-ido)
-                  (cdr (car menu))))
-     (rails/resources/find-file-by-item root file))))
+          (resource (rails/resources/find
+                     (rails/resource-buffer-type rails/current-buffer)))
+          (toggle (cdr (rails/resource-toggle resource)))) ; toggle from current
+     (unless (and
+              toggle
+              (funcall toggle root rails/current-buffer))
+       (setq toggle
+             (loop for res in rails/resources/list-defined
+                   for func = (car (rails/resource-toggle res))
+                   for result = (when func
+                                  (funcall func root rails/current-buffer))
+                   when result
+                   return t))
+       (unless toggle
+         (rails/notify "Can't toggle" :error))))))
+
 
 ;;; ---------------------------------------------------------
-;;; - Lookup resource for test
+;;; - Toggle tests
 ;;;
 
-(defun rails/resources/linked-from-test-item-of-buffer (root rails-buffer)
-  (let* ((type (rails/resource-buffer-type rails-buffer))
-         (resource (rails/resources/find type)))
-    (or
-     ;; direct link
-     (when-bind (test-res (rails/resources/find (rails/resource-test-to resource)))
-       (when-bind (its (rails/resources/get-associated-items-by-resource
-                        root
-                        rails-buffer
-                        test-res))
-         (car its)))
-     ;; test link from linked resource
-     (loop for lay-name in (rails/resource-link-to resource)
-           with assoc-ress  = (rails/resources/get-associated-resources root rails-buffer)
-           for lay-test-to  = (rails/resource-test-to (rails/resources/find lay-name))
-           for test-link    = (find lay-test-to assoc-ress :key 'rails/resource-type)
-           when test-link
-           return
-           (car
-            (rails/resources/get-associated-items-by-resource
-             root
-             rails-buffer
-             test-link))))))
+(defun rails/resources/test-buffer-p (root rails-buffer)
+  "Return resource contains :test-to link, otherwise return nil."
+  (let ((resource (rails/resources/find
+                   (rails/resource-buffer-type rails-buffer))))
+    (when (rails/resource-test-to resource)
+      resource)))
 
-(defun rails/resources/linked-to-test-item-of-buffer (root rails-buffer)
+(defun rails/resources/get-associated-test-item-for-buffer (root rails-buffer)
+  (let ((test-res (rails/resources/test-buffer-p root rails-buffer)))
+    (if test-res
+        ;; it's the test, run it
+        (make-rails/resource-item :file (rails/resource-buffer-file rails-buffer)
+                                  :title (rails/resource-buffer-title rails-buffer)
+                                  :resource-type (rails/resource-type test-res)
+                                  :resource-group (rails/resource-group test-res)
+                                  :resource-title (rails/resource-title test-res))
+      ;; it's have the link to test
+      (rails/resources/test-item-by-buffer
+       root
+       rails-buffer))))
+
+(defun rails/resources/test-item-by-buffer (root rails-buffer)
   (let* ((type (rails/resource-buffer-type rails-buffer))
          (resource (rails/resources/find type))
          (assoc-ress (rails/resources/get-associated-resources root rails-buffer))
          test-res)
     (setq
      test-res
-     (or
-      ;; direct link to resource
-      (loop for res in assoc-ress
-            for test = (eq type (rails/resource-test-to res))
-            when test
-            return res)
-      ;; test link to linked resource
-      (loop for lay-name in (rails/resource-link-to resource)
-            for test = (find lay-name assoc-ress :key 'rails/resource-test-to)
-            when test
-            return test)))
+     (loop for res in assoc-ress
+           for test = (eq type (rails/resource-test-to res))
+           when test
+           return res))
     (when test-res
       (let ((items (rails/resources/get-associated-items-by-resource
                     root
@@ -426,58 +380,51 @@
                     test-res))
             (bfile (regexp-quote (file-name-nondirectory
                                   (rails/resource-buffer-file rails-buffer)))))
-        (or
-         ;; try find in multiple items by regexp (eq using to find view spec)
-         (loop for it in items
-               for match = (string-ext/string=~
-                            bfile
-                            (rails/resource-item-file it)
-                            it)
-               when match
-               return it)
-         ;; return first
-        (car items))))))
+        (if (= 1 (length items))
+            (car items)
+          ;; try find in multiple items by regexp (eq using to find view spec)
+          (loop for it in items
+                for match = (string-ext/string=~
+                             bfile
+                             (rails/resource-item-file it)
+                             it)
+                when match
+                return it))))))
 
-(defun rails/resources/test-buffer-p (root rails-buffer)
-  "Return resource contains :test-to link, otherwise return nil."
-  (let ((resource (rails/resources/find
-                   (rails/resource-buffer-type rails-buffer))))
-    (or
-     ;; direct link
-     (and (rails/resource-test-to resource) resource)
-     ;; link from parent
-     (loop for lay-name in (rails/resource-link-to resource)
-           for lay = (rails/resources/find lay-name)
-           when (rails/resource-test-to lay)
-           return lay))))
-
-(defun rails/resources/get-associated-test-item-for-buffer (root rails-buffer)
-  (let ((test-res (rails/resources/test-buffer-p root rails-buffer)))
-    (if test-res
-        ;; it's the test, run it
-        (car
-         (rails/resources/get-associated-items-by-resource
-          root
-          rails-buffer
-          test-res))
-      ;; it's have the link to test
-      (rails/resources/linked-to-test-item-of-buffer
-       root
-       rails-buffer))))
+(defun rails/resources/item-by-test-buffer (root rails-buffer)
+  (let* ((type (rails/resource-buffer-type rails-buffer))
+         (resource (rails/resources/find type)))
+    (when-bind (test-res (rails/resources/find (rails/resource-test-to resource)))
+      (when-bind (items (rails/resources/get-associated-items-by-resource
+                         root
+                         rails-buffer
+                         test-res))
+        (if (= 1 (length items))
+            (car items)
+          ;; try find in multiple items by regexp (eq using to find view spec)
+          (loop for it in items
+                for bfile = (regexp-quote (file-name-nondirectory
+                                           (rails/resource-item-file it)))
+                for match = (string-ext/string=~
+                             bfile
+                             (rails/resource-buffer-file rails-buffer)
+                             it)
+                when match
+                return it))))))
 
 (defun rails/resources/toggle-test ()
   (interactive)
   (rails/with-current-buffer
-   (let* ((root (rails/root))
-          item)
-    (setq item
-          (if (rails/resources/test-buffer-p root rails/current-buffer)
-              (rails/resources/linked-from-test-item-of-buffer
-               root
-               rails/current-buffer)
-            (rails/resources/linked-to-test-item-of-buffer
-             root
-             rails/current-buffer)))
-    (rails/resources/find-file-by-item root item))))
+   (let ((root (rails/root))
+         item)
+     (setq item
+           (if (rails/resources/test-buffer-p root rails/current-buffer)
+               (rails/resources/item-by-test-buffer root rails/current-buffer)
+             (rails/resources/test-item-by-buffer root rails/current-buffer)))
+     (if item
+         (progn
+           (rails/resources/find-file-by-item root item)
+           (rails/resources/notify-item item))
+       (rails/notify "Can't toggle")))))
 
 (provide 'rails-resources)

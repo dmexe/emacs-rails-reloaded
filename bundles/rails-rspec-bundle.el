@@ -82,14 +82,12 @@
   (rails/defresource 'fixture-spec "RSpec Fixture"
                      :group 'spec
                      :dir "spec/fixtures"
-                     :file-ext "yml"
-                     :link-to 'model-spec)
+                     :file-ext "yml")
 
   (rails/defresource 'factory-spec "RSpec Factory"
                      :dir "spec/factories"
                      :file-ext  "rb"
-                     :options  'pluralize
-                     :link-to 'model-spec)
+                     :options  'pluralize)
 
   (rails/defresource 'view-spec "RSpec View"
                      :group 'views

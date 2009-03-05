@@ -71,8 +71,7 @@
   (rails/defresource 'fixture "Fixture"
                      :group 'unit-test
                      :dir "test/fixtures"
-                     :file-ext  "yml"
-                     :link-to '(unit-test unit-test-mailer))
+                     :file-ext  "yml")
 
   (rails/defresource 'functional-test "Functional Test"
                      :group 'unit-test

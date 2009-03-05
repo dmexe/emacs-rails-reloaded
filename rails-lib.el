@@ -177,7 +177,7 @@ else return nil"
                 (list title
                       menu)))
 
-(defun rails/display-menu-using-ido (title menu)
+(defun rails/display-menu-using-ido (title menu &optional dont-require-match)
   (let (choices value)
     (dolist (item menu) ; filter
       (let ((name (car item))
@@ -189,7 +189,7 @@ else return nil"
                 (ido-completing-read (format "%s: " title)
                                      (mapcar 'car choices)
                                      nil
-                                     t))
+                                     (not dont-require-match)))
       (cdr (find value choices :test 'string= :key 'car)))))
 
 (defun rails/completing-read (title &optional list require default history)

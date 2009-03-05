@@ -63,5 +63,3 @@
      (candidate-number-limit . 10)
      (volatile)
      (delayed)))))
-
-(provide 'rails-apidock-bundle)
