@@ -1,0 +1,6 @@
+#name : collection_path
+#key : cpath
+#group : rails.resources
+#condition : (rails/cur-res-title)
+# --
+${1:`(pluralize-string (rails/cur-res-title))`}_path

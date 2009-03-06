@@ -59,7 +59,7 @@ If RAILS_ROOT not found, return nil."
        (rails/find-existing-root-for file)
        (rails/find-root-for file)))))
 
-(defmacro* rails/with-root (file &body body)
+(defmacro* rails/with-root (&optional file &body body)
   "If you use `rails-project:root' or functions related on it
 several times in a block of code, you can optimize your code by
 using this macro. Also, blocks of code will be executed only if
@@ -271,6 +271,10 @@ else return nil"
 (defun rails/controller-spec? ()
   (rails/with-current-buffer
    (eq 'controller-spec (rails/resource-buffer-type rails/current-buffer))))
+
+(defun rails/model? ()
+  (rails/with-current-buffer
+   (eq 'model (rails/resource-buffer-type rails/current-buffer))))
 
 (defun rails/cur-res-title ()
   (rails/with-current-buffer

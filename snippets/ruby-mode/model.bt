@@ -1,0 +1,6 @@
+#name : belongs_to
+#key : bt
+#group : rails.model
+#condition : (rails/model?)
+# --
+belongs_to :${1:model}

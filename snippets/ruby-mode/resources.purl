@@ -1,0 +1,6 @@
+#name : prefixed_resource_url(@resource)
+#key : purl
+#group : rails.resources
+#condition : (rails/cur-res-title)
+# --
+${1:new}_${2:`(singularize-string (rails/cur-res-title))`}_url(@$2)

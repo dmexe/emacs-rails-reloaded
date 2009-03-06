@@ -1,0 +1,6 @@
+#name : validates_uniqueness_of
+#key : vu
+#group : rails.model
+#condition : (rails/model?)
+# --
+validates_uniqueness_of :${1:name}

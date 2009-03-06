@@ -1,0 +1,6 @@
+#name : has_one :through
+#key : hot
+#group : rails.model
+#condition : (rails/model?)
+# --
+has_one :${1:model}, :through => :${2:through}

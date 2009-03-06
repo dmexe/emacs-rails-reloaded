@@ -1,0 +1,6 @@
+#name : prefixed_nested_resource_url(@resource)
+#key : pnurl
+#group : rails.resources
+#condition : (rails/cur-res-title)
+# --
+${1:new}_${2:owner}_${3:`(singularize-string (rails/cur-res-title))`}_url(@$2, @$3)

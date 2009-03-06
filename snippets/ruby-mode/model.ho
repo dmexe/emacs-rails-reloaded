@@ -1,0 +1,6 @@
+#name : has_one
+#key : ho
+#group : rails.model
+#condition : (rails/model?)
+# --
+has_one :${1:model}${2:, :dependent => :destroy}

@@ -1,0 +1,6 @@
+#name : has_many :through
+#key : hmt
+#group : rails.model
+#condition : (rails/model?)
+# --
+has_many :${1:model}, :through => :${2:through}

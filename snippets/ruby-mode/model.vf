@@ -1,0 +1,6 @@
+#name : validates_format_of
+#key : vf
+#group : rails.model
+#condition : (rails/model?)
+# --
+validates_format_of :${1:email}, :with => ${2:/\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i}

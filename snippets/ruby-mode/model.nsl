@@ -1,0 +1,8 @@
+#name : named_scope ... lambda {}
+#key : nsl
+#group : rails.model
+#condition : (rails/model?)
+# --
+named_scope :${1:approved}, lambda { |i|
+  { :conditions => { :${2:approved} => ${3:true} } }
+}

@@ -1,0 +1,6 @@
+#name : nested_collection_path
+#key : ncpath
+#group : rails.resources
+#condition : (rails/cur-res-title)
+# --
+${1:owner}_${2:`(pluralize-string (rails/cur-res-title))`}_path(@$1)

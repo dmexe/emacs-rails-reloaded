@@ -1,0 +1,6 @@
+#name : nested_resource_url(@resource)
+#key : nurl
+#group : rails.resources
+#condition : (rails/cur-res-title)
+# --
+${1:owner}_${2:`(singularize-string (rails/cur-res-title))`}_url(@$1, @$2)

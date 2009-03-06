@@ -1,0 +1,6 @@
+#name : validates_numericality_of
+#key : vn
+#group : rails.model
+#condition : (rails/model?)
+# --
+validates_numericality_of :${1:value}

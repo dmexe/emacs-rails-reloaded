@@ -1,0 +1,6 @@
+#name : named_scope
+#key : ns
+#group : rails.model
+#condition : (rails/model?)
+# --
+named_scope :${1:approved}, :conditions => { :${2:approved} => ${3:true} }

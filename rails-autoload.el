@@ -65,11 +65,9 @@
       (load-library (concat path "vendor/" lib "/" file))))
   t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Setup autoload
-;;
-
+;;; ---------------------------------------------------------
+;;; - Setup autoload
+;;;
 (defun rails/find-file-hook ()
   "Activate `rails-minor-mode' if opened file inside RAILS_ROOT."
   (when (rails/root (buffer-file-name))
@@ -79,11 +77,9 @@
 (autoload 'rails/root "rails-lib" nil t)
 (add-hook 'find-file-hooks 'rails/find-file-hook)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Setup modes and encoding
-;;
-
+;;; ---------------------------------------------------------
+;;; - Setup modes and encoding
+;;;
 (defun rails/setup-auto-modes-alist ()
   "Added default ruby/rails filetypes to `auto-mode-alist' if not defined."
   (let ((modes
@@ -105,13 +101,22 @@
 (rails/setup-auto-modes-alist)
 (rails/setup-auto-coding-alist)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Mumamo fixes
-;;
+;;; ---------------------------------------------------------
+;;; - Mumamo fixes
+;;;
 (eval-after-load 'mumamo
   '(progn
      (add-to-list 'mumamo-survive 'rails-minor-mode)
      (put 'rails/current-buffer 'permanent-local t)))
+
+;;; ---------------------------------------------------------
+;;; - snippets
+;;;
+(when (fboundp 'yas/minor-mode)
+  (let ((dir
+         (concat
+         (file-name-directory (locate-library "rails-reloaded"))
+         "snippets")))
+    (yas/load-directory dir)))
 
 (provide 'rails-autoload)
