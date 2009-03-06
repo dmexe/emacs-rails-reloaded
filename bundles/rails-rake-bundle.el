@@ -145,7 +145,7 @@
   (rails/with-root nil
     (if task
         (when (not (string-ext/empty-p task))
-          (rails/rake-bundle/task-run root task))
+          (rails/rake-bundle/task-run (rails/root) task))
       (rails/rake-bundle/list-tasks))))
 
 (defun rails/rake-bundle/run-with-args (&optional task)
@@ -155,7 +155,7 @@
     (if task
         (when (not (string-ext/empty-p task))
           (let ((args (read-string (format "Arguments fo %s: " task))))
-            (rails/rake-bundle/task-run root task args)))
+            (rails/rake-bundle/task-run (rails/root) task args)))
       (rails/rake-bundle/list-tasks))))
 
 (defun rails/rake-bundle/reset-cache ()
