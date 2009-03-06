@@ -142,43 +142,32 @@
 (defun rails/rake-bundle/run (&optional task)
   "Run a Rake task."
   (interactive)
-  (when-bind (root (rails/root))
-    (let ((task (if task
-                    task
-                  (rails/completing-read "What task run"
-                                         (rails/rake-bundle/list-of-tasks root)
-                                         nil
-                                         (car rails/rake-bundle/history)
-                                         'rails/rake-bundle/history))))
-      (when (not (string-ext/empty-p task))
-        (rails/rake-bundle/task-run root task)))))
+  (rails/with-root nil
+    (if task
+        (when (not (string-ext/empty-p task))
+          (rails/rake-bundle/task-run root task))
+      (rails/rake-bundle/list-tasks))))
 
 (defun rails/rake-bundle/run-with-args (&optional task)
   "Run a Rake task with arguments ARGS."
   (interactive)
-  (when-bind (root (rails/root))
-    (let ((task (if task
-                    task
-                  (rails/completing-read "What task run"
-                                         (rails/rake-bundle/list-of-tasks root)
-                                         nil
-                                         (car rails/rake-bundle/history)
-                                         'rails/rake-bundle/history)))
-          args)
-      (when (not (string-ext/empty-p task))
-        (setq args (read-string (format "Arguments fo %s: " task)))
-        (rails/rake-bundle/task-run root task args)))))
+  (rails/with-root nil
+    (if task
+        (when (not (string-ext/empty-p task))
+          (let ((args (read-string (format "Arguments fo %s: " task))))
+            (rails/rake-bundle/task-run root task args)))
+      (rails/rake-bundle/list-tasks))))
 
 (defun rails/rake-bundle/reset-cache ()
   "Reset tasks cache."
   (interactive)
-  (when-bind (root (rails/root))
-    (rails/rake-bundle/create-tasks-cache root)))
+  (rails/with-root nil
+    (rails/rake-bundle/create-tasks-cache (rails/root))))
 
 (defun rails/rake-bundle/list-tasks ()
   "List of availabled Rake tasks."
   (interactive)
-  (when-bind (root (rails/root))
+  (rails/with-root nil
     (rails/anything/run-with-pattern "rake ")))
 
 ;;; ---------------------------------------------------------
@@ -190,7 +179,7 @@
    (([reset]     (cons "Reset Tasks Cache" 'rails/rake-bundle/reset-cache))
     ([task]      (cons "Run Rake Task" 'rails/rake-bundle/list-tasks)))
    :keys
-   (("r"    'rails/rake-bundle/anything))
+   (("r"    'rails/rake-bundle/list-tasks))
    :triggers
    (("rake" "Rake Task"
      (candidates
