@@ -55,10 +55,13 @@ can find them in the brackets.
   [C-c '] or [C-c ;] and type 'rake', 'gen', 'des' to display
   available tasks.
 
-* Navigation around rails files, press [C-c '] or [C-c ;] to display
-  available files.
+* Navigation around rails files,
+  press [C-c '] or [C-c ;] to display available files.
+  [C-c up] to toggle (controller|mailer) <> view.
+  [C-c t] to toggle test <> implementation.
 
-* Support test frameworks Test::Unit and RSpec.
+* Support test frameworks Test::Unit and RSpec, press [C-c C-c .] or
+  [C-c C-c ,] to run current test.
 
 * Management of WEBrick/Mongrel/Thing
 
