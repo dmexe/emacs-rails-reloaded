@@ -1,0 +1,75 @@
+#name : generating a RESTful controller
+#key : restful
+#group : rails.controller
+#condition : (rails/controller?)
+# --
+before_filter :capture_${1:`(singularize-string (rails/cur-res-title))`}
+$0
+def index
+  @${1:$(pluralize-string text)} = ${2:`(decamelize-string (singularize-string (rails/cur-res-title)))`}.all
+  respond_to do |format|
+    format.html # index.html.erb
+    format.xml  { render :xml => @${1:$(pluralize-string text)} }
+  end
+end
+
+def show
+  respond_to do |format|
+    format.html # show.html.erb
+    format.xml  { render :xml => @$1 }
+  end
+end
+
+def new
+  respond_to do |format|
+    format.html # new.html.erb
+    format.xml  { render :xml => @$1 }
+  end
+end
+
+def edit
+end
+
+def create
+  @$1.update_attributes!(params[:$1])
+  flash[:notice] = t('.flash')
+  respond_to do |format|
+    format.html { redirect_to($1_path(@$1)) }
+    format.xml  { render :xml => @$1, :status => :created, :location => $1_url(@$1) }
+  end
+rescue ActiveRecord::RecordInvalid
+  respond_to do |format|
+    format.html { render :action => "new" }
+    format.xml  { render :xml => @$1.errors, :status => :unprocessable_entity }
+  end
+end
+
+def update
+  @$1.update_attributes!(params[:$1])
+  flash[:notice] = t('.flash')
+  respond_to do |format|
+    format.html { redirect_to($1_path(@$1)) }
+    format.xml  { head :ok }
+  end
+rescue ActiveRecord::RecordInvalid
+  respond_to do |format|
+    format.html { render :action => "edit" }
+    format.xml  { render :xml => @$1.errors, :status => :unprocessable_entity }
+  end
+end
+
+def destroy
+  @$1.destroy
+  flash[:notice] = t('.flash')
+  respond_to do |format|
+    format.html { redirect_to(${1:$(pluralize-string text)}_path) }
+    format.xml  { head :ok }
+  end
+end
+
+private
+
+  def capture_$1
+    @$1 = $2.find(params[:id]) if params[:id]
+    @$1 ||= $2.new
+  end

@@ -1,0 +1,76 @@
+#name : generating a nested RESTful controller
+#key : restful.nested
+#group : rails.controller
+#condition : (rails/controller?)
+# --
+before_filter :capture_${1:owner}_and_${2:`(singularize-string (rails/cur-res-title))`}
+$0
+def index
+  @${2:$(pluralize-string text)} = @$1.${2:$(pluralize-string text)}
+  respond_to do |format|
+    format.html # index.html.erb
+    format.xml  { render :xml => @${2:$(pluralize-string text)} }
+  end
+end
+
+def show
+  respond_to do |format|
+    format.html # show.html.erb
+    format.xml  { render :xml => @$2 }
+  end
+end
+
+def new
+  respond_to do |format|
+    format.html # new.html.erb
+    format.xml  { render :xml => @$2 }
+  end
+end
+
+def edit
+end
+
+def create
+  @$2.update_attributes!(params[:$2])
+  flash[:notice] = t('.flash')
+  respond_to do |format|
+    format.html { redirect_to($1_$2_path(@$1, @$2)) }
+    format.xml  { render :xml => @$2, :status => :created, :location => $1_$2_url(@$1, @$2) }
+  end
+rescue ActiveRecord::RecordInvalid
+  respond_to do |format|
+    format.html { render :action => "new" }
+    format.xml  { render :xml => @$2.errors, :status => :unprocessable_entity }
+  end
+end
+
+def update
+  @$2.update_attributes!(params[:$2])
+  flash[:notice] = t('.flash')
+  respond_to do |format|
+    format.html { redirect_to($1_$2_path(@$1, @$2)) }
+    format.xml  { head :ok }
+  end
+rescue ActiveRecord::RecordInvalid
+  respond_to do |format|
+    format.html { render :action => "edit" }
+    format.xml  { render :xml => @$2.errors, :status => :unprocessable_entity }
+  end
+end
+
+def destroy
+  @$2.destroy
+  flash[:notice] = t('.flash')
+  respond_to do |format|
+    format.html { redirect_to($1_${2:$(pluralize-string text)}_path(@$1)) }
+    format.xml  { head :ok }
+  end
+end
+
+private
+
+  def capture_$1_and_$2
+    @$1 = ${1:$(decamelize-string text)}.find(params[:$1_id])
+    @$2 = @$1.${2:$(pluralize-string text)}.find(params[:id]) if params[:id]
+    @$2 ||= ${2:$(decamelize-string text)}.new(:$1 => @$1)
+  end

@@ -1,0 +1,249 @@
+#name : generating a nested RESTful controller spec
+#key : restful.nested_spec
+#group : rails.controller_spec
+#condition : (rails/controller-spec?)
+# --
+$0
+before(:each) do
+  @${1:owner} = mock_model(${2:Owner})
+  @${3:`(singularize-string (rails/cur-res-title))`} = mock_model(${4:`(decamelize-string (singularize-string (rails/cur-res-title)))`}, :$1 => @$1)
+  @${3:$(pluralize-string text)} = [@$3]
+  @attrs = { "name" => "name" }
+end
+
+it "should use ${4:$(pluralize-string text)}Controller" do
+  controller.should be_an_instance_of(${4:$(pluralize-string text)}Controller)
+end
+
+describe "GET 'index'" do
+  before(:each) do
+    $2.should_receive(:find).with("1").and_return(@$1)
+    @$1.should_receive(:${3:$(pluralize-string text)}).and_return(@${3:$(pluralize-string text)})
+  end
+
+  describe "with :format => :html" do
+    before(:each) do
+      get :index, :$1_id => "1"
+    end
+    it_should_be_successful
+    it_should_render "${3:$(pluralize-string text)}/index"
+    it_should_be_assign :$1, :$3
+    it_should_return_content_type :html
+  end
+
+  describe "with :format => :xml" do
+    before(:each) do
+      @${3:$(pluralize-string text)}.should_receive(:to_xml).and_return("XML")
+      get :index, :$1_id => "1", :format => "xml"
+    end
+    it_should_be_successful
+    it_should_be_assign :$1, :$3
+    it_should_return_content_type :xml
+    it_should_response_body "XML"
+  end
+end
+
+describe "GET 'show'" do
+  before(:each) do
+    $2.should_receive(:find).with("1").and_return(@$1)
+    @$1.should_receive(:${3:$(pluralize-string text)}).and_return(@${3:$(pluralize-string text)})
+    @${3:$(pluralize-string text)}.should_receive(:find).with("1").and_return(@$3)
+  end
+
+  describe "with :format => :html" do
+    before(:each) do
+      get :show, :$1_id => "1", :id => "1"
+    end
+    it_should_be_successful
+    it_should_render "${3:$(pluralize-string text)}/show"
+    it_should_be_assign :$1, :$3
+  end
+
+  describe "with :format => :xml" do
+    before(:each) do
+      @$3.should_receive(:to_xml).and_return("XML")
+      get :show, :$1_id => "1", :id => "1", :format => "xml"
+    end
+    it_should_be_successful
+    it_should_return_content_type :xml
+    it_should_be_assign :$1, :$3
+    it_should_response_body "XML"
+  end
+end
+
+describe "GET 'new'" do
+  before(:each) do
+    $2.should_receive(:find).with("1").and_return(@$1)
+    $4.should_receive(:new).with(:$1 => @$1).and_return(@$3)
+    @$3.stub!(:new_record? => true)
+    get :new, :$1_id => "1"
+  end
+  it_should_be_successful
+  it_should_render '${3:$(pluralize-string text)}/new'
+  it_should_be_assign :$1, :$3
+end
+
+describe "GET 'edit'" do
+  before(:each) do
+    $2.should_receive(:find).with("1").and_return(@$1)
+    @$1.should_receive(:${3:$(pluralize-string text)}).and_return(@${3:$(pluralize-string text)})
+    @${3:$(pluralize-string text)}.should_receive(:find).with("1").and_return(@$3)
+    get :edit, :$1_id => "1", :id => "1"
+  end
+  it_should_be_successful
+  it_should_be_assign :$1, :$3
+  it_should_render '${3:$(pluralize-string text)}/edit'
+end
+
+describe "POST 'create'" do
+  before(:each) do
+    $2.should_receive(:find).with("1").and_return(@$1)
+    $4.should_receive(:new).with(:$1 => @$1).and_return(@$3)
+    @$3.stub!(:new_record? => true)
+  end
+
+  describe "successfuly" do
+    before(:each) do
+      @$3.should_receive(:update_attributes!).with(@attrs)
+    end
+
+    describe "with :format => :html" do
+      before(:each) do
+        post :create, :$1_id => "1", :$3 => @attrs
+      end
+      it_should_be_redirect { $1_$3_url(@$1, @$3) }
+      it_should_be_assign :$1, :$3
+      it_should_flash_notice_have I18n.translate('${3:$(pluralize-string text)}.create.flash')
+    end
+
+    describe "with :format => :xml" do
+      before(:each) do
+        @$3.should_receive(:to_xml).and_return("XML")
+        post :create, :$1_id => "1", :$3 => @attrs, :format => "xml"
+      end
+      it_should_be_successful
+      it_should_return_content_type :xml
+      it_should_be_assign :$1, :$3
+      it_should_response_body "XML"
+      it_should_response_status "201 Created"
+      it_should_response_location { $1_$3_url(@$1, @$3) }
+    end
+  end
+
+  describe "failed" do
+    before(:each) do
+      raise_record_invalid_on @$3, :update_attributes!, @attrs
+    end
+
+    describe "with :format => :html" do
+      before(:each) do
+        post :create, :$1_id => "1", :$3 => @attrs
+        end
+      it_should_be_successful
+      it_should_be_assign :$1, :$3
+      it_should_render '${3:$(pluralize-string text)}/new'
+    end
+
+    describe "with :format => :xml" do
+      before(:each) do
+        @$3.errors.should_receive(:to_xml).and_return("errors")
+        post :create, :$1_id => "1", :$3 => @attrs, :format => "xml"
+      end
+      it_should_return_content_type :xml
+      it_should_be_assign :$1, :$3
+      it_should_response_status "422 Unprocessable Entity"
+      it_should_response_body "errors"
+    end
+  end
+end
+
+describe "PUT 'update'" do
+  before(:each) do
+    $2.should_receive(:find).with("1").and_return(@$1)
+    @$1.should_receive(:${3:$(pluralize-string text)}).and_return(@${3:$(pluralize-string text)})
+    @${3:$(pluralize-string text)}.should_receive(:find).with("1").and_return(@$3)
+  end
+
+  describe "successfuly" do
+    before(:each) do
+      @$3.should_receive(:update_attributes!).with(@attrs)
+    end
+
+    describe "with :format => :html" do
+      before(:each) do
+        put :update, :$1_id => "1", :id => "1", :$3 => @attrs
+      end
+      it_should_be_redirect { $1_$3_url(@$1, @$3) }
+      it_should_be_assign :$1, :$3
+      it_should_flash_notice_have I18n.translate("${3:$(pluralize-string text)}.update.flash")
+    end
+
+    describe "with :format => :xml" do
+      before(:each) do
+        put :update, :$1_id => "1", :id => "1", :$3 => @attrs, :format => "xml"
+      end
+      it_should_be_successful
+      it_should_return_content_type :xml
+      it_should_be_assign :$1, :$3
+      it_should_response_be_blank
+    end
+  end
+
+  describe "failed" do
+    before(:each) do
+      raise_record_invalid_on @$3, :update_attributes!, @attrs
+    end
+
+    describe "with :format => :html" do
+      before(:each) do
+        put :update, :$1_id => "1", :id => "1", :$3 => @attrs
+      end
+      it_should_be_successful
+      it_should_be_assign :$1, :$3
+      it_should_render '${3:$(pluralize-string text)}/edit'
+    end
+
+    describe "with :format => :xml" do
+      before(:each) do
+        @$3.errors.should_receive(:to_xml).and_return("errors")
+        put :update, :$1_id => "1", :id => "1", :$3 => @attrs, :format => "xml"
+      end
+      it_should_return_content_type :xml
+      it_should_be_assign :$1, :$3
+      it_should_response_status "422 Unprocessable Entity"
+      it_should_response_body "errors"
+    end
+  end
+end
+
+describe "DELETE 'destroy'" do
+  before(:each) do
+    $2.should_receive(:find).with("1").and_return(@$1)
+    @$1.should_receive(:${3:$(pluralize-string text)}).and_return(@${3:$(pluralize-string text)})
+    @${3:$(pluralize-string text)}.should_receive(:find).with("1").and_return(@$3)
+    @$3.should_receive(:destroy)
+  end
+
+  describe "with :format => :html" do
+    before(:each) do
+      delete :destroy, :$1_id => "1", :id => "1"
+    end
+    it_should_be_redirect { $1_${3:$(pluralize-string text)}_url(@$1) }
+    it_should_be_assign :$1, :$3
+    it_should_flash_notice_have I18n.translate("${3:$(pluralize-string text)}.destroy.flash")
+  end
+
+  describe "with :format => :xml" do
+    before(:each) do
+      delete :destroy, :$1_id => "1", :id => "1", :format => "xml"
+    end
+    it_should_be_successful
+    it_should_return_content_type :xml
+    it_should_be_assign :$1, :$3
+    it_should_response_be_blank
+  end
+end
+
+describe_routes_for :controller => "${3:$(pluralize-string text)}", :$1_id => "1" do
+  it_should_have_route_for_resources "${1:$(pluralize-string text)}/1/${3:$(pluralize-string text)}"
+end

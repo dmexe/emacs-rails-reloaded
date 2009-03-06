@@ -282,6 +282,9 @@
             ;; dir
             (when-bind (dir (rails/resource-dir resource))
               (setq file (concat dir file)))
+            ;; skip-file-suffix
+            (when-bind (skip-file-suffix (rails/resource-skip-file-suffix resource))
+              (setq file (concat file skip-file-suffix)))
             ;; file-suffix
             (when-bind (file-suffix (rails/resource-file-suffix resource))
               (setq file (concat file file-suffix)))

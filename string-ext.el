@@ -91,6 +91,8 @@ else return nil."
          (replace-regexp-in-string "\_" " "
            (replace-regexp-in-string "\/" "  " string)))))))
 
+(defalias 'decamelize-string  'string-ext/decamelize)
+
 (defun string-ext/camelize (string)
   "Convert from CamelCase::String to camel_case/string."
   (let ((case-fold-search nil))
@@ -101,6 +103,8 @@ else return nil."
           (replace-regexp-in-string
             "\\([a-z\\d]\\)\\([A-Z]\\)" "\\1_\\2"
             string))))))
+
+(defalias 'camelize-string  'string-ext/camelize)
 
 (defun string-ext/empty-p (str) ;(+)
   "Return t if string STR is not empty."

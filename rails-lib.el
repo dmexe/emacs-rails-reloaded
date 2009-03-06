@@ -260,4 +260,20 @@ else return nil"
 (defmacro rails/toggle-environment-menu-func (env)
   `'(lambda() (interactive) (rails/set-default-environment ,(symbol-value env))))
 
+;;; ---------------------------------------------------------
+;;; - Snippet support functions
+;;;
+
+(defun rails/controller? ()
+  (rails/with-current-buffer
+   (eq 'controller (rails/resource-buffer-type rails/current-buffer))))
+
+(defun rails/controller-spec? ()
+  (rails/with-current-buffer
+   (eq 'controller-spec (rails/resource-buffer-type rails/current-buffer))))
+
+(defun rails/cur-res-title ()
+  (rails/with-current-buffer
+   (rails/resource-buffer-title rails/current-buffer)))
+
 (provide 'rails-lib)
