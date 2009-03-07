@@ -21,8 +21,22 @@
 
 (defun rails/test-unit-bundle/run-test-task (root task args)
   (rails/compile/run root
-                     rails/rake-bundle/command
+                     (if (boundp 'rails/rake-bundle/command)
+                         rails/rake-bundle/command
+                       "rake")
                      (format "%s %s" task (if args args ""))))
+
+(defun rails/test-unit-bundle/after-load ()
+  (setq rails/compile/single-file-list
+        (cons 'rails/test-unit-bundle/single-file
+              rails/compile/single-file-list))
+  (setq rails/compile/current-method-list
+        (cons 'rails/test-unit-bundle/current-method
+              rails/compile/current-method-list))
+
+  (when (boundp 'rails/rake-bundle/tasks-runners-alist)
+    (add-to-list 'rails/rake-bundle/tasks-runners-alist
+                 '("^test" . rails/test-unit-bundle/run-test-task))))
 
 ;;; ---------------------------------------------------------
 ;;; - Bundle
@@ -31,21 +45,9 @@
 (rails/defbundle "Test::Unit"
   (:menu
    (([method]    (cons "Run Current Mehtod" 'rails/compile/current-method))
-    ([file]      (cons "Run Single File"   'rails/compile/single-file))))
-
-  ;;; ---------------------------------------------------------
-  ;;; - Setup tests
-  ;;;
-
-  (setq rails/compile/single-file-list
-        (cons 'rails/test-unit-bundle/single-file
-              rails/compile/single-file-list))
-  (setq rails/compile/current-method-list
-        (cons 'rails/test-unit-bundle/current-method
-              rails/compile/current-method-list))
-
-  (add-to-list 'rails/rake-bundle/tasks-runners-alist
-               '("^test" . rails/test-unit-bundle/run-test-task))
+    ([file]      (cons "Run Single File"   'rails/compile/single-file)))
+   :after-load-bundles
+   'rails/test-unit-bundle/after-load)
 
   ;;; ---------------------------------------------------------
   ;;; - Resources

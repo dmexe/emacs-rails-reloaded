@@ -2,7 +2,7 @@
 ;;; - Variables
 ;;;
 
-(setq rails/rspec-bundle/command rails/ruby/command)
+(defvar rails/rspec-bundle/command rails/ruby/command)
 (defvar rails/rspec-bundle/spec-options "-O spec/spec.opts")
 
 ;;; ---------------------------------------------------------
@@ -28,31 +28,32 @@
 
 (defun rails/rspec-bundle/run-spec-task (root task args)
   (rails/compile/run root
-                     rails/rake-bundle/command
+                     (if (boundp 'rails/rake-bundle/command)
+                         rails/rake-bundle/command
+                       "rake")
                      (format "%s %s" task (if args args ""))))
+
+(defun rails/rspec-bundle/after-load ()
+  (when (boundp 'rails/rake-bundle/tasks-runners-alist)
+    (add-to-list 'rails/rake-bundle/tasks-runners-alist
+                 '("^spec" . rails/rspec-bundle/run-spec-task)))
+  (setq rails/compile/single-file-list
+        (cons 'rails/rspec-bundle/single-file
+              rails/compile/single-file-list))
+  (setq rails/compile/current-method-list
+        (cons 'rails/rspec-bundle/current-method
+              rails/compile/current-method-list)))
 
 ;;; ---------------------------------------------------------
 ;;; - Bundle
 ;;;
-
 (rails/defbundle "RSpec"
   (:menu
    (([method]    (cons "Run Current Mehtod" 'rails/compile/current-method))
-    ([file]      (cons "Run Single File"   'rails/compile/single-file))))
+    ([file]      (cons "Run Single File"   'rails/compile/single-file)))
+   :after-load-bundles
+   'rails/rspec-bundle/after-load)
 
-  ;;; ---------------------------------------------------------
-  ;;; - Setup tests
-  ;;;
-
-  (setq rails/compile/single-file-list
-      (cons 'rails/rspec-bundle/single-file
-            rails/compile/single-file-list))
-  (setq rails/compile/current-method-list
-      (cons 'rails/rspec-bundle/current-method
-            rails/compile/current-method-list))
-
-  (add-to-list 'rails/rake-bundle/tasks-runners-alist
-               '("^spec" . rails/rspec-bundle/run-spec-task))
   ;;; ---------------------------------------------------------
   ;;; - Resources
   ;;;

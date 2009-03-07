@@ -29,6 +29,7 @@
 (defvar rails/bundles/loaded-list nil)
 (defvar rails/bundles/loaded-p nil)
 (defvar rails/bundles/trigger-list nil)
+(defvar rails/bundles/after-load-list nil)
 
 (defconst rails/bundles/file-regexp "^rails-\\(.*\\)-bundle\.el$")
 (defconst rails/bundles/name-fmt "rails/%s-bundle/name")
@@ -59,6 +60,7 @@
                        (intern (format rails/bundles/name-fmt sym)))))
           (add-to-list 'rails/bundles/loaded-list (cons sym title))
           (rails/bundles/add-to-loaded-menu title))))
+    (mapc 'funcall rails/bundles/after-load-list)
     (setq rails/bundles/loaded-p t)))
 
 (defun rails/bundles/reload ()
@@ -66,6 +68,7 @@
   (setq rails/bundles/loaded-list nil)
   (setq rails/bundles/loaded-p nil)
   (setq rails/bundles/trigger-list nil)
+  (setq rails/bundles/after-load-list nil)
   (rails/resources/clear)
   (rails/bundles/load))
 
@@ -93,7 +96,7 @@
     (cons (concat title " Bundle") menumap)
     'bundles-title))
 
-(defmacro* rails/defbundle (name (&key menu keys triggers) &body body)
+(defmacro* rails/defbundle (name (&key menu keys triggers after-load-bundles) &body body)
   `(progn
      (defconst
        ,(intern (format rails/bundles/name-fmt (string-ext/safe-symbol name)))
@@ -109,6 +112,9 @@
          ,@(loop for tr in triggers
                  collect
                  `(add-to-list 'rails/bundles/trigger-list ',tr)))
+       (when ,(not (not after-load-bundles))
+         (setq rails/bundles/after-load-list
+               (cons ,after-load-bundles rails/bundles/after-load-list)))
        (when ,(not (not keys))
          ,@(loop for (key func) in keys collect
                  `(rails/define-key ,key ,func)))

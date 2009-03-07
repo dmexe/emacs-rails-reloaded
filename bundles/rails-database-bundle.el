@@ -36,7 +36,7 @@
      (rails/notify
       (if (zerop retval) ,success ,failed))))
 
-(defun rails/database-bundle/run-task (root task &optional funcs args)
+(defun rails/database-bundle/run-task (root task &optional args funcs)
   "Run a Database task in RAILS_ROOT with MAJOR-MODE."
   (when (and task root)
     (unless funcs
@@ -65,7 +65,6 @@
         (rails/database-bundle/run-task
          root
          "migrate"
-         nil
          (format "VERSION=%s" (car (split-string version " "))))))))
 
 (defun rails/database-bundle/migrate-rollback ()
@@ -78,7 +77,6 @@
           (rails/notify "Invalid step, muste be digits.")
         (rails/database-bundle/run-task root
                                         "rollback"
-                                        nil
                                         (format "STEP=%s" steps))))))
 
 (defun rails/database-bundle/migrate-redo ()

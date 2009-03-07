@@ -93,7 +93,7 @@
     (if task
         (let (options)
           (unless (string-ext/empty-p task)
-            (setq options (read-string (format "Name and/or options for [%s]: " task)))
+            (setq options (read-string (format "script/generate %s " task)))
             (unless (string-ext/empty-p options)
               (rails/generator-bundle/run (rails/root)
                                           "generate"
@@ -109,7 +109,7 @@
     (if task
         (let (options)
           (unless (string-ext/empty-p task)
-            (setq options (read-string (format "Name of [%s]: " task)))
+            (setq options (read-string (format "script/destroy %s " task)))
             (unless (string-ext/empty-p options)
               (rails/generator-bundle/run (rails/root) "destroy" task options))))
       (rails/anything/run-with-pattern "des "))))

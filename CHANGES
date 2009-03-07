@@ -1,5 +1,6 @@
 == HEAD
    *) Feature: added the snippets for yasnippets.
+   *) Bugfix: compilation warnnings.
 
 == 0.99 Changes (5 Mar 2009)
    First release.
