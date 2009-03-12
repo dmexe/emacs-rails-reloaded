@@ -1,0 +1,6 @@
+#name : change_column_default
+#key : ccd
+#group : rails.migration
+#condition : (rails/migration?)
+# --
+change_column_default :${1:`(or (rails/cur-res-title) "table")`}, :${2:column}, :${3:default_value}

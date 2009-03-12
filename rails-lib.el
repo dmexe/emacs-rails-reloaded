@@ -276,6 +276,10 @@ else return nil"
   (rails/with-current-buffer
    (eq 'model (rails/resource-buffer-type rails/current-buffer))))
 
+(defun rails/migration? ()
+  (rails/with-current-buffer
+   (eq 'migration (rails/resource-buffer-type rails/current-buffer))))
+
 (defun rails/cur-res-title ()
   (rails/with-current-buffer
    (rails/resource-buffer-title rails/current-buffer)))

@@ -1,0 +1,8 @@
+#name : change_table
+#key : cht
+#group : rails.migration
+#condition : (rails/migration?)
+# --
+change_table :${1:`(or (rails/cur-res-title) "table")`} do |t|
+  $0
+end

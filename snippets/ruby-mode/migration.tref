@@ -1,0 +1,6 @@
+#name : t.references
+#key : tref
+#group : rails.migration
+#condition : (rails/migration?)
+# --
+t.references :${1:owner}

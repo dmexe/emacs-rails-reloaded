@@ -1,0 +1,6 @@
+#name : rename_column
+#key : renc
+#group : rails.migration
+#condition : (rails/migration?)
+# --
+rename_column :${1:`(or (rails/cur-res-title) "table")`}, :${2:old_name}, :${3:new_name}

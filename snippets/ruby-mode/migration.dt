@@ -1,0 +1,6 @@
+#name : drop_table
+#key : dt
+#group : rails.migration
+#condition : (rails/migration?)
+# --
+drop_table :${1:`(or (rails/cur-res-title) "table")`}

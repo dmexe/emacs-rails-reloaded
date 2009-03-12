@@ -1,0 +1,6 @@
+#name : t.integer
+#key : ti
+#group : rails.migration
+#condition : (rails/migration?)
+# --
+t.integer :${1:name}

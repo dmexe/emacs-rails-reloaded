@@ -1,0 +1,6 @@
+#name : t.text
+#key : tt
+#group : rails.migration
+#condition : (rails/migration?)
+# --
+t.text :${1:name}

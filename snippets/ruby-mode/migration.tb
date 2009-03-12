@@ -1,0 +1,6 @@
+#name : t.boolean
+#key : tb
+#group : rails.migration
+#condition : (rails/migration?)
+# --
+t.boolean :${1:name}

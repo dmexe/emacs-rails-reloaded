@@ -1,0 +1,6 @@
+#name : t.timestamps
+#key : tim
+#group : rails.migration
+#condition : (rails/migration?)
+# --
+t.timestamps

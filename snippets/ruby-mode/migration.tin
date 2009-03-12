@@ -1,0 +1,6 @@
+#name : t.index
+#key : tin
+#group : rails.migration
+#condition : (rails/migration?)
+# --
+t.index [:${name}$0]

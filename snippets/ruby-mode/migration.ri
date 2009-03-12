@@ -1,0 +1,6 @@
+#name : remove_index
+#key : ri
+#group : rails.migration
+#condition : (rails/migration?)
+# --
+remove_index :${1:`(or (rails/cur-res-title) "table")`}, :${2:column}

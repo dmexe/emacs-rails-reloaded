@@ -1,0 +1,6 @@
+#name : add_index :unique => true
+#key : aiu
+#group : rails.migration
+#condition : (rails/migration?)
+# --
+add_index :${1:`(or (rails/cur-res-title) "table")`}, [:${2:column}], :unique => true

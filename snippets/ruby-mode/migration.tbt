@@ -1,0 +1,6 @@
+#name : t.belongs_to
+#key : tbt
+#group : rails.migration
+#condition : (rails/migration?)
+# --
+t.belongs_to :${1:owner}${2:, :polymorphic => true}

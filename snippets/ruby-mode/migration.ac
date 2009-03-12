@@ -1,0 +1,6 @@
+#name : add_column
+#key : ac
+#group : rails.migration
+#condition : (rails/migration?)
+# --
+add_column :${1:`(or (rails/cur-res-title) "table")`}, :${2:column}
