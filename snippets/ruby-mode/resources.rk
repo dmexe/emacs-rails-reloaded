@@ -1,0 +1,6 @@
+#name : resource class name
+#key : rk
+#group : rails.resources
+#condition : (rails/cur-res-title)
+# --
+${1:`(decamelize-string (singularize-string (rails/cur-res-title)))`}$0
