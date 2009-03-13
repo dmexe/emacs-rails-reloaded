@@ -281,7 +281,7 @@ else return nil"
    (eq 'migration (rails/resource-buffer-type rails/current-buffer))))
 
 (defun rails/cur-res-title ()
-  (rails/with-current-buffer
+  (when rails/current-buffer
    (rails/resource-buffer-title rails/current-buffer)))
 
 (provide 'rails-lib)
