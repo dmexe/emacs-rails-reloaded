@@ -265,20 +265,20 @@ else return nil"
 ;;;
 
 (defun rails/controller? ()
-  (rails/with-current-buffer
-   (eq 'controller (rails/resource-buffer-type rails/current-buffer))))
+  (when (rails/resource-buffer-p rails/current-buffer)
+    (eq 'controller (rails/resource-buffer-type rails/current-buffer))))
 
 (defun rails/controller-spec? ()
-  (rails/with-current-buffer
-   (eq 'controller-spec (rails/resource-buffer-type rails/current-buffer))))
+  (when (rails/resource-buffer-p rails/current-buffer)
+    (eq 'controller-spec (rails/resource-buffer-type rails/current-buffer))))
 
 (defun rails/model? ()
-  (rails/with-current-buffer
-   (eq 'model (rails/resource-buffer-type rails/current-buffer))))
+  (when (rails/resource-buffer-p rails/current-buffer)
+    (eq 'model (rails/resource-buffer-type rails/current-buffer))))
 
 (defun rails/migration? ()
-  (rails/with-current-buffer
-   (eq 'migration (rails/resource-buffer-type rails/current-buffer))))
+  (when (rails/resource-buffer-p rails/current-buffer)
+    (eq 'migration (rails/resource-buffer-type rails/current-buffer))))
 
 (defun rails/cur-res-title ()
   (when rails/current-buffer
