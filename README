@@ -1,8 +1,8 @@
-It is the minor mode for editing Ruby On Rails code with Emacs. This
-minor mode makes your work much easier and user friendly.
+It is the minor mode for editing Ruby On Rails code with Emacs.
+This minor mode makes your work much easier and user friendly.
 
 
-== Requirements
+= Requirements
 
 The emacs-rails-reloaded is requiring a 22.x or 23 (CVS) version of
 Emacs, and can’t be running on old versions (less 22.0). To install
